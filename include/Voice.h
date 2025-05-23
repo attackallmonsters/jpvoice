@@ -13,7 +13,7 @@ class Voice
 {
 public:
     // Constructor: requires two Oscillator pointers and the global sample rateSample
-    Voice(Oscillator *o1, Oscillator *o2);
+    Voice();
 
     // Destructor: deletes both oscillator instances
     ~Voice();

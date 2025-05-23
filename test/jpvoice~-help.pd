@@ -1,0 +1,4 @@
+#N canvas 1339 209 450 300 12;
+#X declare -path ../bin;
+#X obj 74 183 jpvoice~;
+#X obj 39 32 declare -path ../bin;

@@ -3,8 +3,7 @@
 
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (osc1) and modulator (osc2).
-Voice::Voice(Oscillator *o1, Oscillator *o2)
-    : osc1(o1), osc2(o2)
+Voice::Voice()
 {
 }
 
@@ -69,6 +68,11 @@ void Voice::setFrequencies(double frequencyOsc1, double frequencyOsc2)
     osc2->setFrequency(frequencyOsc2);
 }
 
+// Applies changed paramters on low amplitude
+void Voice::applyChangedParameters()
+{
+}
+
 // Computes and returns a single audio sample from the voice.
 // Takes two input frequencies (for osc1 and osc2) and the current sample rate.
 // Depending on the modulation settings, the sample result is computed differently.
@@ -81,12 +85,13 @@ double Voice::getSample()
     // Step 2: Apply frequency modulation if enabled.
     // The carrier frequency (osc1) is modulated by the modulator signal,
     // scaled by the modulation index and by freq1 to keep it frequency-relative.
-    double frequencyOsc1 = osc1->getFrequency();;
+    double frequencyOsc1 = osc1->getFrequency();
+    ;
     double effectiveFreq1 = frequencyOsc1;
     if (fmEnabled)
     {
         effectiveFreq1 += modSignal * modulationIndex * frequencyOsc1;
-    }   
+    }
 
     // Step 3: Generate the carrier signal sample (osc1), possibly frequency-modulated.
     double carrier = osc1->getSample();

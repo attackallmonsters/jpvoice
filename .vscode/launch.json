@@ -9,7 +9,7 @@
         "args": [
           "-stderr",
           "-guiport", "0",
-          "/home/thomas/Documents/data/Music Production/pd/extensions/supersaw/supersaw~-help.pd" // <== path to test patch
+          "/home/thomas/Documents/data/Music Production/pd/extensions/jpvoice/test/jpvoice~-help.pd" // <== path to test patch
         ],
         "stopAtEntry": false,
         "cwd": "${workspaceFolder}",

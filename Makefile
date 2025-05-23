@@ -9,63 +9,53 @@ CXX = g++
 # -fPIC: generate position-independent code (useful for shared libraries)
 # -Iinclude: add 'include' directory to the header search path
 # -MMD -MP: generate dependency files for header tracking
-CXXFLAGS_COMMON = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP
+CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP
 
 # === Directory layout ===
-# Source files are located in ./src
-# Header files are in ./include
-# Object files will be placed in ./obj
-# The final binary will be placed in ./bin
 SRC_DIR = src
+PD_SRC_DIR = $(SRC_DIR)/puredata
 OBJ_DIR = obj
 BIN_DIR = bin
 
-# === Target binary ===
-TARGET = $(BIN_DIR)/jpvoice
-
-# === Explicit list of source files ===
-SOURCES = \
-	$(SRC_DIR)/NoiseGenerator.cpp \
-	$(SRC_DIR)/SupersawOscillator.cpp \
+# === Pure Data sources ===
+PD_SOURCES = \
+	$(PD_SRC_DIR)/jpvoice.cpp \
 	$(SRC_DIR)/Voice.cpp \
-	$(SRC_DIR)/puredata/jpvoice.cpp \
+	$(SRC_DIR)/SupersawOscillator.cpp \
+	$(SRC_DIR)/NoiseGenerator.cpp
 
-# === Derived object and dependency files ===
-OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))
-DEPS    = $(OBJECTS:.o=.d)
+PD_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(PD_SOURCES))
+PD_TARGET = $(BIN_DIR)/jpvoice~.pd_linux
+
+# === Dependency files ===
+DEPS = $(PD_OBJECTS:.o=.d)
 
 # === Default target ===
-all: release
-
-# === Release build ===
-release: CXXFLAGS = $(CXXFLAGS_COMMON) -O3
-release: build
+all: $(PD_TARGET)
 
 # === Debug build ===
-debug: CXXFLAGS = $(CXXFLAGS_COMMON) -O0 -g
-debug: build
+debug: CXXFLAGS += -O0 -g
+debug: clean all
 
-# === Shared build rule ===
-build: $(TARGET)
+# === Release build ===
+release: CXXFLAGS += -O3
+release: clean all
 
-# Link all object files into the final binary
-$(TARGET): $(OBJECTS)
+# === Build rule for pd_linux external ===
+$(PD_TARGET): $(PD_OBJECTS)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) -shared $(OBJECTS) -o $(TARGET)
+	$(CXX) -shared -o $@ $^
 
-# Compile each source file to an object file
+# === Compile rule for .cpp to .o ===
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # === Clean rule ===
-# Removes all build artifacts
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-# === Include auto-generated dependency files ===
-# Ensures that changes to headers trigger recompilation
+# === Include dependency files ===
 -include $(DEPS)
 
-# === Mark targets as phony (not actual files) ===
-.PHONY: all release debug build clean
+.PHONY: all clean debug release
