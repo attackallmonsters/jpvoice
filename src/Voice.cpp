@@ -55,26 +55,41 @@ void Voice::setModIndex(double index)
     paramChanged = true;
 }
 
+// Sets teh sample rate for signal calculation
+void Voice::setSampleRate(double sampleRate)
+{
+    osc1->setSampleRate(sampleRate);
+    osc2->setSampleRate(sampleRate);
+}
+
+// Sets the frequency of oscillator 1/carrier and oscillator 2/modulator
+void Voice::setFrequencies(double frequencyOsc1, double frequencyOsc2)
+{
+    osc1->setFrequency(frequencyOsc1);
+    osc2->setFrequency(frequencyOsc2);
+}
+
 // Computes and returns a single audio sample from the voice.
 // Takes two input frequencies (for osc1 and osc2) and the current sample rate.
 // Depending on the modulation settings, the sample result is computed differently.
-double Voice::getSample(double freq1, double freq2, double sampleRate)
+double Voice::getSample()
 {
     // Step 1: Compute the output signal of the modulator oscillator (osc2).
     // This signal is used for FM or mixing, depending on the mode.
-    double modSignal = osc2->getSample(freq2, sampleRate);
+    double modSignal = osc2->getSample();
 
     // Step 2: Apply frequency modulation if enabled.
     // The carrier frequency (osc1) is modulated by the modulator signal,
     // scaled by the modulation index and by freq1 to keep it frequency-relative.
-    double effectiveFreq1 = freq1;
+    double frequencyOsc1 = osc1->getFrequency();;
+    double effectiveFreq1 = frequencyOsc1;
     if (fmEnabled)
     {
-        effectiveFreq1 += modSignal * modulationIndex * freq1;
-    }
+        effectiveFreq1 += modSignal * modulationIndex * frequencyOsc1;
+    }   
 
     // Step 3: Generate the carrier signal sample (osc1), possibly frequency-modulated.
-    double carrier = osc1->getSample(effectiveFreq1, sampleRate);
+    double carrier = osc1->getSample();
 
     // Step 4: If oscillator sync is enabled and osc1 wrapped its phase this sample,
     // reset the phase of osc2 to re-align it.

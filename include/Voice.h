@@ -30,8 +30,14 @@ public:
     // Sets the modulation index used when FM is active
     void setModIndex(double index);
 
+    // Sets teh sample rate for signal calculation
+    void setSampleRate(double sampleRate);
+
+    // Sets the frequency of oscillator 1/carrier and oscillator 2/modulator
+    void setFrequencies(double frequencyOsc1, double frequencyOsc2);
+
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
-    double getSample(double freq1, double freq2, double sampleRate);
+    double getSample();
 
     // Applies changed paramters on low amplitude
     void applyChangedParameters();

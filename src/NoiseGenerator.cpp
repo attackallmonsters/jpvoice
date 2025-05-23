@@ -19,7 +19,7 @@ void NoiseGenerator::setType(NoiseType type)
 }
 
 // Returns one noise sample, depending on the selected type (white or pink)
-double NoiseGenerator::getSample(double /*frequency*/, double /*sampleRate*/)
+double NoiseGenerator::getSample()
 {
     // Generate white noise sample in range [-1.0, 1.0]
     double white = dist(rng);

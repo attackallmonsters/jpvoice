@@ -18,11 +18,8 @@ public:
     // Constructor: always initializes with white noise and distribution [-1, 1]
     NoiseGenerator();
 
-    // Constructor initializes with desired noise type (default: white)
-    explicit NoiseGenerator(NoiseType type = NoiseType::White);
-
     // Returns a single noise sample; frequency and sampleRate are unused but kept for compatibility
-    double getSample(double frequency, double sampleRate) override;
+    double getSample() override;
 
     // Noise has no concept of phase, so this is a no-op
     void resetPhase() override;

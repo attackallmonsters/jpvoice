@@ -25,10 +25,10 @@ TARGET = $(BIN_DIR)/jpvoice
 
 # === Explicit list of source files ===
 SOURCES = \
-    $(SRC_DIR)/main.cpp \
-    $(SRC_DIR)/Voice.cpp \
-    $(SRC_DIR)/Oscillator.cpp \
-    $(SRC_DIR)/Supersaw.cpp
+	$(SRC_DIR)/NoiseGenerator.cpp \
+	$(SRC_DIR)/SupersawOscillator.cpp \
+	$(SRC_DIR)/Voice.cpp \
+	$(SRC_DIR)/puredata/jpvoice.cpp \
 
 # === Derived object and dependency files ===
 OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCES))
@@ -51,7 +51,7 @@ build: $(TARGET)
 # Link all object files into the final binary
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(OBJECTS) -o $(TARGET)
+	$(CXX) -shared $(OBJECTS) -o $(TARGET)
 
 # Compile each source file to an object file
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
