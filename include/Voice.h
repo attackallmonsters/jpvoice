@@ -56,13 +56,13 @@ public:
     void setNoiseType(NoiseType type);
 
     // Sets the detune factor
-    void setDetune(float value);
+    void setDetune(double value);
 
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
     double getSample();
 
     // Applies changed paramters on low amplitude
-    void applyChangedOscillators();
+    void applyChangedParameters();
 
 private:
     Oscillator *carrier;               // Carrier oscillator (may be modulated)

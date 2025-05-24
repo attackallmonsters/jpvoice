@@ -12,9 +12,9 @@ SupersawOscillator::SupersawOscillator()
 }
 
 // Sets the detune factor
-void SupersawOscillator::setDetune(float value)
+void SupersawOscillator::setDetune(double value)
 {
-    detune = clamp(value 0,0, 1.0);
+    detune = clamp(value, 0.0, 1.0);
 }
 
 // Generates the next audio sample based on the current frequency and sample rate

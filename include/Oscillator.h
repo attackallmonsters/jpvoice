@@ -22,7 +22,7 @@ public:
     virtual double getSample() = 0;
 
     // Sets the detune factor
-    virtual void setDetune(float /*value*/) {};
+    virtual void setDetune(double /*value*/) {};
 
     // Resets the internal oscillator phase to 0.0.
     virtual void resetPhase()

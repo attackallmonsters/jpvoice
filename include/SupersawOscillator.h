@@ -33,7 +33,7 @@ public:
     void resetPhase() override;
 
     // Sets the detune factor for the supersaw voices
-    void setDetune(float value) override;
+    void setDetune(double value) override;
 
 private:
     SupersawVoice voices[NUM_VOICES]; // All detuned voices

@@ -66,7 +66,7 @@ void Voice::setFrequencyModulator(double frequency)
 }
 
 // Sets the detune factor
-void Voice::setDetune(float value)
+void Voice::setDetune(double value)
 {
     carrier->setDetune(value);
     modulator->setDetune(value);
@@ -113,7 +113,10 @@ void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
 }
 
 // Changes the current noise type (white or pink)
-void Voice::setNoiseType(NoiseType type) {}
+void Voice::setNoiseType(NoiseType type)
+{
+    noise->setType(type);
+}
 
 // Applies changed paramters on low amplitude
 void Voice::applyChangedParameters()

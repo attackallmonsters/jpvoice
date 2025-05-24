@@ -4,14 +4,16 @@
 
 static t_class *jpvoice_class;
 
-typedef struct _jpvoice {
+typedef struct _jpvoice
+{
     t_object x_obj;
     Voice *voice;
     t_outlet *audio_out;
 } t_jpvoice;
 
 // DSP perform function
-t_int *jpvoice_tilde_perform(t_int *w) {
+t_int *jpvoice_tilde_perform(t_int *w)
+{
     t_jpvoice *x = (t_jpvoice *)(w[1]);
     t_sample *out = (t_sample *)(w[2]);
     int n = (int)(w[3]);
@@ -23,23 +25,38 @@ t_int *jpvoice_tilde_perform(t_int *w) {
 }
 
 // DSP add function
-void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp) {
+void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
+{
     dsp_add(jpvoice_tilde_perform, 3, x, sp[0]->s_vec, sp[0]->s_n);
 }
 
-// Frequency set via list [f freq1 freq2(Voice::
-void jpvoice_tilde_f(t_jpvoice *x, t_symbol *, int argc, t_atom *argv) {
-    if (argc != 2 || argv[0].a_type != A_FLOAT || argv[1].a_type != A_FLOAT) {
-        pd_error(x, "[jpvoice~]: expected two float arguments: [f freq1 freq2(");
+// Frequency of carrier set via list [f1 freq(
+void jpvoice_tilde_f1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc != 2 || argv[0].a_type != A_FLOAT)
+    {
+        pd_error(x, "[jpvoice~]: expected float argument 0 - n for carrier frequency f1: [f1 f(");
         return;
     }
-    double freq1 = atom_getfloat(argv);
-    double freq2 = atom_getfloat(argv + 1);
-    x->voice->setFrequencies(freq1, freq2);
+    double f = atom_getfloat(argv);
+    x->voice->setFrequencyCarrier(f);
+}
+
+// Frequency of modulator set via list [f2 freq(
+void jpvoice_tilde_f2(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc != 2 || argv[0].a_type != A_FLOAT)
+    {
+        pd_error(x, "[jpvoice~]: expected float argument 0 - n for modulator frequency f2: [f2 f(");
+        return;
+    }
+    double f = atom_getfloat(argv);
+    x->voice->setFrequencyModulator(f);
 }
 
 // Constructor
-void *jpvoice_tilde_new() {
+void *jpvoice_tilde_new()
+{
     t_jpvoice *x = (t_jpvoice *)pd_new(jpvoice_class);
 
     x->voice = new Voice();
@@ -50,12 +67,14 @@ void *jpvoice_tilde_new() {
 }
 
 // Destructor
-void jpvoice_tilde_free(t_jpvoice *x) {
+void jpvoice_tilde_free(t_jpvoice *x)
+{
     delete x->voice;
 }
 
 // Setup function
-extern "C" void jpvoice_tilde_setup(void) {
+extern "C" void jpvoice_tilde_setup(void)
+{
     jpvoice_class = class_new(gensym("jpvoice~"),
                               (t_newmethod)jpvoice_tilde_new,
                               (t_method)jpvoice_tilde_free,
@@ -64,5 +83,5 @@ extern "C" void jpvoice_tilde_setup(void) {
                               A_NULL);
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_dsp, gensym("dsp"), A_CANT, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f, gensym("f"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f1, gensym("f1"), A_GIMME, 0);
 }

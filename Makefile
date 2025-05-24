@@ -23,7 +23,7 @@ BIN_DIR = bin
 
 # === Pure Data sources ===
 PD_SOURCES = \
-	$(PD_SRC_DIR)/jpvoice.cpp \
+	$(PD_SRC_DIR)/jpvoice~.cpp \
 	$(SRC_DIR)/Voice.cpp \
 	$(SRC_DIR)/SupersawOscillator.cpp \
 	$(SRC_DIR)/NoiseGenerator.cpp
