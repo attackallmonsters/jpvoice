@@ -30,12 +30,12 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp) {
 // Frequency set via list [f freq1 freq2(Voice::
 void jpvoice_tilde_f(t_jpvoice *x, t_symbol *, int argc, t_atom *argv) {
     if (argc != 2 || argv[0].a_type != A_FLOAT || argv[1].a_type != A_FLOAT) {
-        pd_error(x, "Expected two float arguments: [f freq1 freq2(");
+        pd_error(x, "[jpvoice~]: expected two float arguments: [f freq1 freq2(");
         return;
     }
     double freq1 = atom_getfloat(argv);
     double freq2 = atom_getfloat(argv + 1);
-    //x->voice->setFrequencies(freq1, freq2);
+    x->voice->setFrequencies(freq1, freq2);
 }
 
 // Constructor

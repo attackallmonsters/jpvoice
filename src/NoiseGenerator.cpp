@@ -45,9 +45,3 @@ double NoiseGenerator::getSample()
     // Scale output to normalize level (empirical factor)
     return pink * 0.11;
 }
-
-// No-op since noise has no phase concept
-void NoiseGenerator::resetPhase()
-{
-    // Do nothing
-}

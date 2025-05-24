@@ -7,7 +7,7 @@
 #include <cmath>
 
 // Internal voice struct used for detuned oscillators
-struct Voice
+struct SupersawVoice
 {
     double phase;
     double detune_ratio;
@@ -32,10 +32,10 @@ public:
     // Resets the internal phase of all voices
     void resetPhase() override;
 
-    // Returns true if any voice's phase wrapped in the last call
-    bool hasWrapped() const override;
+    // Sets the detune factor for the supersaw voices
+    void setDetune(float value) override;
 
 private:
-    Voice voices[NUM_VOICES]; // All detuned voices
-    bool wrapped = false;
+    SupersawVoice voices[NUM_VOICES]; // All detuned voices
+    double detune = 0.0;              // Voices detune
 };

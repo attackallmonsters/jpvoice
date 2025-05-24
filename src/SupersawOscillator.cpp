@@ -11,29 +11,31 @@ SupersawOscillator::SupersawOscillator()
     wrapped = false;
 }
 
+// Sets the detune factor
+void SupersawOscillator::setDetune(float value)
+{
+    detune = clamp(value 0,0, 1.0);
+}
+
 // Generates the next audio sample based on the current frequency and sample rate
 double SupersawOscillator::getSample()
 {
-    if (sampleRate <= 0.0)
-        sampleRate = 44100.0;
-
     frequency = std::fmax(1.0, frequency);
     double sum = 0.0;
     wrapped = false;
 
     for (int i = 0; i < NUM_VOICES; ++i)
     {
-        Voice &v = voices[i];
+        SupersawVoice &v = voices[i];
         double detune_factor = v.detune_ratio * detune;
         double voice_freq = frequency * (1.0 + detune_factor);
         double phase_inc = voice_freq / sampleRate;
-        double t = v.phase;
-        double val = 2.0 * t - 1.0;
+        double val = 2.0 * currentPhase - 1.0;
 
-        v.phase += phase_inc;
-        if (v.phase >= 1.0)
+        currentPhase += phase_inc;
+        if (currentPhase >= 1.0)
         {
-            v.phase -= 1.0;
+            currentPhase -= 1.0;
             wrapped = true;
         }
 
@@ -46,15 +48,10 @@ double SupersawOscillator::getSample()
 // Resets the internal phase of all voices
 void SupersawOscillator::resetPhase()
 {
+    Oscillator::resetPhase();
+
     for (auto &v : voices)
     {
         v.phase = 0.0;
     }
-    wrapped = false;
-}
-
-// Returns true if any voice's phase wrapped in the last call
-bool SupersawOscillator::hasWrapped() const
-{
-    return wrapped;
 }

@@ -1,14 +1,8 @@
 #pragma once
 
 #include "Oscillator.h"
+#include "OscillatorOptions.h"
 #include <random>
-
-// Defines the available types of noise
-enum class NoiseType
-{
-    White, // Uncorrelated white noise
-    Pink   // Filtered pink noise (equal energy per octave)
-};
 
 // A subclass of Oscillator that generates noise instead of periodic waveforms.
 // Supports white and pink noise generation.

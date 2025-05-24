@@ -1,3 +1,7 @@
+#######################################
+#   Makefile for Pure Data on Linux   #
+#######################################
+
 # === Compiler settings ===
 # Use g++ as the C++ compiler
 CXX = g++

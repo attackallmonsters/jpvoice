@@ -1,6 +1,10 @@
 #pragma once
 
 #include "Oscillator.h"
+#include "OscillatorOptions.h"
+#include "NoiseGenerator.h"
+#include "SupersawOscillator.h"
+#include "SineOscillator.h"
 
 // The PI
 #ifndef M_PI
@@ -18,9 +22,6 @@ public:
     // Destructor: deletes both oscillator instances
     ~Voice();
 
-    // Osc1<>Osc2 mix: 0: Osc1 only; 1: Osc2 only
-    void setMix(double mix);
-
     // Enables or disables frequency modulation (FM)
     void setFMEnabled(bool enabled);
 
@@ -33,29 +34,59 @@ public:
     // Sets teh sample rate for signal calculation
     void setSampleRate(double sampleRate);
 
-    // Sets the frequency of oscillator 1/carrier and oscillator 2/modulator
-    void setFrequencies(double frequencyOsc1, double frequencyOsc2);
+    // Sets the frequency of oscillator 1/carrier
+    void setFrequencyCarrier(double frequency);
+
+    // Sets the frequency of oscillator 2/modulator
+    void setFrequencyModulator(double frequency);
+
+    // Sets the volume level of the oscillators
+    void setOscillatorMix(double mix);
+
+    // Sets the volume level of the noise generator
+    void setNoiseMix(double mix);
+
+    // Assigns the carrier oscillator
+    void setCarrierOscillatorType(CarrierOscillatiorType oscillatorType);
+
+    // Assigns the modulator oscillator
+    void setModulatorOscillatorType(ModulatorOscillatorType oscillatorType);
+
+    // Changes the current noise type (white or pink)
+    void setNoiseType(NoiseType type);
+
+    // Sets the detune factor
+    void setDetune(float value);
 
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
     double getSample();
 
     // Applies changed paramters on low amplitude
-    void applyChangedParameters();
+    void applyChangedOscillators();
 
 private:
-    Oscillator *osc1; // Carrier oscillator (may be modulated)
-    Oscillator *osc2; // Modulator oscillator (for FM or sync)
+    Oscillator *carrier;               // Carrier oscillator (may be modulated)
+    Oscillator *modulator;             // Modulator oscillator (for FM or sync)
+    double frequencyCarrier = 220.0;   // Current frequency carrier
+    double frequencyModulator = 220.0; // Current frequency modulator
 
-    double oscmix = 0.5;          // Mix Osc1<>Osc2
+    NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
+
+    double oscmix = 0.0;          // Mix carrier <=> modulator
+    double noisemix = 0.0;        // Mix oscillators <=> noise
     bool fmEnabled = false;       // True if FM is active
     bool syncEnabled = false;     // True if Sync is active
-    double modulationIndex = 1.0; // FM depth: how much osc2 modulates osc1
+    double modulationIndex = 1.0; // FM depth: how much modulator modulates carrier
 
-    double detune = 0;        // Detune factor supersaw oszillator
-    double pulseWidth = 0.5;  // Pulse width square oscillator
+    double detune = 0;       // Detune factor supersaw oszillator
+    double pulseWidth = 0.5; // Pulse width square oscillator
 
-    bool paramChanged = false;    // Indicates a paramter change
-    int fadeCounter = 0;          // Amplitude for param change
-    const int fadeLength = 32;    // Fade in/out samples for param change
-    double fadeValue = 1.0;       // Current amplitude for param change
+    bool paramChanged = false; // Indicates a paramter change
+    int fadeCounter = 0;       // Amplitude for param change
+    const int fadeLength = 32; // Fade in/out samples for param change
+    double fadeValue = 1.0;    // Current amplitude for param change
+
+    // Oscillators
+    SupersawOscillator *supersawCarrier = new SupersawOscillator();
+    SineOscillator *sineModulator = new SineOscillator();
 };
