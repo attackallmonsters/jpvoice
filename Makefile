@@ -26,6 +26,7 @@ PD_SOURCES = \
 	$(PD_SRC_DIR)/jpvoice~.cpp \
 	$(SRC_DIR)/Voice.cpp \
 	$(SRC_DIR)/SupersawOscillator.cpp \
+	$(SRC_DIR)/SineOscillator.cpp \
 	$(SRC_DIR)/NoiseGenerator.cpp
 
 PD_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(PD_SOURCES))

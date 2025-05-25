@@ -19,7 +19,7 @@ void NoiseGenerator::setType(NoiseType type)
 }
 
 // Returns one noise sample, depending on the selected type (white or pink)
-double NoiseGenerator::getSample()
+void NoiseGenerator::getSample(double &left, double &right)
 {
     // Generate white noise sample in range [-1.0, 1.0]
     double white = dist(rng);
@@ -27,7 +27,7 @@ double NoiseGenerator::getSample()
     // If white noise is selected, return it directly
     if (noiseType == NoiseType::White)
     {
-        return white;
+        return;
     }
 
     // --- Paul Kellet's Pink Noise Filter ---
@@ -43,5 +43,5 @@ double NoiseGenerator::getSample()
     b6 = white * 0.115926;
 
     // Scale output to normalize level (empirical factor)
-    return pink * 0.11;
+    left = right = pink * 0.11;
 }

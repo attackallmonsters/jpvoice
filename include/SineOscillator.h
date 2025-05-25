@@ -15,5 +15,5 @@ public:
     SineOscillator() = default;
 
     // Generates the next audio sample
-    double getSample() override;    
+    void getSample(double &left, double &right) override;
 };

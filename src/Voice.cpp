@@ -126,82 +126,105 @@ void Voice::applyChangedParameters()
 // Computes and returns a single audio sample from the voice.
 // Takes two input frequencies (for carrier and modulator) and the current sample rate.
 // Depending on the modulation settings, the sample result is computed differently.
-double Voice::getSample()
+void Voice::getSample(double &left, double &right)
 {
-    // Step 1: Compute the output signal of the modulator oscillator (modulator).
-    // This signal is used for FM or mixing, depending on the mode.
-    double modulatorSample = modulator->getSample();
+    // --- Step 1: Get stereo signal from the modulator oscillator ---
+    // This signal will be used either for frequency modulation or direct audio mixing.
+    modulator->getSample(modulatorSampleLeft, modulatorSampleRight);
 
-    // Step 2: Apply frequency modulation if enabled.
-    // The carrier frequency (carrier) is modulated by the modulator signal,
-    // scaled by the modulation index and by freq1 to keep it frequency-relative.
-    double frequencyOsc1 = carrier->getFrequency();
-    ;
-    double effectiveFreq1 = frequencyOsc1;
+    // --- Step 2: Apply Frequency Modulation if enabled ---
+    // Use the average (mono) value of the stereo modulator signal
+    // to modulate the frequency of the carrier oscillator.
     if (fmEnabled)
     {
-        effectiveFreq1 += modulatorSample * modulationIndex * frequencyOsc1;
+        double frequencyCarrier = carrier->getFrequency(); // Retrieve base frequency
+        double modulatorSample = 0.5 * (modulatorSampleLeft + modulatorSampleRight); // Convert to mono
+        frequencyCarrier += modulatorSample * modulationIndex * frequencyCarrier; // Apply FM
+        carrier->setCalculatedFrequency(frequencyCarrier); // Set the modulated frequency
     }
 
-    // Step 3: Generate the carrier signal sample (carrier), possibly frequency-modulated.
-    double carrierSample = carrier->getSample();
+    // --- Step 3: Generate the stereo output from the carrier oscillator ---
+    // This will either be used directly (in FM mode) or mixed with the modulator signal.
+    carrier->getSample(carrierSampleLeft, carrierSampleRight);
 
-    // Step 4: If oscillator sync is enabled and carrier wrapped its phase this sample,
-    // reset the phase of modulator to re-align it.
+    // --- Step 4: Sync handling ---
+    // If sync is enabled and the carrier oscillator has wrapped (phase reset),
+    // we reset the phase of the modulator oscillator to align it.
     if (syncEnabled && carrier->hasWrapped())
     {
         modulator->resetPhase();
     }
 
-    // Step 5: Determine final output depending on FM mode.
-    double sample;
+    // --- Step 5: Oscillator mixing or FM-only output ---
     if (fmEnabled)
     {
-        // In FM mode, return only the modulated carrier signal.
-        // This matches traditional FM synthesis behavior.
-        sample = carrierSample;
+        // FM Mode: Only output the carrier oscillator's stereo signal.
+        // The modulator is not heard directly (as in classic FM synths).
+        mixSampleLeft = carrierSampleLeft;
+        mixSampleRight = carrierSampleRight;
     }
     else
     {
-        // In normal mode, return a mixed signal from both oscillators.
-        // The result is an equal-weight average of carrier and modulator signals.
+        // Normal Mode: Mix the carrier and modulator signals using an equal-power crossfade.
+        // The oscmix parameter defines the mix balance (0.0 = only carrier, 1.0 = only modulator).
+        amp_carrier = std::cos(oscmix * 0.5 * M_PI);
+        amp_modulator = std::sin(oscmix * 0.5 * M_PI);
 
-        // Oscillator mix
-        double amp_carrier = std::cos(oscmix * 0.5 * M_PI);
-        double amp_modSignal = std::sin(oscmix * 0.5 * M_PI);
-
-        sample = amp_carrier * carrierSample + amp_modSignal * modulatorSample;
+        mixSampleLeft  = amp_carrier * carrierSampleLeft  + amp_modulator * modulatorSampleLeft;
+        mixSampleRight = amp_carrier * carrierSampleRight + amp_modulator * modulatorSampleRight;
     }
 
-    // Quick fade out/fade in for param change
+    // --- Step 6: Add noise to the signal, if enabled ---
+    if (noisemix > 0)
+    {
+        // Get stereo signal from the noise generator.
+        noise->getSample(noiseSampleLeft, noiseSampleRight);
+
+        // Apply another equal-power crossfade between the oscillator signal and noise.
+        // noisemix controls how much noise is mixed in (0.0 = no noise, 1.0 = only noise).
+        amp_oscmix = std::cos(noisemix * 0.5 * M_PI);
+        amp_noise  = std::sin(noisemix * 0.5 * M_PI);
+
+        mixSampleLeft  = amp_oscmix * mixSampleLeft + amp_noise * noiseSampleLeft;
+        mixSampleRight = amp_oscmix * mixSampleRight + amp_noise * noiseSampleRight;
+    }
+
+    // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (paramChanged)
     {
         fadeCounter++;
 
         if (fadeCounter <= fadeLength)
         {
-            // Fade out phase
-            fadeValue = 1.0 - (fadeCounter / double(fadeLength));
+            // Fade out: Linearly reduce output volume
+            fadeValue = 1.0 - (double(fadeCounter) / fadeLength);
         }
         else if (fadeCounter == fadeLength + 1)
         {
+            // Midpoint reached: apply any pending parameter changes
             applyChangedParameters();
         }
         else if (fadeCounter <= fadeLength * 2)
         {
-            // Fade in phase
-            fadeValue = (fadeCounter - fadeLength) / double(fadeLength);
+            // Fade in: Linearly restore output volume
+            fadeValue = (double(fadeCounter - fadeLength) / fadeLength);
         }
         else
         {
-            // Finished
+            // Fade process complete: reset state
             paramChanged = false;
             fadeValue = 1.0;
             fadeCounter = 0;
         }
 
-        sample *= fadeValue;
+        // Apply fade value to both channels
+        mixSampleLeft *= fadeValue;
+        mixSampleRight *= fadeValue;
     }
 
-    return sample;
+    // --- Step 8: Final output assignment ---
+    // Write the final stereo output sample to the provided references.
+    left = mixSampleLeft;
+    right = mixSampleRight;
 }
+

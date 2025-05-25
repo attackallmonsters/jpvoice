@@ -8,32 +8,40 @@ typedef struct _jpvoice
 {
     t_object x_obj;
     Voice *voice;
-    t_outlet *audio_out;
+    t_outlet *left_out;
+    t_outlet *right_out;
+    double left;
+    double right;
 } t_jpvoice;
 
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
     t_jpvoice *x = (t_jpvoice *)(w[1]);
-    t_sample *out = (t_sample *)(w[2]);
-    int n = (int)(w[3]);
+    t_sample *outL = (t_sample *)(w[2]);
+    t_sample *outR = (t_sample *)(w[3]);
+    int n = (int)(w[4]);
 
     for (int i = 0; i < n; i++)
-        out[i] = static_cast<float>(x->voice->getSample());
+    {
+        x->voice->getSample(x->left, x->right);
+        outL[i] = static_cast<t_sample>(x->left);
+        outR[i] = static_cast<t_sample>(x->right);
+    }
 
-    return (w + 4);
+    return (w + 5);
 }
 
 // DSP add function
 void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 {
-    dsp_add(jpvoice_tilde_perform, 3, x, sp[0]->s_vec, sp[0]->s_n);
+    dsp_add(jpvoice_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
 }
 
 // Frequency of carrier set via list [f1 freq(
 void jpvoice_tilde_f1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
-    if (argc != 2 || argv[0].a_type != A_FLOAT)
+    if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected float argument 0 - n for carrier frequency f1: [f1 f(");
         return;
@@ -45,13 +53,25 @@ void jpvoice_tilde_f1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Frequency of modulator set via list [f2 freq(
 void jpvoice_tilde_f2(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
-    if (argc != 2 || argv[0].a_type != A_FLOAT)
+    if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected float argument 0 - n for modulator frequency f2: [f2 f(");
         return;
     }
     double f = atom_getfloat(argv);
     x->voice->setFrequencyModulator(f);
+}
+
+// Frequency of modulator set via list [detune factor(
+void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc != 1 || argv[0].a_type != A_FLOAT)
+    {
+        pd_error(x, "[jpvoice~]: expected float argument 0 - 1 for detune factor: [detune f(");
+        return;
+    }
+    double detune = atom_getfloat(argv);
+    x->voice->setDetune(detune);
 }
 
 // Constructor
@@ -61,7 +81,8 @@ void *jpvoice_tilde_new()
 
     x->voice = new Voice();
 
-    x->audio_out = outlet_new(&x->x_obj, &s_signal);
+    x->left_out = outlet_new(&x->x_obj, &s_signal);
+    x->right_out = outlet_new(&x->x_obj, &s_signal);
 
     return (void *)x;
 }
@@ -84,4 +105,6 @@ extern "C" void jpvoice_tilde_setup(void)
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_dsp, gensym("dsp"), A_CANT, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f1, gensym("f1"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f2, gensym("f2"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_detune, gensym("detune"), A_GIMME, 0);
 }

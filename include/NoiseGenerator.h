@@ -13,11 +13,8 @@ public:
     NoiseGenerator();
 
     // Returns a single noise sample; frequency and sampleRate are unused but kept for compatibility
-    double getSample() override;
-
-    // Noise has no concept of phase, so this is a no-op
-    void resetPhase() override;
-
+    void getSample(double &left, double &right) override;
+    
     // Changes the current noise type (white or pink)
     void setType(NoiseType type);
 

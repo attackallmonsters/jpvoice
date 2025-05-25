@@ -59,7 +59,7 @@ public:
     void setDetune(double value);
 
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
-    double getSample();
+    void getSample(double &left, double &right);
 
     // Applies changed paramters on low amplitude
     void applyChangedParameters();
@@ -89,4 +89,15 @@ private:
     // Oscillators
     SupersawOscillator *supersawCarrier = new SupersawOscillator();
     SineOscillator *sineModulator = new SineOscillator();
+
+    // DSP working vars
+    double carrierSampleLeft, carrierSampleRight;
+    double modulatorSampleLeft, modulatorSampleRight;
+    double noiseSampleLeft, noiseSampleRight;
+    double mixSampleLeft, mixSampleRight;
+    double amp_carrier;
+    double amp_modulator;
+    double amp_oscmix;
+    double amp_noise;
+
 };

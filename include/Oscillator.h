@@ -18,8 +18,8 @@ public:
     // Generates the next audio sample for the oscillator.
     // This function must be implemented by each specific oscillator type (e.g., sine, saw, square).
     // Returns:
-    //   The next mono audio sample as a floating point value in the range [-1.0, 1.0]
-    virtual double getSample() = 0;
+    // The next mono audio sample as a floating point value in the range [-1.0, 1.0]
+    virtual void getSample(double &left, double &right) = 0;
 
     // Sets the detune factor
     virtual void setDetune(double /*value*/) {};
@@ -30,7 +30,7 @@ public:
         currentPhase = 0.0;
         wrapped = false;
     }
-    
+
     // Sets the audio systems current sampling rate
     void setSampleRate(double value)
     {
@@ -48,13 +48,26 @@ public:
     void setFrequency(double value)
     {
         clampmin(value, 0.0);
-        frequency = value;
+        frequency = calculatedFrequency = value;
+    }
+
+    // Sets the oscillator FM frequency in Hertz
+    void setCalculatedFrequency(double value)
+    {
+        clampmin(value, 0.0);
+        calculatedFrequency = value;
     }
 
     // Gets the current frequency
     double getFrequency()
     {
         return frequency;
+    }
+
+    // Gets the calculated FM frequency
+    double getCalculatedFrequency()
+    {
+        return calculatedFrequency;
     }
 
     // Returns true if the oscillator's phase wrapped during the last getSample() call
@@ -64,13 +77,9 @@ public:
     }
 
 protected:
-    // The audio systems current sampling rate
-    double sampleRate;
-    // The desired oscillator frequency in Hertz
-    double frequency;
-    // Current phase of the oscillator in radians.
-    // Typically wraps within the range [0, 2π).
-    double currentPhase;
-    // True when pahse wrapped
-    bool wrapped = false;
+    double sampleRate;    // The audio systems current sampling rate
+    double frequency;     // The desired oscillator frequency in Hertz
+    double calculatedFrequency;   // The calculated FM frequency in Hertz
+    double currentPhase;  // Current phase of the oscillator in radians [0, 2π]
+    bool wrapped = false; // True when pahse wrapped
 };
