@@ -38,5 +38,6 @@ public:
 private:
     SupersawVoice voices[NUM_VOICES]; // All detuned voices
     double detune = 0.0;              // Voices detune
-    double norm = 0.9; 
+    double norm = 0.9;                // Loudness normalization
+    bool snycDone;                    // Sync indicator
 };

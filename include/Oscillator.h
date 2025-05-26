@@ -60,12 +60,14 @@ public:
     void setPitchOffset(int value)
     {
         pitchOffset = clamp(value, -24, 24);
+        setCalculatedFrequency(frequency);
     }
 
     // Sets the fine tuning in cent
     void setFineTune(double value)
     {
         fineTune = clamp(value, -100.0, 100.0);
+        setCalculatedFrequency(frequency);
     }
 
     // Calculates the effective frequency based on base frequency,

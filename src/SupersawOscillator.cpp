@@ -22,6 +22,7 @@ void SupersawOscillator::getSample(double &left, double &right)
 {
     left = right = 0.0;
     wrapped = false;
+    snycDone = false;
 
     for (int i = 0; i < NUM_VOICES; ++i)
     {
@@ -39,10 +40,11 @@ void SupersawOscillator::getSample(double &left, double &right)
 
         // Update phase
         v.phase += phaseInc;
-        if (v.phase >= 1.0)
+        if (v.phase >= 1.0 && !snycDone)
         {
             v.phase -= 1.0;
             wrapped = true;
+            snycDone = true;
         }
 
         // Panning based on voice index (-1.0 to +1.0)

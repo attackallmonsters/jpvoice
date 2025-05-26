@@ -6,8 +6,8 @@
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
 Voice::Voice() : carrier(nullptr), modulator(nullptr)
 {
-    setCarrierOscillatorType(CarrierOscillatiorType::Supersaw);
-    setModulatorOscillatorType(ModulatorOscillatorType::Sine);
+    carrier = supersawCarrier;
+    modulator = sineModulator;
 }
 
 // Destructor: cleans up oscillator instances.
@@ -16,6 +16,7 @@ Voice::~Voice()
 {
     delete noise;
     delete supersawCarrier;
+    delete sineCarrier;
     delete sineModulator;
     delete sawCarrier;
     delete sawModulator;
@@ -30,7 +31,11 @@ Voice::~Voice()
 void Voice::setFMEnabled(bool enabled)
 {
     fmEnabled = enabled;
-    paramChanged = true;
+
+    if (!enabled)
+    {
+        carrier->setFrequency(frequency);
+    }
 }
 
 // Enables or disables oscillator synchronization.
@@ -38,24 +43,44 @@ void Voice::setFMEnabled(bool enabled)
 void Voice::setSyncEnabled(bool enabled)
 {
     syncEnabled = enabled;
-    paramChanged = true;
+}
+
+// Sets the duty cycle
+void Voice::setDutyCycle(double cycle)
+{
+    double dutyCycle = clamp(cycle, 0.0, 1.0);
+    squareModulator->setDutyCycle(dutyCycle);
+    squareCarrier->setDutyCycle(dutyCycle);
+}
+
+// Sets the pitch offset for the modulator
+void Voice::setPitchOffset(double offset)
+{
+    pitchOffset = clamp(offset, -24.0, 24.0);
+    modulator->setPitchOffset(pitchOffset);
+}
+
+// Sets the fine tunig for the modulator
+void Voice::setFineTune(double fine)
+{
+    fineTune = clamp(fine, -100.0, 100.0);
+    modulator->setFineTune(fineTune);
 }
 
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
-void Voice::setModIndex(double index)
+void Voice::setFMModIndex(double index)
 {
     modulationIndex = clampmin(index, 0.0);
-    paramChanged = true;
 }
 
 // Sets teh sample rate for signal calculation
 void Voice::setSampleRate(double sampleRate)
 {
     double rate = clamp(sampleRate, 41100.0, 96000.0);
-
     noise->setSampleRate(rate);
     supersawCarrier->setSampleRate(rate);
+    sineCarrier->setSampleRate(rate);
     sineModulator->setSampleRate(rate);
     sawCarrier->setSampleRate(rate);
     sawModulator->setSampleRate(rate);
@@ -65,21 +90,15 @@ void Voice::setSampleRate(double sampleRate)
     triangleModulator->setSampleRate(rate);
 }
 
-// Sets the frequency of oscillator 1/carrier
-void Voice::setFrequencyCarrier(double frequency)
+// Sets the current frequency
+void Voice::setFrequency(double f)
 {
-    carrier->setFrequency(frequency);
-    frequencyCarrier = frequency;
+    carrier->setFrequency(f);
+    modulator->setFrequency(f);
+    frequency = f;
 }
 
-// Sets the frequency of oscillator 2/modulator
-void Voice::setFrequencyModulator(double frequency)
-{
-    modulator->setFrequency(frequency);
-    frequencyModulator = frequency;
-}
-
-// Sets the detune factor
+// Sets the detune factorjpvoice_tilde_sync
 void Voice::setDetune(double value)
 {
     carrier->setDetune(value);
@@ -106,23 +125,32 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     switch (oscillatorType)
     {
     case CarrierOscillatiorType::Supersaw:
-        carrier = supersawCarrier;
+        carrierTmp = supersawCarrier;
         break;
     case CarrierOscillatiorType::Saw:
-        carrier = sawCarrier;
+        carrierTmp = sawCarrier;
         break;
     case CarrierOscillatiorType::Square:
-        carrier = squareCarrier;
+        carrierTmp = squareCarrier;
         break;
     case CarrierOscillatiorType::Triangle:
-        carrier = trianlgeCarrier;
+        carrierTmp = trianlgeCarrier;
+        break;
+    case CarrierOscillatiorType::Sine:
+        carrierTmp = sineCarrier;
         break;
     default:
-        carrier = supersawCarrier;
+        carrierTmp = supersawCarrier;
         break;
     }
 
-    carrier->setFrequency(f);
+    if (carrierTmp == carrier)
+    {
+        return;
+    }
+
+    carrierTmp->setFrequency(f);
+    applyOscillators = true;
 }
 
 // Assigns the modulation oscillator
@@ -133,34 +161,37 @@ void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
     switch (oscillatorType)
     {
     case ModulatorOscillatorType::Saw:
-        modulator = sawModulator;
+        modulatorTmp = sawModulator;
         break;
     case ModulatorOscillatorType::Square:
-        modulator = squareModulator;
+        modulatorTmp = squareModulator;
         break;
     case ModulatorOscillatorType::Triangle:
-        modulator = triangleModulator;
+        modulatorTmp = triangleModulator;
         break;
     case ModulatorOscillatorType::Sine:
-        modulator = sineModulator;
+        modulatorTmp = sineModulator;
         break;
     default:
-        modulator = sineModulator;
+        modulatorTmp = sineModulator;
         break;
     }
 
-    modulator->setFrequency(f);
+    if (modulatorTmp == modulator)
+    {
+        return;
+    }
+
+    modulatorTmp->setFrequency(f);
+    modulatorTmp->setPitchOffset(pitchOffset);
+    modulatorTmp->setFineTune(fineTune);
+    applyOscillators = true;
 }
 
 // Changes the current noise type (white or pink)
 void Voice::setNoiseType(NoiseType type)
 {
     noise->setType(type);
-}
-
-// Applies changed paramters on low amplitude
-void Voice::applyChangedParameters()
-{
 }
 
 // Computes and returns a single audio sample from the voice.
@@ -177,9 +208,9 @@ void Voice::getSample(double &left, double &right)
     // to modulate the frequency of the carrier oscillator.
     if (fmEnabled)
     {
-        double frequencyCarrier = carrier->getFrequency();                           // Retrieve base frequency
+        double frequencyCarrier = frequency;                                         // Get current frequency
         double modulatorSample = 0.5 * (modulatorSampleLeft + modulatorSampleRight); // Convert to mono
-        frequencyCarrier += modulatorSample * modulationIndex * frequencyCarrier;    // Apply FM
+        frequencyCarrier += modulatorSample * modulationIndex * frequency;           // Apply FM
         carrier->setCalculatedFrequency(frequencyCarrier);                           // Set the modulated frequency
     }
 
@@ -195,7 +226,7 @@ void Voice::getSample(double &left, double &right)
         modulator->resetPhase();
     }
 
-    // --- Step 5: Oscillator mixing or FM-only output ---
+    // --- Step 5.1: Oscillator mixing or FM-only output ---
     if (fmEnabled)
     {
         // FM Mode: Only output the carrier oscillator's stereo signal.
@@ -203,16 +234,14 @@ void Voice::getSample(double &left, double &right)
         mixSampleLeft = carrierSampleLeft;
         mixSampleRight = carrierSampleRight;
     }
-    else
-    {
-        // Normal Mode: Mix the carrier and modulator signals using an equal-power crossfade.
-        // The oscmix parameter defines the mix balance (0.0 = only carrier, 1.0 = only modulator).
-        amp_carrier = std::cos(oscmix * 0.5 * M_PI);
-        amp_modulator = std::sin(oscmix * 0.5 * M_PI);
 
-        mixSampleLeft = amp_carrier * carrierSampleLeft + amp_modulator * modulatorSampleLeft;
-        mixSampleRight = amp_carrier * carrierSampleRight + amp_modulator * modulatorSampleRight;
-    }
+    // --- Step 5.2: Mix the carrier and modulator signals using an equal-power crossfade.
+    // The oscmix parameter defines the mix balance (0.0 = only carrier, 1.0 = only modulator).
+    amp_carrier = std::cos(oscmix * 0.5 * M_PI);
+    amp_modulator = std::sin(oscmix * 0.5 * M_PI);
+
+    mixSampleLeft = amp_carrier * carrierSampleLeft + amp_modulator * modulatorSampleLeft;
+    mixSampleRight = amp_carrier * carrierSampleRight + amp_modulator * modulatorSampleRight;
 
     // --- Step 6: Add noise to the signal, if enabled ---
     if (noisemix > 0)
@@ -230,7 +259,7 @@ void Voice::getSample(double &left, double &right)
     }
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
-    if (paramChanged)
+    if (applyOscillators)
     {
         fadeCounter++;
 
@@ -241,8 +270,15 @@ void Voice::getSample(double &left, double &right)
         }
         else if (fadeCounter == fadeLength + 1)
         {
-            // Midpoint reached: apply any pending parameter changes
-            applyChangedParameters();
+            if (carrier != carrierTmp)
+            {
+                carrier = carrierTmp;
+            }
+
+            if (modulator != modulatorTmp)
+            {
+                modulator = modulatorTmp;
+            }
         }
         else if (fadeCounter <= fadeLength * 2)
         {
@@ -252,7 +288,7 @@ void Voice::getSample(double &left, double &right)
         else
         {
             // Fade process complete: reset state
-            paramChanged = false;
+            applyOscillators = false;
             fadeValue = 1.0;
             fadeCounter = 0;
         }

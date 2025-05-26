@@ -27,6 +27,7 @@ void NoiseGenerator::getSample(double &left, double &right)
     // If white noise is selected, return it directly
     if (noiseType == NoiseType::White)
     {
+        left = right = white;
         return;
     }
 

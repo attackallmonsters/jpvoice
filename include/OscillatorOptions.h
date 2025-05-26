@@ -8,7 +8,8 @@ enum class CarrierOscillatiorType
     Supersaw, // Supersaw oascilator
     Saw,      // Saw oscillator
     Square,   // Sqare oscillator
-    Triangle  // Triangle oscillator
+    Triangle, // Triangle oscillator
+    Sine      // Sine oscillator
 };
 
 // OScillator types for oscillator 1

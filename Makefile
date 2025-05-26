@@ -30,7 +30,8 @@ PD_SOURCES = \
 	$(SRC_DIR)/SawOscillator.cpp \
 	$(SRC_DIR)/TriangleOscillator.cpp \
 	$(SRC_DIR)/SquareOscillator.cpp \
-	$(SRC_DIR)/NoiseGenerator.cpp
+	$(SRC_DIR)/NoiseGenerator.cpp \
+	$(SRC_DIR)/ZDFMultimodeFilter.cpp
 
 PD_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(PD_SOURCES))
 PD_TARGET = $(BIN_DIR)/jpvoice~.pd_linux
