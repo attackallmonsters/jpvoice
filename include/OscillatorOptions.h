@@ -5,13 +5,19 @@
 // OScillator types for oscillator 1
 enum class CarrierOscillatiorType
 {
-    Supersaw    // Supersaw oascilator
+    Supersaw, // Supersaw oascilator
+    Saw,      // Saw oscillator
+    Square,   // Sqare oscillator
+    Triangle  // Triangle oscillator
 };
 
 // OScillator types for oscillator 1
 enum class ModulatorOscillatorType
 {
-    Sine    // Sine oascilator
+    Saw,      // Saw oscillator
+    Square,   // Square oscillator
+    Triangle, // Triangle oscsillator
+    Sine      // Sine oascilator
 };
 
 // Defines the available types of noise

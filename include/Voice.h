@@ -5,6 +5,9 @@
 #include "NoiseGenerator.h"
 #include "SupersawOscillator.h"
 #include "SineOscillator.h"
+#include "SawOscillator.h"
+#include "TriangleOscillator.h"
+#include "SquareOscillator.h"
 
 // The PI
 #ifndef M_PI
@@ -70,8 +73,6 @@ private:
     double frequencyCarrier = 220.0;   // Current frequency carrier
     double frequencyModulator = 220.0; // Current frequency modulator
 
-    NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
-
     double oscmix = 0.0;          // Mix carrier <=> modulator
     double noisemix = 0.0;        // Mix oscillators <=> noise
     bool fmEnabled = false;       // True if FM is active
@@ -87,8 +88,15 @@ private:
     double fadeValue = 1.0;    // Current amplitude for param change
 
     // Oscillators
+    NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
     SupersawOscillator *supersawCarrier = new SupersawOscillator();
     SineOscillator *sineModulator = new SineOscillator();
+    SawOscillator *sawCarrier = new SawOscillator();
+    SawOscillator *sawModulator = new SawOscillator();
+    SquareOscillator *squareCarrier = new SquareOscillator();
+    SquareOscillator *squareModulator = new SquareOscillator();
+    TriangleOscillator *trianlgeCarrier = new TriangleOscillator();
+    TriangleOscillator *triangleModulator = new TriangleOscillator();
 
     // DSP working vars
     double carrierSampleLeft, carrierSampleRight;

@@ -1,4 +1,4 @@
-// SineOscillator.h
+// TriangleOscillator.h
 
 #pragma once
 
@@ -6,12 +6,12 @@
 #include <vector>
 #include <cmath>
 
-// Sine oscillator generates sine waveform
-class SineOscillator : public Oscillator
+// Triangle oscillator generates triangle waveform
+class TriangleOscillator : public Oscillator
 {
 public:
     // Default constructor
-    SineOscillator() = default;
+    TriangleOscillator() = default;
 
     // Generates the next audio sample
     void getSample(double &left, double &right) override;

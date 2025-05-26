@@ -1,10 +1,10 @@
 #include <cmath>
 #include "Voice.h"
-#include "tool.h"
+#include "clamp.h"
 
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
-Voice::Voice()
+Voice::Voice() : carrier(nullptr), modulator(nullptr)
 {
     setCarrierOscillatorType(CarrierOscillatiorType::Supersaw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
@@ -14,9 +14,15 @@ Voice::Voice()
 // It is assumed that carrier and modulator were allocated using 'new' and are not shared elsewhere.
 Voice::~Voice()
 {
-    delete carrier;
-    delete modulator;
     delete noise;
+    delete supersawCarrier;
+    delete sineModulator;
+    delete sawCarrier;
+    delete sawModulator;
+    delete squareCarrier;
+    delete squareModulator;
+    delete trianlgeCarrier;
+    delete triangleModulator;
 }
 
 // Enables or disables frequency modulation (FM).
@@ -47,8 +53,16 @@ void Voice::setModIndex(double index)
 void Voice::setSampleRate(double sampleRate)
 {
     double rate = clamp(sampleRate, 41100.0, 96000.0);
-    carrier->setSampleRate(rate);
-    modulator->setSampleRate(rate);
+
+    noise->setSampleRate(rate);
+    supersawCarrier->setSampleRate(rate);
+    sineModulator->setSampleRate(rate);
+    sawCarrier->setSampleRate(rate);
+    sawModulator->setSampleRate(rate);
+    squareCarrier->setSampleRate(rate);
+    squareModulator->setSampleRate(rate);
+    trianlgeCarrier->setSampleRate(rate);
+    triangleModulator->setSampleRate(rate);
 }
 
 // Sets the frequency of oscillator 1/carrier
@@ -87,29 +101,55 @@ void Voice::setNoiseMix(double mix)
 // Assigns the carrier oscillator
 void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 {
+    double f = (carrier) ? carrier->getFrequency() : 0.0;
+
     switch (oscillatorType)
     {
     case CarrierOscillatiorType::Supersaw:
         carrier = supersawCarrier;
         break;
-
+    case CarrierOscillatiorType::Saw:
+        carrier = sawCarrier;
+        break;
+    case CarrierOscillatiorType::Square:
+        carrier = squareCarrier;
+        break;
+    case CarrierOscillatiorType::Triangle:
+        carrier = trianlgeCarrier;
+        break;
     default:
+        carrier = supersawCarrier;
         break;
     }
+
+    carrier->setFrequency(f);
 }
 
 // Assigns the modulation oscillator
 void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
 {
+    double f = (modulator) ? modulator->getFrequency() : 0.0;
+
     switch (oscillatorType)
     {
+    case ModulatorOscillatorType::Saw:
+        modulator = sawModulator;
+        break;
+    case ModulatorOscillatorType::Square:
+        modulator = squareModulator;
+        break;
+    case ModulatorOscillatorType::Triangle:
+        modulator = triangleModulator;
+        break;
     case ModulatorOscillatorType::Sine:
         modulator = sineModulator;
         break;
-
     default:
+        modulator = sineModulator;
         break;
     }
+
+    modulator->setFrequency(f);
 }
 
 // Changes the current noise type (white or pink)
@@ -137,10 +177,10 @@ void Voice::getSample(double &left, double &right)
     // to modulate the frequency of the carrier oscillator.
     if (fmEnabled)
     {
-        double frequencyCarrier = carrier->getFrequency(); // Retrieve base frequency
+        double frequencyCarrier = carrier->getFrequency();                           // Retrieve base frequency
         double modulatorSample = 0.5 * (modulatorSampleLeft + modulatorSampleRight); // Convert to mono
-        frequencyCarrier += modulatorSample * modulationIndex * frequencyCarrier; // Apply FM
-        carrier->setCalculatedFrequency(frequencyCarrier); // Set the modulated frequency
+        frequencyCarrier += modulatorSample * modulationIndex * frequencyCarrier;    // Apply FM
+        carrier->setCalculatedFrequency(frequencyCarrier);                           // Set the modulated frequency
     }
 
     // --- Step 3: Generate the stereo output from the carrier oscillator ---
@@ -170,7 +210,7 @@ void Voice::getSample(double &left, double &right)
         amp_carrier = std::cos(oscmix * 0.5 * M_PI);
         amp_modulator = std::sin(oscmix * 0.5 * M_PI);
 
-        mixSampleLeft  = amp_carrier * carrierSampleLeft  + amp_modulator * modulatorSampleLeft;
+        mixSampleLeft = amp_carrier * carrierSampleLeft + amp_modulator * modulatorSampleLeft;
         mixSampleRight = amp_carrier * carrierSampleRight + amp_modulator * modulatorSampleRight;
     }
 
@@ -183,9 +223,9 @@ void Voice::getSample(double &left, double &right)
         // Apply another equal-power crossfade between the oscillator signal and noise.
         // noisemix controls how much noise is mixed in (0.0 = no noise, 1.0 = only noise).
         amp_oscmix = std::cos(noisemix * 0.5 * M_PI);
-        amp_noise  = std::sin(noisemix * 0.5 * M_PI);
+        amp_noise = std::sin(noisemix * 0.5 * M_PI);
 
-        mixSampleLeft  = amp_oscmix * mixSampleLeft + amp_noise * noiseSampleLeft;
+        mixSampleLeft = amp_oscmix * mixSampleLeft + amp_noise * noiseSampleLeft;
         mixSampleRight = amp_oscmix * mixSampleRight + amp_noise * noiseSampleRight;
     }
 
@@ -227,4 +267,3 @@ void Voice::getSample(double &left, double &right)
     left = mixSampleLeft;
     right = mixSampleRight;
 }
-

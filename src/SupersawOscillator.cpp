@@ -20,34 +20,44 @@ void SupersawOscillator::setDetune(double value)
 // Generates the next audio sample based on the current frequency and sample rate
 void SupersawOscillator::getSample(double &left, double &right)
 {
+    left = right = 0.0;
     wrapped = false;
 
     for (int i = 0; i < NUM_VOICES; ++i)
     {
         SupersawVoice &v = voices[i];
+
+        // Calculate per-voice frequency with detune
         double detune_factor = v.detune_ratio * detune;
         double voice_freq = calculatedFrequency * (1.0 + detune_factor);
-        double phase_inc = voice_freq / sampleRate;
 
+        // Convert to phase increment for this voice
+        double phaseInc = voice_freq / sampleRate;
+
+        // Sawtooth signal in range [-1.0, +1.0]
         double val = 2.0 * v.phase - 1.0;
 
-        v.phase += phase_inc;
+        // Update phase
+        v.phase += phaseInc;
         if (v.phase >= 1.0)
         {
             v.phase -= 1.0;
             wrapped = true;
         }
 
+        // Panning based on voice index (-1.0 to +1.0)
         double pan = static_cast<double>(i) / (NUM_VOICES - 1) * 2.0 - 1.0;
         double gainL = std::sqrt(0.5 * (1.0 - pan));
         double gainR = std::sqrt(0.5 * (1.0 + pan));
 
+        // Accumulate stereo output
         left  += val * v.amp_ratio * gainL;
         right += val * v.amp_ratio * gainR;
     }
-    
-    left = left * norm;
-    right = right * norm;
+
+    // Normalize output
+    left  *= norm;
+    right *= norm;
 }
 
 // Resets the internal phase of all voices

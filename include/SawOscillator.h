@@ -1,4 +1,4 @@
-// SineOscillator.h
+// sawOscillator.h
 
 #pragma once
 
@@ -6,12 +6,12 @@
 #include <vector>
 #include <cmath>
 
-// Sine oscillator generates sine waveform
-class SineOscillator : public Oscillator
+// Sawtooth oscillator generates sawtooth waveform
+class SawOscillator : public Oscillator
 {
 public:
     // Default constructor
-    SineOscillator() = default;
+    SawOscillator() = default;
 
     // Generates the next audio sample
     void getSample(double &left, double &right) override;

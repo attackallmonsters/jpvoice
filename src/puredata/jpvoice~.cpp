@@ -35,6 +35,7 @@ t_int *jpvoice_tilde_perform(t_int *w)
 // DSP add function
 void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 {
+    x->voice->setSampleRate(sp[0]->s_sr);
     dsp_add(jpvoice_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
 }
 
@@ -50,8 +51,20 @@ void jpvoice_tilde_f1(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setFrequencyCarrier(f);
 }
 
-// Frequency of modulator set via list [f2 freq(
-void jpvoice_tilde_f2(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+// Frequency offset modulator in halftones
+void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc != 1 || argv[0].a_type != A_FLOAT)
+    {
+        pd_error(x, "[jpvoice~]: expected float argument 0 - n for modulator frequency f2: [f2 f(");
+        return;
+    }
+    double f = atom_getfloat(argv);
+    x->voice->setFrequencyModulator(f);
+}
+
+// Frequency offset modulator in halftones
+void jpvoice_tilde_fine(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
@@ -72,6 +85,64 @@ void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     }
     double detune = atom_getfloat(argv);
     x->voice->setDetune(detune);
+}
+
+// Oscillator type carrier [cosc n( 1 - 4
+void jpvoice_tilde_cosc(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc != 1 || argv[0].a_type != A_FLOAT)
+    {
+        pd_error(x, "[jpvoice~]: expected int argument 1 - 4 for carrier oscillator type: [cosc n(");
+        return;
+    }
+
+    switch (atom_getint(argv))
+    {
+    case 1:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Supersaw);
+        break;
+    case 2:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Saw);
+        break;
+    case 3:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Square);
+        break;
+    case 4:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Triangle);
+        break;
+    default:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Supersaw);
+        break;
+    }
+}
+
+// Oscillator type carrier [mosc n( 1 - 4
+void jpvoice_tilde_mosc(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc != 1 || argv[0].a_type != A_FLOAT)
+    {
+        pd_error(x, "[jpvoice~]: expected int argument 1 - 4 for modulation oscillator type: [mosc n(");
+        return;
+    }
+
+    switch (atom_getint(argv))
+    {
+    case 1:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Saw);
+        break;
+    case 2:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Square);
+        break;
+    case 3:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Triangle);
+        break;
+    case 4:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Sine);
+        break;
+    default:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Sine);
+        break;
+    }
 }
 
 // Constructor
@@ -104,7 +175,10 @@ extern "C" void jpvoice_tilde_setup(void)
                               A_NULL);
 
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_dsp, gensym("dsp"), A_CANT, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f1, gensym("f1"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f2, gensym("f2"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_f1, gensym("f"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_offset, gensym("offset"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fine, gensym("fine"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_detune, gensym("detune"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cosc, gensym("cosc"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_mosc, gensym("mosc"), A_GIMME, 0);
 }

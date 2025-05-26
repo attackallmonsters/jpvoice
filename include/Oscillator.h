@@ -1,6 +1,7 @@
 #pragma once
 
-#include "tool.h"
+#include <cmath>
+#include "clamp.h"
 
 // Abstract base class for all oscillator types.
 // This class provides a common interface and shared internal phase state
@@ -24,6 +25,9 @@ public:
     // Sets the detune factor
     virtual void setDetune(double /*value*/) {};
 
+    // Sets the duty cycle for PWM
+    virtual void setDutyCycle(double /*value*/) {};
+
     // Resets the internal oscillator phase to 0.0.
     virtual void resetPhase()
     {
@@ -36,6 +40,7 @@ public:
     {
         clampmin(value, 0.0);
         sampleRate = value;
+        setFrequency(frequency);
     }
 
     // Gets the current sampling rate
@@ -47,15 +52,37 @@ public:
     // Sets the desired oscillator frequency in Hertz
     void setFrequency(double value)
     {
-        clampmin(value, 0.0);
-        frequency = calculatedFrequency = value;
+        frequency = clampmin(value, 0.0);
+        setCalculatedFrequency(frequency);
     }
 
-    // Sets the oscillator FM frequency in Hertz
+    // Sets the pitch offset in semi tones
+    void setPitchOffset(int value)
+    {
+        pitchOffset = clamp(value, -24, 24);
+    }
+
+    // Sets the fine tuning in cent
+    void setFineTune(double value)
+    {
+        fineTune = clamp(value, -100.0, 100.0);
+    }
+
+    // Calculates the effective frequency based on base frequency,
+    // pitch offset (in semitones), and fine-tuning (in cents).
+    // Then updates the phase increment accordingly.
     void setCalculatedFrequency(double value)
     {
-        clampmin(value, 0.0);
-        calculatedFrequency = value;
+        double f = clampmin(value, 0.0);
+
+        // Convert pitch offset and fine tune to a total semitone offset
+        double semitoneOffset = static_cast<double>(pitchOffset) + (fineTune / 100.0);
+
+        // Apply equal temperament formula: f = f0 * 2^(n/12)
+        calculatedFrequency = f * std::pow(2.0, semitoneOffset / 12.0);
+
+        // Update phase increment for waveform generation
+        phaseIncrement = calculatedFrequency / sampleRate;
     }
 
     // Gets the current frequency
@@ -77,9 +104,13 @@ public:
     }
 
 protected:
-    double sampleRate;    // The audio systems current sampling rate
-    double frequency;     // The desired oscillator frequency in Hertz
-    double calculatedFrequency;   // The calculated FM frequency in Hertz
-    double currentPhase;  // Current phase of the oscillator in radians [0, 2π]
-    bool wrapped = false; // True when pahse wrapped
+    double sampleRate;          // The audio systems current sampling rate
+    double frequency;           // The desired oscillator frequency in Hertz
+    double calculatedFrequency; // The calculated FM frequency in Hertz
+    double pitchOffset;         // offset in half tones
+    double fineTune;            // fine tune in cent
+    double phaseIncrement;      // Increment based on frquency and sample rate
+    double currentPhase;        // Current phase of the oscillator in radians [0, 2π]
+    bool wrapped = false;       // True when pahse wrapped
+    
 };
