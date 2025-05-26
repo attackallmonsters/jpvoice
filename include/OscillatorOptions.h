@@ -27,3 +27,11 @@ enum class NoiseType
     White, // Uncorrelated white noise
     Pink   // Filtered pink noise (equal energy per octave)
 };
+
+// FM operations modes
+enum class FMType
+{
+    Linear,
+    ThroughZero,
+    Relative
+};

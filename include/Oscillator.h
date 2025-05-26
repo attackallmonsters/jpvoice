@@ -70,13 +70,17 @@ public:
         setCalculatedFrequency(frequency);
     }
 
+    // Enables negative phase wrapping
+    void setNegativeWrappingEnabled(bool enabled)
+    {
+        negativeWrappingEnabled = enabled;
+    }
+
     // Calculates the effective frequency based on base frequency,
     // pitch offset (in semitones), and fine-tuning (in cents).
     // Then updates the phase increment accordingly.
-    void setCalculatedFrequency(double value)
+    void setCalculatedFrequency(double f)
     {
-        double f = clampmin(value, 0.0);
-
         // Convert pitch offset and fine tune to a total semitone offset
         double semitoneOffset = static_cast<double>(pitchOffset) + (fineTune / 100.0);
 
@@ -106,13 +110,13 @@ public:
     }
 
 protected:
-    double sampleRate;          // The audio systems current sampling rate
-    double frequency;           // The desired oscillator frequency in Hertz
-    double calculatedFrequency; // The calculated FM frequency in Hertz
-    double pitchOffset;         // offset in half tones
-    double fineTune;            // fine tune in cent
-    double phaseIncrement;      // Increment based on frquency and sample rate
-    double currentPhase;        // Current phase of the oscillator in radians [0, 2π]
-    bool wrapped = false;       // True when pahse wrapped
-    
+    bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
+    double sampleRate;                   // The audio systems current sampling rate
+    double frequency;                    // The desired oscillator frequency in Hertz
+    double calculatedFrequency;          // The calculated FM frequency in Hertz
+    double pitchOffset;                  // offset in half tones
+    double fineTune;                     // fine tune in cent
+    double phaseIncrement;               // Increment based on frquency and sample rate
+    double currentPhase;                 // Current phase of the oscillator in radians [0, 2π]
+    bool wrapped = false;                // True when pahse wrapped
 };

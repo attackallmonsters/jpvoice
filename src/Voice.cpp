@@ -1,6 +1,7 @@
 #include <cmath>
 #include "Voice.h"
 #include "clamp.h"
+#include "OscillatorOptions.h"
 
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
@@ -24,18 +25,6 @@ Voice::~Voice()
     delete squareModulator;
     delete trianlgeCarrier;
     delete triangleModulator;
-}
-
-// Enables or disables frequency modulation (FM).
-// When enabled, the output frequency of carrier is modulated by the output of modulator.
-void Voice::setFMEnabled(bool enabled)
-{
-    fmEnabled = enabled;
-
-    if (!enabled)
-    {
-        carrier->setFrequency(frequency);
-    }
 }
 
 // Enables or disables oscillator synchronization.
@@ -67,11 +56,30 @@ void Voice::setFineTune(double fine)
     modulator->setFineTune(fineTune);
 }
 
+// Sets the type of FM to use
+void Voice::setFMType(FMType fm)
+{
+    fmType = fm;
+    negativeWrappingEnabled = fmType == FMType::ThroughZero;
+    carrier->setNegativeWrappingEnabled(negativeWrappingEnabled);
+}
+
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
 void Voice::setFMModIndex(double index)
 {
     modulationIndex = clampmin(index, 0.0);
+
+    if (modulationIndex == 0)
+    {
+        carrier->setFrequency(frequency);
+    }
+}
+
+// Enables negative phase wrapping
+void Voice::setNegativeWrappingEnabled(bool enabled)
+{
+    negativeWrappingEnabled = enabled;
 }
 
 // Sets teh sample rate for signal calculation
@@ -150,6 +158,7 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     }
 
     carrierTmp->setFrequency(f);
+    carrier->setNegativeWrappingEnabled(negativeWrappingEnabled);
     applyOscillators = true;
 }
 
@@ -203,15 +212,33 @@ void Voice::getSample(double &left, double &right)
     // This signal will be used either for frequency modulation or direct audio mixing.
     modulator->getSample(modulatorSampleLeft, modulatorSampleRight);
 
-    // --- Step 2: Apply Frequency Modulation if enabled ---
+    // --- Step 2: Apply Through Zero Frequency Modulation if enabled ---
     // Use the average (mono) value of the stereo modulator signal
     // to modulate the frequency of the carrier oscillator.
-    if (fmEnabled)
+    if (modulationIndex > 0)
     {
-        double frequencyCarrier = frequency;                                         // Get current frequency
+        double frequencyCarrier;
         double modulatorSample = 0.5 * (modulatorSampleLeft + modulatorSampleRight); // Convert to mono
-        frequencyCarrier += modulatorSample * modulationIndex * frequency;           // Apply FM
-        carrier->setCalculatedFrequency(frequencyCarrier);                           // Set the modulated frequency
+
+        switch (fmType)
+        {
+        case FMType::Linear:
+            frequencyCarrier = frequency + modulatorSample * modulationIndex;
+            break;
+
+        case FMType::Relative:
+            frequencyCarrier = frequency + modulatorSample * modulationIndex * frequency;
+            break;
+
+        case FMType::ThroughZero:
+            frequencyCarrier = frequency + modulatorSample * modulationIndex;
+            break;
+        default:
+            frequencyCarrier = frequency;
+            break;
+        }
+
+        carrier->setCalculatedFrequency(frequencyCarrier); // Set the modulated frequency
     }
 
     // --- Step 3: Generate the stereo output from the carrier oscillator ---
@@ -224,15 +251,6 @@ void Voice::getSample(double &left, double &right)
     if (syncEnabled && carrier->hasWrapped())
     {
         modulator->resetPhase();
-    }
-
-    // --- Step 5.1: Oscillator mixing or FM-only output ---
-    if (fmEnabled)
-    {
-        // FM Mode: Only output the carrier oscillator's stereo signal.
-        // The modulator is not heard directly (as in classic FM synths).
-        mixSampleLeft = carrierSampleLeft;
-        mixSampleRight = carrierSampleRight;
     }
 
     // --- Step 5.2: Mix the carrier and modulator signals using an equal-power crossfade.

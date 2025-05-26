@@ -22,7 +22,7 @@ void SupersawOscillator::getSample(double &left, double &right)
 {
     left = right = 0.0;
     wrapped = false;
-    snycDone = false;
+    snycDone = false;   // Avoids sync reset on every saw oscillator
 
     for (int i = 0; i < NUM_VOICES; ++i)
     {
@@ -46,6 +46,12 @@ void SupersawOscillator::getSample(double &left, double &right)
             wrapped = true;
             snycDone = true;
         }
+        else if (v.phase < 0.0 && negativeWrappingEnabled)
+        {
+            v.phase += 1.0;
+            wrapped = true; // Phase wrapped backward
+            snycDone = true;
+        }
 
         // Panning based on voice index (-1.0 to +1.0)
         double pan = static_cast<double>(i) / (NUM_VOICES - 1) * 2.0 - 1.0;
@@ -53,12 +59,12 @@ void SupersawOscillator::getSample(double &left, double &right)
         double gainR = std::sqrt(0.5 * (1.0 + pan));
 
         // Accumulate stereo output
-        left  += val * v.amp_ratio * gainL;
+        left += val * v.amp_ratio * gainL;
         right += val * v.amp_ratio * gainR;
     }
 
     // Normalize output
-    left  *= norm;
+    left *= norm;
     right *= norm;
 }
 

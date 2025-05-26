@@ -7,11 +7,16 @@ void SquareOscillator::getSample(double &left, double &right)
     currentPhase += phaseIncrement;
     wrapped = false;
 
-    // Wrap phase to stay in [0.0, 1.0)
+    // Wrap phase to stay within [0.0, 1.0) – works in both directions
     if (currentPhase >= 1.0)
     {
         currentPhase -= 1.0;
-        wrapped = true;
+        wrapped = true; // Phase wrapped forward
+    }
+    else if (currentPhase < 0.0 && negativeWrappingEnabled)
+    {
+        currentPhase += 1.0;
+        wrapped = true; // Phase wrapped backward
     }
 
     // Generate square wave: output +1.0 if phase is less than dutyCycle, else -1.0

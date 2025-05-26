@@ -60,7 +60,7 @@ void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         pd_error(x, "[jpvoice~]: expected float argument -24 - 24 for modulator offset: [offset f(");
         return;
     }
-    
+
     double offset = clamp(atom_getfloat(argv), -24.0f, 24.0f);
     x->voice->setPitchOffset(offset);
 }
@@ -201,17 +201,29 @@ void jpvoice_tilde_noisemix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setNoiseMix(mix);
 }
 
-// Enables FM
-void jpvoice_tilde_fm(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+// Sets the FM modulation type [fmtype f(
+void jpvoice_tilde_fmtype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 (white) or 1 (pink) for noise type: [fm n(");
+        pd_error(x, "[jpvoice~]: expected int argument 0 - n for FM modulation type: [fmtype n(");
         return;
     }
 
-    int enabled = clamp(static_cast<int>(atom_getint(argv)), 0, 1);
-    x->voice->setFMEnabled(enabled == 1);
+    int fmType = clampmin(static_cast<int>(atom_getint(argv)), 0);
+
+    switch (fmType)
+    {
+    case 1:
+        x->voice->setFMType(FMType::ThroughZero);
+        break;
+    case 2:
+        x->voice->setFMType(FMType::Linear);
+        break;
+    case 3:
+        x->voice->setFMType(FMType::Relative);
+        break;
+    }
 }
 
 // Sets the FM modulation index [fmmod f(
@@ -243,7 +255,6 @@ void jpvoice_tilde_pw(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Oscillator sync
 void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
-    post("[jpvoice~] sync called");
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 0 (unsynced) or 1 (synced) for oscillator sync: [oscsync n(");
@@ -293,7 +304,7 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_oscmix, gensym("oscmix"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_noisemix, gensym("noisemix"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_noisetype, gensym("noisetype"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fm, gensym("fm"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fmtype, gensym("fmtype"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fmmod, gensym("fmmod"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_pw, gensym("pw"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
