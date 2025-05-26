@@ -35,3 +35,11 @@ enum class FMType
     ThroughZero,
     Relative
 };
+
+// Enum for selecting the filter mode
+enum class FilterMode
+{
+    LPF12,
+    HPF12,
+    BPF12
+};

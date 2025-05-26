@@ -1,14 +1,7 @@
 #pragma once
 #include <cmath>
 #include <algorithm>
-
-// Enum for selecting the filter mode
-enum class FilterMode
-{
-    LPF12,
-    HPF12,
-    BPF12
-};
+#include "VoiceOptions.h"
 
 // A zero-delay feedback (ZDF) multimode filter using the TPT (Topology-Preserving Transform) structure.
 // This filter provides 12 dB/oct lowpass, highpass, and bandpass outputs, switchable via setMode().
@@ -46,7 +39,7 @@ private:
     double sampleRate; // Sample rate
     double cutoff;     // Cutoff frequency in Hz
     double resonance;  // Resonance amount (Q control)
-    FilterMode mode;   // Selected filter mode
+    FilterMode filterMode;   // Selected filter mode
 
     // --- Internal state ---
     double ic1eq = 0.0; // Internal state for first integrator (bandpass)

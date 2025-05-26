@@ -3,10 +3,9 @@
 
 ZDFMultimodeFilter::ZDFMultimodeFilter()
 {
-    sampleRate = 41100;
     cutoff = 10000.0;
     resonance = 0.0;
-    mode = FilterMode::LPF12;
+    filterMode = FilterMode::LPF12;
     reset();               // Clear internal filter states
     computeCoefficients(); // Initialize filter coefficients
 }
@@ -14,7 +13,7 @@ ZDFMultimodeFilter::ZDFMultimodeFilter()
 // Choose filter mode: LPF12, BPF12, or HPF12
 void ZDFMultimodeFilter::setMode(FilterMode mode)
 {
-    mode = mode;
+    filterMode = mode;
 }
 
 // Reset the internal state variables
@@ -76,7 +75,7 @@ double ZDFMultimodeFilter::process(double input)
     ic2eq = 2.0 * v2 - ic2eq;
 
     // Select the desired output based on filter mode
-    switch (mode)
+    switch (filterMode)
     {
     case FilterMode::LPF12:
         return v2; // Lowpass output

@@ -1,7 +1,7 @@
-#N canvas 327 102 954 422 12;
+#N canvas 1874 482 954 422 12;
 #X declare -path ../bin;
 #X obj 12 10 declare -path ../bin;
-#N canvas 352 123 886 570 control 1;
+#N canvas 352 123 886 570 control 0;
 #X obj 201 101 cnv 20 518 374 empty empty empty 20 12 0 12 #e0e0e0 #404040 0;
 #X obj 11 12 loadbang;
 #X obj 175 11 notein;

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Oscillator.h"
-#include "OscillatorOptions.h"
+#include "VoiceOptions.h"
 #include "NoiseGenerator.h"
 #include "SupersawOscillator.h"
 #include "SineOscillator.h"
 #include "SawOscillator.h"
 #include "TriangleOscillator.h"
 #include "SquareOscillator.h"
+#include "ZDFMultomodeFilter.h"
 
 // The PI
 #ifndef M_PI
@@ -47,7 +48,7 @@ public:
     void setNegativeWrappingEnabled(bool enabled);
 
     // Sets teh sample rate for signal calculation
-    void setSampleRate(double sampleRate);
+    void setSampleRate(double rate);
 
     // Sets the frequency of oscillator 1/carrier
     void setFrequency(double f);
@@ -70,10 +71,21 @@ public:
     // Sets the detune factor
     void setDetune(double value);
 
+    // Sets the filter type
+    void setFilterMode(FilterMode mode);
+
+    // Sets the cutoff frequency
+    void setCutoffFrequency(double frequency);
+
+    // Sets the filter resonance
+    void setResonance(double value);
+
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
     void getSample(double &left, double &right);
 
 private:
+    double sampleRate; // Audio system samplerate
+
     Oscillator *carrier;           // Carrier oscillator (may be modulated)
     Oscillator *modulator;         // Modulator oscillator (for FM or sync)
     Oscillator *carrierTmp;        // Carrier oscillator (may be modulated)
@@ -109,6 +121,9 @@ private:
     SquareOscillator *squareModulator = new SquareOscillator();
     TriangleOscillator *trianlgeCarrier = new TriangleOscillator();
     TriangleOscillator *triangleModulator = new TriangleOscillator();
+
+    // Filter
+    ZDFMultimodeFilter *filter = new ZDFMultimodeFilter();
 
     // DSP working vars
     double carrierSampleLeft, carrierSampleRight;

@@ -1,7 +1,7 @@
 #include <cmath>
 #include "Voice.h"
 #include "clamp.h"
-#include "OscillatorOptions.h"
+#include "VoiceOptions.h"
 
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
@@ -9,6 +9,8 @@ Voice::Voice() : carrier(nullptr), modulator(nullptr)
 {
     carrier = supersawCarrier;
     modulator = sineModulator;
+    filter->setCutoff(10000.0);
+    filter->setResonance(0.0);
 }
 
 // Destructor: cleans up oscillator instances.
@@ -83,19 +85,21 @@ void Voice::setNegativeWrappingEnabled(bool enabled)
 }
 
 // Sets teh sample rate for signal calculation
-void Voice::setSampleRate(double sampleRate)
+void Voice::setSampleRate(double rate)
 {
-    double rate = clamp(sampleRate, 41100.0, 96000.0);
-    noise->setSampleRate(rate);
-    supersawCarrier->setSampleRate(rate);
-    sineCarrier->setSampleRate(rate);
-    sineModulator->setSampleRate(rate);
-    sawCarrier->setSampleRate(rate);
-    sawModulator->setSampleRate(rate);
-    squareCarrier->setSampleRate(rate);
-    squareModulator->setSampleRate(rate);
-    trianlgeCarrier->setSampleRate(rate);
-    triangleModulator->setSampleRate(rate);
+    sampleRate = clamp(rate, 44100.0, 96000.0);
+
+    noise->setSampleRate(sampleRate);
+    supersawCarrier->setSampleRate(sampleRate);
+    sineCarrier->setSampleRate(sampleRate);
+    sineModulator->setSampleRate(sampleRate);
+    sawCarrier->setSampleRate(sampleRate);
+    sawModulator->setSampleRate(sampleRate);
+    squareCarrier->setSampleRate(sampleRate);
+    squareModulator->setSampleRate(sampleRate);
+    trianlgeCarrier->setSampleRate(sampleRate);
+    triangleModulator->setSampleRate(sampleRate);
+    filter->setSampleRate(sampleRate);
 }
 
 // Sets the current frequency
@@ -201,6 +205,25 @@ void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
 void Voice::setNoiseType(NoiseType type)
 {
     noise->setType(type);
+}
+
+// Sets the filter type
+void Voice::setFilterMode(FilterMode mode)
+{
+    filter->setMode(mode);
+}
+
+// Sets the cutoff frequency
+void Voice::setCutoffFrequency(double frequency)
+{
+    
+    filter->setCutoff(clamp(frequency, 10.0, sampleRate * 0.45));
+}
+
+// Sets the filter resonance
+void Voice::setResonance(double value)
+{
+    filter->setResonance(clamp(value, 0.0, 4.0));
 }
 
 // Computes and returns a single audio sample from the voice.
@@ -315,6 +338,8 @@ void Voice::getSample(double &left, double &right)
         mixSampleLeft *= fadeValue;
         mixSampleRight *= fadeValue;
     }
+
+    filter->getSample(mixSampleLeft, mixSampleRight);
 
     // --- Step 8: Final output assignment ---
     // Write the final stereo output sample to the provided references.

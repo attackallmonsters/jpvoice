@@ -13,6 +13,7 @@ typedef struct _jpvoice
     t_outlet *right_out;
     double left;
     double right;
+    double samplerate;
 } t_jpvoice;
 
 // DSP perform function
@@ -36,7 +37,8 @@ t_int *jpvoice_tilde_perform(t_int *w)
 // DSP add function
 void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 {
-    x->voice->setSampleRate(sp[0]->s_sr);
+    x->samplerate = sp[0]->s_sr;
+    x->voice->setSampleRate(x->samplerate);
     dsp_add(jpvoice_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
 }
 
@@ -265,6 +267,60 @@ void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setSyncEnabled(enabled == 1);
 }
 
+// [filtermode <0|1|2>] → 0 = LPF12, 1 = BPF12, 2 = HPF12
+void jpvoice_tilde_filtermode(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: filtermode <1=LPF12 | 2=BPF12 | 3=HPF12>");
+        return;
+    }
+
+    int mode = atom_getint(argv);
+    if (mode < 0 || mode > 2)
+    {
+        post("[jpvoice~] filtermode out of range 1 - 3, clamped.");
+    }
+
+    x->voice->setFilterMode(static_cast<FilterMode>(clamp(mode, 1, 3)));
+}
+
+// [cutoff <Hz>] → e.g. [cutoff 1500(
+void jpvoice_tilde_cutoff(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: cutoff <frequency in Hz>");
+        return;
+    }
+
+    double freq = atom_getfloat(argv);
+    if (freq < 10.0 || freq > x->samplerate * 0.45)
+    {
+        post("[jpvoice~] cutoff out of range, clamped to safe limits.");
+    }
+    
+    x->voice->setCutoffFrequency(clamp(freq, 10.0, x->samplerate * 0.45));
+}
+
+// [resonance <0.0–4.0>] → 4.0 kann zur Selbstoszillation führen
+void jpvoice_tilde_resonance(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: resonance <amount 0.0 – 4.0>");
+        return;
+    }
+
+    double res = atom_getfloat(argv);
+    if (res < 0.0 || res > 4.0)
+    {
+        post("[jpvoice~] resonance out of range (0.0–4.0), clamped.");
+    }
+
+    x->voice->setResonance(clamp(res, 0.0, 4.0));
+}
+
 // Constructor
 void *jpvoice_tilde_new()
 {
@@ -308,4 +364,7 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fmmod, gensym("fmmod"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_pw, gensym("pw"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_filtermode, gensym("filtermode"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_resonance, gensym("resonance"), A_GIMME, 0);
 }

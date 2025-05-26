@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Oscillator.h"
-#include "OscillatorOptions.h"
+#include "VoiceOptions.h"
 #include <random>
 
 // A subclass of Oscillator that generates noise instead of periodic waveforms.
