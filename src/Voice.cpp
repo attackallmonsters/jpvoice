@@ -9,8 +9,6 @@ Voice::Voice() : carrier(nullptr), modulator(nullptr)
 {
     carrier = supersawCarrier;
     modulator = sineModulator;
-    filter->setCutoff(10000.0);
-    filter->setResonance(0.0);
 }
 
 // Destructor: cleans up oscillator instances.
@@ -64,17 +62,24 @@ void Voice::setFMType(FMType fm)
     fmType = fm;
     negativeWrappingEnabled = fmType == FMType::ThroughZero;
     carrier->setNegativeWrappingEnabled(negativeWrappingEnabled);
+
+    if (fmType == FMType::Relative && modulationIndex > 30.0)
+    {
+        setFMModIndex(30);
+    }
 }
 
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
 void Voice::setFMModIndex(double index)
 {
-    modulationIndex = clampmin(index, 0.0);
+    double modmax = (fmType == FMType::Relative) ? 30 : 1000;
+    modulationIndex = clamp(index, 0.0, modmax);
 
     if (modulationIndex == 0)
     {
         carrier->setFrequency(frequency);
+        return;
     }
 }
 
@@ -100,6 +105,9 @@ void Voice::setSampleRate(double rate)
     trianlgeCarrier->setSampleRate(sampleRate);
     triangleModulator->setSampleRate(sampleRate);
     filter->setSampleRate(sampleRate);
+
+    filter->setCutoff(5000.0);
+    filter->setResonance(0.0);
 }
 
 // Sets the current frequency
@@ -339,10 +347,11 @@ void Voice::getSample(double &left, double &right)
         mixSampleRight *= fadeValue;
     }
 
-    filter->getSample(mixSampleLeft, mixSampleRight);
+    // Filter currently not working
+    //filter->getSample(mixSampleLeft, mixSampleRight);
 
     // --- Step 8: Final output assignment ---
     // Write the final stereo output sample to the provided references.
-    left = mixSampleLeft;
-    right = mixSampleRight;
+    left = std::tanh(mixSampleLeft);
+    right = std::tanh(mixSampleRight);
 }

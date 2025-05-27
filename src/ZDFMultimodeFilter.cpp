@@ -1,103 +1,91 @@
 #include "ZDFMultomodeFilter.h"
 #include "clamp.h"
+#include <cmath>
 
+// Konstruktor mit Defaultwerten
 ZDFMultimodeFilter::ZDFMultimodeFilter()
 {
-    cutoff = 10000.0;
-    resonance = 0.0;
+    sampleRate = 48000.0;
+    cutoff = 5000.0;
+    resonance = 1.0;
     filterMode = FilterMode::LPF12;
-    reset();               // Clear internal filter states
-    computeCoefficients(); // Initialize filter coefficients
+    reset();
+    computeCoefficients();
 }
 
-// Choose filter mode: LPF12, BPF12, or HPF12
+// Setzt Filtermodus
 void ZDFMultimodeFilter::setMode(FilterMode mode)
 {
     filterMode = mode;
 }
 
-// Reset the internal state variables
+// Rücksetzen interner Zustände
 void ZDFMultimodeFilter::reset()
 {
     ic1eq = 0.0;
     ic2eq = 0.0;
 }
 
-// Set the cutoff frequency in Hz (limited to Nyquist range)
+// Setzt Grenzfrequenz in Hz
 void ZDFMultimodeFilter::setCutoff(double freq)
 {
     cutoff = std::clamp(freq, 10.0, sampleRate * 0.45);
     computeCoefficients();
 }
 
-// Update the sample rate and recalculate coefficients
+// Setzt Resonanz (Q)
+void ZDFMultimodeFilter::setResonance(double res)
+{
+    resonance = std::clamp(res, 0.0, 4.0);
+    computeCoefficients();
+}
+
+// Setzt Sample Rate in Hz
 void ZDFMultimodeFilter::setSampleRate(double sr)
 {
     sampleRate = sr;
     computeCoefficients();
 }
 
-// Processes a stereo sample using mid/side filtering.
-// The ZDF filter is applied only to the mid component to preserve stereo width.
+// Stereo Mid/Side Verarbeitung
 void ZDFMultimodeFilter::getSample(double &left, double &right)
 {
-    // Convert stereo input to mid/side components:
-    // 'mid' represents the mono center (shared between left and right),
-    // 'side' represents the stereo difference (spread between channels).
     double mid = 0.5 * (left + right);
     double side = 0.5 * (left - right);
 
-    // Apply the zero-delay feedback filter only to the mid component.
-    // This simulates a single shared filter, as in classic analog synths,
-    // while preserving the stereo spread in the side signal.
     mid = process(mid);
 
-    // Reconstruct the stereo signal by combining the filtered mid and unfiltered side.
-    // This maintains the stereo width and places the filter effect in the phantom center.
     left = mid + side;
     right = mid - side;
 }
 
-// Process a single audio sample and return the filtered result
+// Verarbeitung eines einzelnen Samples (Zavalishin ZDF SVF)
 double ZDFMultimodeFilter::process(double input)
 {
-    // v3 is the input with negative feedback from the bandpass stage (self-resonance)
-    double v3 = input - resonance * ic2eq;
+    double vhp = (input - R * bp - lp) * g;
+    bp += vhp;
+    lp += bp;
 
-    // First integrator: bandpass output
-    double v1 = a1 * ic1eq + a2 * v3;
-
-    // Second integrator: lowpass output
-    double v2 = ic2eq + a2 * v1;
-
-    // Update internal states using the trapezoidal integration formula
-    ic1eq = 2.0 * v1 - ic1eq;
-    ic2eq = 2.0 * v2 - ic2eq;
-
-    // Select the desired output based on filter mode
     switch (filterMode)
     {
     case FilterMode::LPF12:
-        return v2; // Lowpass output
-    case FilterMode::HPF12:
-        return v3 - resonance * v2; // Highpass output
+        return lp;
     case FilterMode::BPF12:
-        return v1; // Bandpass output
+        return bp;
+    case FilterMode::HPF12:
+        return vhp;
     default:
-        return v2; // Fallback to lowpass
+        return lp;
     }
 }
 
-// Recalculate filter coefficients based on current cutoff and resonance
+// Berechne Koeffizienten für ZDF-SVF
 void ZDFMultimodeFilter::computeCoefficients()
 {
-    // Bilinear transform: pre-warping for ZDF structure
+    double wd = 2.0 * M_PI * cutoff;
     double T = 1.0 / sampleRate;
-    double wd = 2.0 * M_PI * cutoff;                // Digital angular frequency
-    double wa = (2.0 / T) * std::tan(wd * T / 2.0); // Pre-warped analog frequency
-    g = wa * T / 2.0;                               // Filter gain
-
-    // Coefficients for trapezoidal integrator
-    a1 = 1.0 / (1.0 + g * (g + resonance));
-    a2 = g * a1;
+    double wa = (2.0 / T) * std::tan(wd * T / 2.0); // pre-warped frequency
+    g = wa * T / 2.0;
+    h = g / (1.0 + g); // trapezoidal integration coefficient
+    R = resonance;     // feedback amount (Q inverse)
 }

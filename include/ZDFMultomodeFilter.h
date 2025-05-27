@@ -18,11 +18,7 @@ public:
     void setCutoff(double freq);
 
     // Set the resonance amount (typically 0.0 to ~4.0 for self-oscillation)
-    void setResonance(double res)
-    {
-        resonance = std::clamp(res, 0.0, 4.0);
-        computeCoefficients();
-    }
+    void setResonance(double res);
 
     // Choose filter mode: LPF12, BPF12, or HPF12
     void setMode(FilterMode mode);
@@ -36,10 +32,10 @@ public:
 
 private:
     // --- Parameters ---
-    double sampleRate; // Sample rate
-    double cutoff;     // Cutoff frequency in Hz
-    double resonance;  // Resonance amount (Q control)
-    FilterMode filterMode;   // Selected filter mode
+    double sampleRate;     // Sample rate
+    double cutoff;         // Cutoff frequency in Hz
+    double resonance;      // Resonance amount (Q control)
+    FilterMode filterMode; // Selected filter mode
 
     // --- Internal state ---
     double ic1eq = 0.0; // Internal state for first integrator (bandpass)
@@ -47,8 +43,12 @@ private:
 
     // --- Coefficients ---
     double g = 0.0;  // Pre-warped gain factor
+    double h = 0.0;  // Pre-warped gain factor
+    double R = 1.0;  // Pre-warped gain factor
     double a1 = 0.0; // Coefficient for v1
     double a2 = 0.0; // Coefficient for v3
+    double bp = 0.0; // Bandpass-Integrator
+    double lp = 0.0; // Lowpass-Integrator
 
     // Process a single audio sample and return the filtered result
     double process(double input);
