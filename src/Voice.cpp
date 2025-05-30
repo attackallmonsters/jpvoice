@@ -104,10 +104,12 @@ void Voice::setSampleRate(double rate)
     squareModulator->setSampleRate(sampleRate);
     trianlgeCarrier->setSampleRate(sampleRate);
     triangleModulator->setSampleRate(sampleRate);
-    filter->setSampleRate(sampleRate);
 
-    filter->setCutoff(5000.0);
-    filter->setResonance(0.0);
+    // currently not working
+    // filter->setSampleRate(sampleRate);
+
+    // filter->setCutoff(5000.0);
+    // filter->setResonance(0.0);
 }
 
 // Sets the current frequency
@@ -218,20 +220,35 @@ void Voice::setNoiseType(NoiseType type)
 // Sets the filter type
 void Voice::setFilterMode(FilterMode mode)
 {
-    filter->setMode(mode);
+    // currently not working
+    // filter->setMode(mode);
 }
 
 // Sets the cutoff frequency
 void Voice::setCutoffFrequency(double frequency)
 {
-    
-    filter->setCutoff(clamp(frequency, 10.0, sampleRate * 0.45));
+
+    // currently not working
+    // filter->setCutoff(clamp(frequency, 10.0, sampleRate * 0.45));
 }
 
 // Sets the filter resonance
 void Voice::setResonance(double value)
 {
-    filter->setResonance(clamp(value, 0.0, 4.0));
+    // currently not working
+    // filter->setResonance(clamp(value, 0.0, 4.0));
+}
+
+// Sets the feedback amount for the carrier
+void Voice::setFeedbackCarrier(double feedback)
+{
+    feedbackAmountCarrier = clamp(feedback, 0.0, 2.0);
+}
+
+// Sets the feedback amount for the modulator
+void Voice::setFeedbackModulator(double feedback)
+{
+    feedbackAmountModulator = clamp(feedback, 0.0, 2.0);
 }
 
 // Computes and returns a single audio sample from the voice.
@@ -289,8 +306,13 @@ void Voice::getSample(double &left, double &right)
     amp_carrier = std::cos(oscmix * 0.5 * M_PI);
     amp_modulator = std::sin(oscmix * 0.5 * M_PI);
 
-    mixSampleLeft = amp_carrier * carrierSampleLeft + amp_modulator * modulatorSampleLeft;
-    mixSampleRight = amp_carrier * carrierSampleRight + amp_modulator * modulatorSampleRight;
+    mixSampleLeft = amp_carrier * (carrierSampleLeft + lastSampleCarrierLeft) + amp_modulator * (modulatorSampleLeft + lastSampleModulatorLeft);
+    mixSampleRight = amp_carrier * (carrierSampleRight + lastSampleCarrierRight) + amp_modulator * (modulatorSampleRight + lastSampleModulatorRight);
+
+    lastSampleCarrierLeft = carrierSampleLeft * feedbackAmountCarrier;
+    lastSampleCarrierRight = carrierSampleRight * feedbackAmountCarrier;
+    lastSampleModulatorLeft = modulatorSampleLeft * feedbackAmountModulator;
+    lastSampleModulatorRight = modulatorSampleRight * feedbackAmountModulator;
 
     // --- Step 6: Add noise to the signal, if enabled ---
     if (noisemix > 0)
@@ -348,10 +370,10 @@ void Voice::getSample(double &left, double &right)
     }
 
     // Filter currently not working
-    //filter->getSample(mixSampleLeft, mixSampleRight);
+    // filter->getSample(mixSampleLeft, mixSampleRight);
 
     // --- Step 8: Final output assignment ---
-    // Write the final stereo output sample to the provided references.
+    // Clip & write the final stereo output sample to the provided references.
     left = std::tanh(mixSampleLeft);
     right = std::tanh(mixSampleRight);
 }

@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include "SupersawOscillator.h"
 
 SupersawOscillator::SupersawOscillator()

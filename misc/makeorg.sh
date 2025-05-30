@@ -8,10 +8,10 @@ set -e
 # remounting root filesystem read/write...
 sudo mount -o remount,rw /
 
-# removing old Gravity directory 
-rm -r -f Gravity
+# removing old jpvoice directory
+rm -r -f jpvoice
 
-# cloning latest Gravity from GitHub...
+# cloning latest jpvoice from GitHub...
 GIT_SSL_NO_VERIFY=true git clone https://github.com/attackallmonsters/jpvoice.git
 
 # building release version

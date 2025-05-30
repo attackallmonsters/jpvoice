@@ -321,6 +321,34 @@ void jpvoice_tilde_resonance(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setResonance(clamp(res, 0.0, 4.0));
 }
 
+// [carrierfb (0 - 1.2)] 
+void jpvoice_tilde_carrierfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: carrierfb (amount 0.0 – 1.2)");
+        return;
+    }
+
+    double fb = atom_getfloat(argv);
+
+    x->voice->setFeedbackCarrier(fb);
+}
+
+// [carrierfb (0 - 1.2)] 
+void jpvoice_tilde_modulatorfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: modulatorfb (amount 0.0 – 1.2)");
+        return;
+    }
+
+    double fb = atom_getfloat(argv);
+
+    x->voice->setFeedbackModulator(fb);
+}
+
 // Constructor
 void *jpvoice_tilde_new()
 {
@@ -364,7 +392,15 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fmmod, gensym("fmmod"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_pw, gensym("pw"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_filtermode, gensym("filtermode"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_resonance, gensym("resonance"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_carrierfb, gensym("carrierfb"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modulatorfb, gensym("modulatorfb"), A_GIMME, 0);
+
+
+
+
+
+    // currently not working
+    // class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_filtermode, gensym("filtermode"), A_GIMME, 0);
+    // class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
+    // class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_resonance, gensym("resonance"), A_GIMME, 0);
 }

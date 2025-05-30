@@ -80,6 +80,12 @@ public:
     // Sets the filter resonance
     void setResonance(double value);
 
+    // Sets the feedback amount for the carrier
+    void setFeedbackCarrier(double feedback);
+
+    // Sets the feedback amount for the modulator
+    void setFeedbackModulator(double feedback);
+
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
     void getSample(double &left, double &right);
 
@@ -123,7 +129,7 @@ private:
     TriangleOscillator *triangleModulator = new TriangleOscillator();
 
     // Filter
-    ZDFMultimodeFilter *filter = new ZDFMultimodeFilter();
+    // ZDFMultimodeFilter *filter = new ZDFMultimodeFilter(); <== currently not working
 
     // DSP working vars
     double carrierSampleLeft, carrierSampleRight;
@@ -134,4 +140,12 @@ private:
     double amp_modulator;
     double amp_oscmix;
     double amp_noise;
+
+    // Feedback
+    double lastSampleCarrierLeft;
+    double lastSampleCarrierRight;
+    double lastSampleModulatorLeft;
+    double lastSampleModulatorRight;
+    double feedbackAmountCarrier = 0.0;
+    double feedbackAmountModulator = 0.0;
 };
