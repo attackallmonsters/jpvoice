@@ -19,7 +19,7 @@ CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP
 SRC_DIR = src
 PD_SRC_DIR = $(SRC_DIR)/puredata
 OBJ_DIR = obj
-BIN_DIR = bin
+BIN_DIR = out
 
 # === Pure Data sources ===
 PD_SOURCES = \
