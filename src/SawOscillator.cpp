@@ -1,23 +1,29 @@
 #include "SawOscillator.h"
 
-void SawOscillator::getSample(double &left, double &right)
+SawOscillator::SawOscillator()
+{
+    // to avoid vtable lookup
+    sampleFunc = &SawOscillator::getSampleIntern;
+}
+
+void SawOscillator::getSampleIntern(Oscillator* osc, double &left, double &right)
 {
     // Compute phase increment and update phase
-    currentPhase += phaseIncrement;
-    wrapped = false;
+    osc->currentPhase += osc->phaseIncrement;
+    osc->wrapped = false;
 
     // Wrap phase to stay within [0.0, 1.0) – works in both directions
-    if (currentPhase >= 1.0)
+    if (osc->currentPhase >= 1.0)
     {
-        currentPhase -= 1.0;
-        wrapped = true; // Phase wrapped forward
+        osc->currentPhase -= 1.0;
+        osc->wrapped = true; // Phase wrapped forward
     }
-    else if (currentPhase < 0.0 && negativeWrappingEnabled)
+    else if (osc->currentPhase < 0.0 && osc->negativeWrappingEnabled)
     {
-        currentPhase += 1.0;
-        wrapped = true; // Phase wrapped backward
+        osc->currentPhase += 1.0;
+        osc->wrapped = true; // Phase wrapped backward
     }
     
     // Raw sawtooth signal from -1.0 to +1.0
-    left = right = 2.0 * currentPhase - 1.0;
+    left = right = 2.0 * osc->currentPhase - 1.0;
 }

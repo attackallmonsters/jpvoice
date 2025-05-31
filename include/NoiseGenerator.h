@@ -12,13 +12,13 @@ public:
     // Constructor: always initializes with white noise and distribution [-1, 1]
     NoiseGenerator();
 
-    // Returns a single noise sample; frequency and sampleRate are unused but kept for compatibility
-    void getSample(double &left, double &right) override;
-    
     // Changes the current noise type (white or pink)
     void setType(NoiseType type);
 
 private:
+// Returns a single noise sample; frequency and sampleRate are unused but kept for compatibility
+    static void getSampleIntern(Oscillator *osc, double &left, double &right);
+    
     // Random number generator for white noise source
     std::mt19937 rng;
 

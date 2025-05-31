@@ -11,8 +11,8 @@ class SawOscillator : public Oscillator
 {
 public:
     // Default constructor
-    SawOscillator() = default;
+    SawOscillator();
 
-    // Generates the next audio sample
-    void getSample(double &left, double &right) override;
+private:
+    static void getSampleIntern(Oscillator *osc, double &left, double &right);
 };

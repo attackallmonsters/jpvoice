@@ -26,9 +26,6 @@ public:
     // Default constructor
     SupersawOscillator();
 
-    // Generates the next audio sample
-    void getSample(double &left, double &right) override;
-
     // Resets the internal phase of all voices
     void resetPhase() override;
 
@@ -36,6 +33,9 @@ public:
     void setDetune(double value) override;
 
 private:
+    // Generates the next audio sample
+    static void getSampleIntern(Oscillator *osc, double &left, double &right);
+    
     SupersawVoice voices[NUM_VOICES]; // All detuned voices
     double detune = 0.0;              // Voices detune
     double norm = 0.9;                // Loudness normalization

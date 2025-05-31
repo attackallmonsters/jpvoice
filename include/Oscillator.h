@@ -20,13 +20,16 @@ public:
     // This function must be implemented by each specific oscillator type (e.g., sine, saw, square).
     // Returns:
     // The next mono audio sample as a floating point value in the range [-1.0, 1.0]
-    virtual void getSample(double &left, double &right) = 0;
+    void getSample(double &left, double &right)
+    {
+        (*sampleFunc)(this, left, right);
+    }
 
     // Sets the detune factor
     virtual void setDetune(double /*value*/) {};
 
     // Sets the duty cycle for PWM
-    virtual void setDutyCycle(double /*value*/) {};
+    virtual void setDutyCycle(double value){};
 
     // Resets the internal oscillator phase to 0.0.
     virtual void resetPhase()
@@ -109,7 +112,9 @@ public:
         return wrapped;
     }
 
-protected:
+    using SampleFunc = void (*)(Oscillator *, double &, double &);
+    SampleFunc sampleFunc; // avaoid vtable lookup
+
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
     double sampleRate;                   // The audio systems current sampling rate
     double frequency;                    // The desired oscillator frequency in Hertz

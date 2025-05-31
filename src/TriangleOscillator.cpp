@@ -1,24 +1,30 @@
 #include "TriangleOscillator.h"
 
-void TriangleOscillator::getSample(double &left, double &right)
+TriangleOscillator::TriangleOscillator()
+{
+    // to avoid vtable lookup
+    sampleFunc = &TriangleOscillator::getSampleIntern;
+}
+
+void TriangleOscillator::getSampleIntern(Oscillator *osc, double &left, double &right)
 {
     // Compute the phase increment based on the current frequency and sample rate
-    currentPhase += phaseIncrement;
-    wrapped = false;
+    osc->currentPhase += osc->phaseIncrement;
+    osc->wrapped = false;
 
     // Wrap phase to stay within [0.0, 1.0) – works in both directions
-    if (currentPhase >= 1.0)
+    if (osc->currentPhase >= 1.0)
     {
-        currentPhase -= 1.0;
-        wrapped = true; // Phase wrapped forward
+        osc->currentPhase -= 1.0;
+        osc->wrapped = true; // Phase wrapped forward
     }
-    else if (currentPhase < 0.0 && negativeWrappingEnabled)
+    else if (osc->currentPhase < 0.0 && osc->negativeWrappingEnabled)
     {
-        currentPhase += 1.0;
-        wrapped = true; // Phase wrapped backward
+        osc->currentPhase += 1.0;
+        osc->wrapped = true; // Phase wrapped backward
     }
 
     // Triangle waveform: linear ramp up and down from -1 to +1
     // Formula: 4 * |x - 0.5| - 1 for x in [0, 1)
-    left = right = 4.0 * std::abs(currentPhase - 0.5) - 1.0;
+    left = right = 4.0 * std::abs(osc->currentPhase - 0.5) - 1.0;
 }

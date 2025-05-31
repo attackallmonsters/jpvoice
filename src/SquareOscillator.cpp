@@ -1,26 +1,34 @@
 #include "SquareOscillator.h"
 #include "clamp.h"
 
-void SquareOscillator::getSample(double &left, double &right)
+SquareOscillator::SquareOscillator()
 {
+    // to avoid vtable lookup
+    sampleFunc = &SquareOscillator::getSampleIntern;
+}
+
+void SquareOscillator::getSampleIntern(Oscillator *osc, double &left, double &right)
+{
+    SquareOscillator *self = static_cast<SquareOscillator *>(osc);
+
     // Compute phase increment and update phase
-    currentPhase += phaseIncrement;
-    wrapped = false;
+    self->currentPhase += self->phaseIncrement;
+    self->wrapped = false;
 
     // Wrap phase to stay within [0.0, 1.0) – works in both directions
-    if (currentPhase >= 1.0)
+    if (self->currentPhase >= 1.0)
     {
-        currentPhase -= 1.0;
-        wrapped = true; // Phase wrapped forward
+        self->currentPhase -= 1.0;
+        self->wrapped = true; // Phase wrapped forward
     }
-    else if (currentPhase < 0.0 && negativeWrappingEnabled)
+    else if (self->currentPhase < 0.0 && self->negativeWrappingEnabled)
     {
-        currentPhase += 1.0;
-        wrapped = true; // Phase wrapped backward
+        self->currentPhase += 1.0;
+        self->wrapped = true; // Phase wrapped backward
     }
 
     // Generate square wave: output +1.0 if phase is less than dutyCycle, else -1.0
-    left = right = (currentPhase < dutyCycle) ? 1.0 : -1.0;
+    left = right = (self->currentPhase < self->dutyCycle) ? 1.0 : -1.0;
 }
 
 // Sets the duty cycle for PWM
