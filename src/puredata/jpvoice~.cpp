@@ -285,42 +285,6 @@ void jpvoice_tilde_filtermode(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setFilterMode(static_cast<FilterMode>(clamp(mode, 1, 3)));
 }
 
-// [cutoff <Hz>] → e.g. [cutoff 1500(
-void jpvoice_tilde_cutoff(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
-{
-    if (argc < 1)
-    {
-        post("[jpvoice~] usage: cutoff <frequency in Hz>");
-        return;
-    }
-
-    double freq = atom_getfloat(argv);
-    if (freq < 10.0 || freq > x->samplerate * 0.45)
-    {
-        post("[jpvoice~] cutoff out of range, clamped to safe limits.");
-    }
-    
-    x->voice->setCutoffFrequency(clamp(freq, 10.0, x->samplerate * 0.45));
-}
-
-// [resonance <0.0–4.0>] → 4.0 kann zur Selbstoszillation führen
-void jpvoice_tilde_resonance(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
-{
-    if (argc < 1)
-    {
-        post("[jpvoice~] usage: resonance <amount 0.0 – 4.0>");
-        return;
-    }
-
-    double res = atom_getfloat(argv);
-    if (res < 0.0 || res > 4.0)
-    {
-        post("[jpvoice~] resonance out of range (0.0–4.0), clamped.");
-    }
-
-    x->voice->setResonance(clamp(res, 0.0, 4.0));
-}
-
 // [carrierfb (0 - 1.2)] 
 void jpvoice_tilde_carrierfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
@@ -347,6 +311,45 @@ void jpvoice_tilde_modulatorfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     double fb = atom_getfloat(argv);
 
     x->voice->setFeedbackModulator(fb);
+}
+
+void jpvoice_tilde_cutoff(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: cutoff (amount 0.0 – samplerate / 2)");
+        return;
+    }
+
+    double fc = atom_getfloat(argv);
+
+    x->voice->setCutoffFrequency(fc);
+}
+
+void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: reso (amount 0.0 – 1.0)");
+        return;
+    }
+
+    double r = atom_getfloat(argv);
+
+    x->voice->setResonance(r * 4.0);
+}
+
+void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: drive (amount 0.0 – 1.0)");
+        return;
+    }
+
+    double d = atom_getfloat(argv);
+
+    x->voice->setDrive(d * 10.0);
 }
 
 // Constructor
@@ -394,6 +397,9 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_carrierfb, gensym("carrierfb"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modulatorfb, gensym("modulatorfb"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
 
 
 
