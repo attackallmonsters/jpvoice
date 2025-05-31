@@ -15,5 +15,5 @@ public:
 
 private:
     // Generates the next audio sample
-    static void getSampleIntern(Oscillator *osc, double &left, double &right);
+    static void getSampleIntern(DSPBase *dsp, double &left, double &right);
 };

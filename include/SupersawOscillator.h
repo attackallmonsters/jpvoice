@@ -34,7 +34,7 @@ public:
 
 private:
     // Generates the next audio sample
-    static void getSampleIntern(Oscillator *osc, double &left, double &right);
+    static void getSampleIntern(DSPBase *dsp, double &left, double &right);
     
     SupersawVoice voices[NUM_VOICES]; // All detuned voices
     double detune = 0.0;              // Voices detune

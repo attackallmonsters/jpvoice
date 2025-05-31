@@ -21,41 +21,41 @@ void SupersawOscillator::setDetune(double value)
 }
 
 // Generates the next audio sample based on the current frequency and sample rate
-void SupersawOscillator::getSampleIntern(Oscillator *osc, double &left, double &right)
+void SupersawOscillator::getSampleIntern(DSPBase *dsp, double &left, double &right)
 {
-    SupersawOscillator *self = static_cast<SupersawOscillator *>(osc);
+    SupersawOscillator *osc = static_cast<SupersawOscillator *>(dsp);
 
     left = right = 0.0;
-    self->wrapped = false;
-    self->snycDone = false;   // Avoids sync reset on every saw oscillator
+    osc->wrapped = false;
+    osc->snycDone = false;   // Avoids sync reset on every saw oscillator
 
     for (int i = 0; i < NUM_VOICES; ++i)
     {
-        SupersawVoice &v = self->voices[i];
+        SupersawVoice &v = osc->voices[i];
 
         // Calculate per-voice frequency with detune
-        double detune_factor = v.detune_ratio * self->detune;
-        double voice_freq = self->calculatedFrequency * (1.0 + detune_factor);
+        double detune_factor = v.detune_ratio * osc->detune;
+        double voice_freq = osc->calculatedFrequency * (1.0 + detune_factor);
 
         // Convert to phase increment for this voice
-        double phaseInc = voice_freq / self->sampleRate;
+        double phaseInc = voice_freq / osc->sampleRate;
 
         // Sawtooth signal in range [-1.0, +1.0]
         double val = 2.0 * v.phase - 1.0;
 
         // Update phase
         v.phase += phaseInc;
-        if (v.phase >= 1.0 && !self->snycDone)
+        if (v.phase >= 1.0 && !osc->snycDone)
         {
             v.phase -= 1.0;
-            self->wrapped = true;
-            self->snycDone = true;
+            osc->wrapped = true;
+            osc->snycDone = true;
         }
-        else if (v.phase < 0.0 && self->negativeWrappingEnabled)
+        else if (v.phase < 0.0 && osc->negativeWrappingEnabled)
         {
             v.phase += 1.0;
-            self->wrapped = true; // Phase wrapped backward
-            self->snycDone = true;
+            osc->wrapped = true; // Phase wrapped backward
+            osc->snycDone = true;
         }
 
         // Panning based on voice index (-1.0 to +1.0)
@@ -69,8 +69,8 @@ void SupersawOscillator::getSampleIntern(Oscillator *osc, double &left, double &
     }
 
     // Normalize output
-    left *= self->norm;
-    right *= self->norm;
+    left *= osc->norm;
+    right *= osc->norm;
 }
 
 // Resets the internal phase of all voices

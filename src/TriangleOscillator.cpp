@@ -6,8 +6,10 @@ TriangleOscillator::TriangleOscillator()
     sampleFunc = &TriangleOscillator::getSampleIntern;
 }
 
-void TriangleOscillator::getSampleIntern(Oscillator *osc, double &left, double &right)
+void TriangleOscillator::getSampleIntern(DSPBase *dsp, double &left, double &right)
 {
+    TriangleOscillator *osc = static_cast<TriangleOscillator *>(dsp);
+
     // Compute the phase increment based on the current frequency and sample rate
     osc->currentPhase += osc->phaseIncrement;
     osc->wrapped = false;

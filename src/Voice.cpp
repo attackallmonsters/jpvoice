@@ -104,12 +104,7 @@ void Voice::setSampleRate(double rate)
     squareModulator->setSampleRate(sampleRate);
     trianlgeCarrier->setSampleRate(sampleRate);
     triangleModulator->setSampleRate(sampleRate);
-
-    // currently not working
-    // filter->setSampleRate(sampleRate);
-
-    // filter->setCutoff(5000.0);
-    // filter->setResonance(0.0);
+    filter->setSampleRate(sampleRate);
 }
 
 // Sets the current frequency
@@ -217,28 +212,6 @@ void Voice::setNoiseType(NoiseType type)
     noise->setType(type);
 }
 
-// Sets the filter type
-void Voice::setFilterMode(FilterMode mode)
-{
-    // currently not working
-    // filter->setMode(mode);
-}
-
-// Sets the cutoff frequency
-void Voice::setCutoffFrequency(double frequency)
-{
-
-    // currently not working
-    // filter->setCutoff(clamp(frequency, 10.0, sampleRate * 0.45));
-}
-
-// Sets the filter resonance
-void Voice::setResonance(double value)
-{
-    // currently not working
-    // filter->setResonance(clamp(value, 0.0, 4.0));
-}
-
 // Sets the feedback amount for the carrier
 void Voice::setFeedbackCarrier(double feedback)
 {
@@ -249,6 +222,30 @@ void Voice::setFeedbackCarrier(double feedback)
 void Voice::setFeedbackModulator(double feedback)
 {
     feedbackAmountModulator = clamp(feedback, 0.0, 2.0);
+}
+
+// Sets the filter type
+void Voice::setFilterMode(FilterMode mode)
+{
+    // TODO
+}
+
+// Sets the cutoff frequency
+void Voice::setCutoffFrequency(double frequency)
+{
+    filter->setCutoff(frequency);
+}
+
+// Sets the filter resonance
+void Voice::setResonance(double value)
+{
+    filter->setResonance(value);
+}
+
+// Sets the filter drive
+void Voice::setDrive(double value)
+{
+    filter->setDrive(value);
 }
 
 // Computes and returns a single audio sample from the voice.
@@ -370,7 +367,7 @@ void Voice::getSample(double &left, double &right)
     }
 
     // Filter currently not working
-    // filter->getSample(mixSampleLeft, mixSampleRight);
+    filter->getSample(mixSampleLeft, mixSampleRight);
 
     // --- Step 8: Final output assignment ---
     // Clip & write the final stereo output sample to the provided references.

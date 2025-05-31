@@ -6,8 +6,10 @@ SineOscillator::SineOscillator()
     sampleFunc = &SineOscillator::getSampleIntern;
 }
 
-void SineOscillator::getSampleIntern(Oscillator *osc, double &left, double &right)
+void SineOscillator::getSampleIntern(DSPBase *dsp, double &left, double &right)
 {
+    SineOscillator *osc = static_cast<SineOscillator *>(dsp);
+
     // Reset wrap flag at start of each sample
     osc->wrapped = false;
 

@@ -8,7 +8,7 @@
 #include "SawOscillator.h"
 #include "TriangleOscillator.h"
 #include "SquareOscillator.h"
-#include "ZDFMultomodeFilter.h"
+#include "LadderFilter.h"
 
 // The PI
 #ifndef M_PI
@@ -71,6 +71,12 @@ public:
     // Sets the detune factor
     void setDetune(double value);
 
+    // Sets the feedback amount for the carrier
+    void setFeedbackCarrier(double feedback);
+
+    // Sets the feedback amount for the modulator
+    void setFeedbackModulator(double feedback);
+
     // Sets the filter type
     void setFilterMode(FilterMode mode);
 
@@ -80,11 +86,8 @@ public:
     // Sets the filter resonance
     void setResonance(double value);
 
-    // Sets the feedback amount for the carrier
-    void setFeedbackCarrier(double feedback);
-
-    // Sets the feedback amount for the modulator
-    void setFeedbackModulator(double feedback);
+    // Sets the filter drive
+    void setDrive(double value);
 
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
     void getSample(double &left, double &right);
@@ -127,9 +130,9 @@ private:
     SquareOscillator *squareModulator = new SquareOscillator();
     TriangleOscillator *trianlgeCarrier = new TriangleOscillator();
     TriangleOscillator *triangleModulator = new TriangleOscillator();
-
-    // Filter
-    // ZDFMultimodeFilter *filter = new ZDFMultimodeFilter(); <== currently not working
+    
+    // Multi mode filter
+    LadderFilter *filter = new LadderFilter();
 
     // DSP working vars
     double carrierSampleLeft, carrierSampleRight;

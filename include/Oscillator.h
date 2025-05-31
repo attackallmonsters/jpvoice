@@ -2,12 +2,13 @@
 
 #include <cmath>
 #include "clamp.h"
+#include "DSPBase.h"
 
 // Abstract base class for all oscillator types.
 // This class provides a common interface and shared internal phase state
 // for generating periodic waveforms based on frequency and sample rate.
 // Concrete subclasses must implement their specific waveform behavior.
-class Oscillator
+class Oscillator : public DSPBase
 {
 public:
     // Oscillator is initialized with current phase
@@ -16,20 +17,11 @@ public:
     // Virtual destructor to allow proper cleanup in derived classes
     virtual ~Oscillator() = default;
 
-    // Generates the next audio sample for the oscillator.
-    // This function must be implemented by each specific oscillator type (e.g., sine, saw, square).
-    // Returns:
-    // The next mono audio sample as a floating point value in the range [-1.0, 1.0]
-    void getSample(double &left, double &right)
-    {
-        (*sampleFunc)(this, left, right);
-    }
-
     // Sets the detune factor
     virtual void setDetune(double /*value*/) {};
 
     // Sets the duty cycle for PWM
-    virtual void setDutyCycle(double value){};
+    virtual void setDutyCycle(double /*value*/) {};
 
     // Resets the internal oscillator phase to 0.0.
     virtual void resetPhase()
@@ -111,9 +103,6 @@ public:
     {
         return wrapped;
     }
-
-    using SampleFunc = void (*)(Oscillator *, double &, double &);
-    SampleFunc sampleFunc; // avaoid vtable lookup
 
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
     double sampleRate;                   // The audio systems current sampling rate

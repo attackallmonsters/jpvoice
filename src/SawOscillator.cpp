@@ -6,8 +6,10 @@ SawOscillator::SawOscillator()
     sampleFunc = &SawOscillator::getSampleIntern;
 }
 
-void SawOscillator::getSampleIntern(Oscillator* osc, double &left, double &right)
+void SawOscillator::getSampleIntern(DSPBase* dsp, double &left, double &right)
 {
+    SawOscillator *osc = static_cast<SawOscillator *>(dsp);
+
     // Compute phase increment and update phase
     osc->currentPhase += osc->phaseIncrement;
     osc->wrapped = false;

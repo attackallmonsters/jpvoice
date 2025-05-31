@@ -2,14 +2,15 @@
 #include <cmath>
 #include <algorithm>
 #include "VoiceOptions.h"
+#include "DSPBase.h"
 
 // A zero-delay feedback (ZDF) multimode filter using the TPT (Topology-Preserving Transform) structure.
 // This filter provides 12 dB/oct lowpass, highpass, and bandpass outputs, switchable via setMode().
-class ZDFMultimodeFilter
+class LadderFilter : public DSPBase
 {
 public:
     // Constructor: sets sample rate and initializes internal state and coefficients
-    ZDFMultimodeFilter();
+    LadderFilter();
 
     // Update the sample rate and recalculate coefficients
     void setSampleRate(double sr);
@@ -20,39 +21,26 @@ public:
     // Set the resonance amount (typically 0.0 to ~4.0 for self-oscillation)
     void setResonance(double res);
 
+    // Set the drive amount
+    void setDrive(double drv);
+
     // Choose filter mode: LPF12, BPF12, or HPF12
     void setMode(FilterMode mode);
 
     // Reset the internal state variables
     void reset();
 
-    // Processes a stereo sample using mid/side filtering.
-    // The ZDF filter is applied only to the mid component to preserve stereo width.
-    void getSample(double &left, double &right);
-
 private:
+    static void getSampleIntern(DSPBase *osc, double &left, double &right);
+
     // --- Parameters ---
     double sampleRate;     // Sample rate
     double cutoff;         // Cutoff frequency in Hz
     double resonance;      // Resonance amount (Q control)
+    double drive;          // filter drive
     FilterMode filterMode; // Selected filter mode
 
     // --- Internal state ---
-    double ic1eq = 0.0; // Internal state for first integrator (bandpass)
-    double ic2eq = 0.0; // Internal state for second integrator (lowpass)
-
-    // --- Coefficients ---
-    double g = 0.0;  // Pre-warped gain factor
-    double h = 0.0;  // Pre-warped gain factor
-    double R = 1.0;  // Pre-warped gain factor
-    double a1 = 0.0; // Coefficient for v1
-    double a2 = 0.0; // Coefficient for v3
-    double bp = 0.0; // Bandpass-Integrator
-    double lp = 0.0; // Lowpass-Integrator
-
-    // Process a single audio sample and return the filtered result
-    double process(double input);
-
-    // Recalculate filter coefficients based on current cutoff and resonance
-    void computeCoefficients();
+    double s1L, s2L, s3L, s4L;
+    double s1R, s2R, s3R, s4R;
 };
