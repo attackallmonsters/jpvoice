@@ -16,32 +16,6 @@ typedef struct _jpvoice
     double samplerate;
 } t_jpvoice;
 
-// DSP perform function
-t_int *jpvoice_tilde_perform(t_int *w)
-{
-    t_jpvoice *x = (t_jpvoice *)(w[1]);
-    t_sample *outL = (t_sample *)(w[2]);
-    t_sample *outR = (t_sample *)(w[3]);
-    int n = (int)(w[4]);
-
-    for (int i = 0; i < n; i++)
-    {
-        x->voice->getSample(x->left, x->right);
-        outL[i] = static_cast<t_sample>(x->left);
-        outR[i] = static_cast<t_sample>(x->right);
-    }
-
-    return (w + 5);
-}
-
-// DSP add function
-void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
-{
-    x->samplerate = sp[0]->s_sr;
-    x->voice->setSampleRate(x->samplerate);
-    dsp_add(jpvoice_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
-}
-
 // Frequency of carrier set via list [f1 freq(
 void jpvoice_tilde_f(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
@@ -352,6 +326,32 @@ void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setDrive(d * 10.0);
 }
 
+// DSP perform function
+t_int *jpvoice_tilde_perform(t_int *w)
+{
+    t_jpvoice *x = (t_jpvoice *)(w[1]);
+    t_sample *outL = (t_sample *)(w[2]);
+    t_sample *outR = (t_sample *)(w[3]);
+    int n = (int)(w[4]);
+
+    for (int i = 0; i < n; i++)
+    {
+        x->voice->getSample(x->left, x->right);
+        outL[i] = static_cast<t_sample>(x->left);
+        outR[i] = static_cast<t_sample>(x->right);
+    }
+
+    return (w + 5);
+}
+
+// DSP add function
+void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
+{
+    x->samplerate = sp[0]->s_sr;
+    x->voice->setSampleRate(x->samplerate);
+    dsp_add(jpvoice_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
+}
+
 // Constructor
 void *jpvoice_tilde_new()
 {
@@ -400,13 +400,4 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
-
-
-
-
-
-    // currently not working
-    // class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_filtermode, gensym("filtermode"), A_GIMME, 0);
-    // class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
-    // class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_resonance, gensym("resonance"), A_GIMME, 0);
 }
