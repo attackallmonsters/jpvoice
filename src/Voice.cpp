@@ -225,7 +225,7 @@ void Voice::setFeedbackModulator(double feedback)
 }
 
 // Sets the filter type
-void Voice::setFilterMode(FilterMode mode)
+void Voice::setFilterMode(FilterMode /*mode*/)
 {
     // TODO
 }
@@ -246,6 +246,12 @@ void Voice::setResonance(double value)
 void Voice::setDrive(double value)
 {
     filter->setDrive(value);
+}
+
+// Sets the filter stage
+void Voice::setFilterStage(FilterStage stage)
+{
+    filter->setFilterStage(stage);
 }
 
 // Computes and returns a single audio sample from the voice.

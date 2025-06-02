@@ -9,6 +9,9 @@ typedef struct _jpvoice
 {
     t_object x_obj;
     Voice *voice;
+
+    t_inlet *in_cutoff;
+    t_inlet *in_reso;
     t_outlet *left_out;
     t_outlet *right_out;
     double left;
@@ -259,7 +262,7 @@ void jpvoice_tilde_filtermode(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setFilterMode(static_cast<FilterMode>(clamp(mode, 1, 3)));
 }
 
-// [carrierfb (0 - 1.2)] 
+// [carrierfb (0 - 1.2)]
 void jpvoice_tilde_carrierfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc < 1)
@@ -273,7 +276,7 @@ void jpvoice_tilde_carrierfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setFeedbackCarrier(fb);
 }
 
-// [carrierfb (0 - 1.2)] 
+// [carrierfb (0 - 1.2)]
 void jpvoice_tilde_modulatorfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc < 1)
@@ -310,7 +313,7 @@ void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     double r = atom_getfloat(argv);
 
-    x->voice->setResonance(r * 4.0);
+    x->voice->setResonance(r * 10.0);
 }
 
 void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
@@ -323,25 +326,59 @@ void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     double d = atom_getfloat(argv);
 
-    x->voice->setDrive(d * 10.0);
+    x->voice->setDrive(d * 20.0);
+}
+
+void jpvoice_tilde_stages(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: stage (0 = two pole, 1 = four pole)");
+        return;
+    }
+
+    int s = atom_getint(argv);
+
+    switch (s)
+    {
+    case 0:
+        x->voice->setFilterStage(FilterStage::TwoPole);
+        break;
+    case 1:
+        x->voice->setFilterStage(FilterStage::FourPole);
+        break;
+    default:
+        x->voice->setFilterStage(FilterStage::TwoPole);
+        break;
+    }
 }
 
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
     t_jpvoice *x = (t_jpvoice *)(w[1]);
-    t_sample *outL = (t_sample *)(w[2]);
-    t_sample *outR = (t_sample *)(w[3]);
-    int n = (int)(w[4]);
+    float cutoff = static_cast<float>(((t_sample *)(w[2]))[0]);
+    float reso = static_cast<float>(((t_sample *)(w[3]))[0]);
+    t_sample *outL = (t_sample *)(w[4]);
+    t_sample *outR = (t_sample *)(w[5]);
+    int n = (int)(w[6]);
+
+    if (n > 1024)
+    {
+        post("Blocksize too large: %d > 1024", n);
+        return (w + 5);
+    }
 
     for (int i = 0; i < n; i++)
     {
+        x->voice->setCutoffFrequency(cutoff);
+        x->voice->setResonance(reso);
         x->voice->getSample(x->left, x->right);
         outL[i] = static_cast<t_sample>(x->left);
         outR[i] = static_cast<t_sample>(x->right);
     }
 
-    return (w + 5);
+    return (w + 7);
 }
 
 // DSP add function
@@ -349,7 +386,13 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 {
     x->samplerate = sp[0]->s_sr;
     x->voice->setSampleRate(x->samplerate);
-    dsp_add(jpvoice_tilde_perform, 4, x, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
+    dsp_add(jpvoice_tilde_perform, 6,
+            x,
+            sp[0]->s_vec, // in_cutoff
+            sp[1]->s_vec, // in_reso
+            sp[2]->s_vec, // outL
+            sp[3]->s_vec, // outR
+            sp[0]->s_n);
 }
 
 // Constructor
@@ -358,6 +401,9 @@ void *jpvoice_tilde_new()
     t_jpvoice *x = (t_jpvoice *)pd_new(jpvoice_class);
 
     x->voice = new Voice();
+
+    x->in_cutoff = inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_signal, &s_signal);
+    x->in_reso = inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_signal, &s_signal);
 
     x->left_out = outlet_new(&x->x_obj, &s_signal);
     x->right_out = outlet_new(&x->x_obj, &s_signal);
@@ -368,6 +414,11 @@ void *jpvoice_tilde_new()
 // Destructor
 void jpvoice_tilde_free(t_jpvoice *x)
 {
+    inlet_free(x->in_cutoff);
+    inlet_free(x->in_reso);
+    outlet_free(x->left_out);
+    outlet_free(x->right_out);
+
     delete x->voice;
 }
 
@@ -400,4 +451,5 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_stages, gensym("stages"), A_GIMME, 0);
 }

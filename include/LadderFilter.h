@@ -4,6 +4,12 @@
 #include "VoiceOptions.h"
 #include "DSPBase.h"
 
+enum class FilterStage
+{
+    TwoPole,
+    FourPole
+};
+
 // A zero-delay feedback (ZDF) multimode filter using the TPT (Topology-Preserving Transform) structure.
 // This filter provides 12 dB/oct lowpass, highpass, and bandpass outputs, switchable via setMode().
 class LadderFilter : public DSPBase
@@ -27,11 +33,16 @@ public:
     // Choose filter mode: LPF12, BPF12, or HPF12
     void setMode(FilterMode mode);
 
+    // Sets the filter stage
+    void setFilterStage(FilterStage stage);
+
     // Reset the internal state variables
     void reset();
 
 private:
     static void getSampleIntern(DSPBase *osc, double &left, double &right);
+
+    FilterStage filterStage; // filter calculation stages
 
     // --- Parameters ---
     double sampleRate;     // Sample rate

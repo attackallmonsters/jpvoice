@@ -89,6 +89,9 @@ public:
     // Sets the filter drive
     void setDrive(double value);
 
+    // Sets the filter stage
+    void setFilterStage(FilterStage stage);
+
     // Computes and returns one audio sample by combining both oscillators at a given sample rate
     void getSample(double &left, double &right);
 
