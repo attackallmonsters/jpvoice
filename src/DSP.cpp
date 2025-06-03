@@ -36,7 +36,7 @@ double DSP::getSampleRate() const
 }
 
 // Copies external buffers to the internal buffers
-void DSP::setBuffer(double *srcBufL, double *srcBufR)
+void DSP::copyBuffer(double *srcBufL, double *srcBufR)
 {
     std::memcpy(BufferLeft, srcBufL, sizeof(double) * blockSize);
     std::memcpy(BufferRight, srcBufR, sizeof(double) * blockSize);

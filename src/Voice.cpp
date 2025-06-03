@@ -311,9 +311,6 @@ void Voice::computeSamples()
 
     for (int i = 0; i < DSP::blockSize; ++i)
     {
-        BufferLeft[i] = fast_tanh(carrier->BufferLeft[i]);
-        BufferRight[i] = fast_tanh(carrier->BufferRight[i]);
-        continue;
         double carrierLeft = carrier->BufferLeft[i];
         double carrierRight = carrier->BufferRight[i];
         double modLeft = modulator->BufferLeft[i];
@@ -340,9 +337,12 @@ void Voice::computeSamples()
         BufferRight[i] = fast_tanh(mixR);
     }
 
-    // Step 6: apply ladder filter
-    filter->setBuffer(BufferLeft, BufferRight);
+    // Step 6: assign buffer to ladder filter
+    filter->copyBuffer(BufferLeft, BufferRight);
+    // Calculate filterd samples
     filter->setSamples();
+    // copy back to this instance
+    copyBuffer(filter->BufferLeft, filter->BufferRight);
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)

@@ -48,7 +48,7 @@ void SupersawOscillator::setSamplesIntern(DSP *dsp)
 
             // Update phase
             v.phase += phaseInc;
-            if (v.phase >= 1.0 && !wrapped)
+            if (v.phase >= 1.0)
             {
                 v.phase -= 1.0;
                 wrapped = true;

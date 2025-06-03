@@ -5,6 +5,7 @@ class DSP
 public:
     // Ctor
     DSP();
+
     // Dtor
     virtual ~DSP();
 
@@ -21,7 +22,7 @@ public:
     void setSamples();
 
     // Copies external buffers to the internal buffers
-    void setBuffer(double *srcBufL, double *srcBufR);
+    void copyBuffer(double *srcBufL, double *srcBufR);
 
     static constexpr int maxBlockSize = 1024; // Buffer size
     double BufferLeft[maxBlockSize];          // Left multi perpose audio buffer
