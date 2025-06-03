@@ -3,32 +3,38 @@
 SineOscillator::SineOscillator()
 {
     // to avoid vtable lookup
-    sampleFunc = &SineOscillator::getSampleIntern;
+    sampleFunc = &SineOscillator::setSamplesIntern;
 }
 
-void SineOscillator::getSampleIntern(DSPBase *dsp, double &left, double &right)
+void SineOscillator::setSamplesIntern(DSP *dsp)
 {
     SineOscillator *osc = static_cast<SineOscillator *>(dsp);
 
-    // Reset wrap flag at start of each sample
-    osc->wrapped = false;
+    double phase = osc->currentPhase;
+    bool wrapped = false;
 
-    // Update phase – phaseIncrement may be positive (normal FM) or negative (through-zero FM)
-    osc->currentPhase += osc->phaseIncrement;
-
-    // Wrap phase to stay within [0.0, 1.0) – works in both directions
-    if (osc->currentPhase >= 1.0)
+    for (int i = 0; i < DSP::blockSize; ++i)
     {
-        osc->currentPhase -= 1.0;
-        osc->wrapped = true; // Phase wrapped forward
-    }
-    else if (osc->currentPhase < 0.0 && osc->negativeWrappingEnabled)
-    {
-        osc->currentPhase += 1.0;
-        osc->wrapped = true; // Phase wrapped backward
+        // Update phase – phaseIncrement may be positive (normal FM) or negative (through-zero FM)
+        phase += osc->phaseIncrement;
+
+        // Wrap phase to stay within [0.0, 1.0) – works in both directions
+        if (phase >= 1.0)
+        {
+            phase -= 1.0;
+            wrapped = true; // Phase wrapped forward
+        }
+        else if (phase < 0.0 && osc->negativeWrappingEnabled)
+        {
+            phase += 1.0;
+            wrapped = true; // Phase wrapped backward
+        }
+
+        // Generate sine wave: use 2π * phase
+        // Direction of phase naturally controls direction of waveform
+        osc->BufferLeft[i] = osc->BufferRight[i] = std::sin(phase * 2.0 * M_PI);
     }
 
-    // Generate sine wave: use 2π * phase
-    // Direction of phase naturally controls direction of waveform
-    left = right = std::sin(osc->currentPhase * 2.0 * M_PI);
+    osc->currentPhase = phase;
+    osc->wrapped = wrapped;
 }

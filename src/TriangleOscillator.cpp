@@ -3,30 +3,39 @@
 TriangleOscillator::TriangleOscillator()
 {
     // to avoid vtable lookup
-    sampleFunc = &TriangleOscillator::getSampleIntern;
+    sampleFunc = &TriangleOscillator::setSamplesIntern;
 }
 
-void TriangleOscillator::getSampleIntern(DSPBase *dsp, double &left, double &right)
+// Next sample block generation
+void TriangleOscillator::setSamplesIntern(DSP *dsp)
 {
     TriangleOscillator *osc = static_cast<TriangleOscillator *>(dsp);
 
-    // Compute the phase increment based on the current frequency and sample rate
-    osc->currentPhase += osc->phaseIncrement;
-    osc->wrapped = false;
+    double phase = osc->currentPhase;
+    bool wrapped = false;
 
-    // Wrap phase to stay within [0.0, 1.0) – works in both directions
-    if (osc->currentPhase >= 1.0)
+    for (int i = 0; i < DSP::blockSize; ++i)
     {
-        osc->currentPhase -= 1.0;
-        osc->wrapped = true; // Phase wrapped forward
-    }
-    else if (osc->currentPhase < 0.0 && osc->negativeWrappingEnabled)
-    {
-        osc->currentPhase += 1.0;
-        osc->wrapped = true; // Phase wrapped backward
+        // Compute the phase increment based on the current frequency and sample rate
+        phase += osc->phaseIncrement;
+        
+        // Wrap phase to stay within [0.0, 1.0) – works in both directions
+        if (phase >= 1.0)
+        {
+            phase -= 1.0;
+            wrapped = true; // Phase wrapped forward
+        }
+        else if (phase < 0.0 && osc->negativeWrappingEnabled)
+        {
+            phase += 1.0;
+            wrapped = true; // Phase wrapped backward
+        }
+
+        // Triangle waveform: linear ramp up and down from -1 to +1
+        // Formula: 4 * |x - 0.5| - 1 for x in [0, 1)
+        osc->BufferLeft[i] = osc->BufferRight[i] = 4.0 * std::abs(phase - 0.5) - 1.0;
     }
 
-    // Triangle waveform: linear ramp up and down from -1 to +1
-    // Formula: 4 * |x - 0.5| - 1 for x in [0, 1)
-    left = right = 4.0 * std::abs(osc->currentPhase - 0.5) - 1.0;
+    osc->currentPhase = phase;
+    osc->wrapped = wrapped;
 }

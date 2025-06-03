@@ -3,29 +3,38 @@
 SawOscillator::SawOscillator()
 {
     // to avoid vtable lookup
-    sampleFunc = &SawOscillator::getSampleIntern;
+    sampleFunc = &SawOscillator::setSamplesIntern;
 }
 
-void SawOscillator::getSampleIntern(DSPBase* dsp, double &left, double &right)
+// Next sample block generation
+void SawOscillator::setSamplesIntern(DSP *dsp)
 {
     SawOscillator *osc = static_cast<SawOscillator *>(dsp);
 
-    // Compute phase increment and update phase
-    osc->currentPhase += osc->phaseIncrement;
-    osc->wrapped = false;
+    double phase = osc->currentPhase;
+    bool wrapped = false;
 
-    // Wrap phase to stay within [0.0, 1.0) – works in both directions
-    if (osc->currentPhase >= 1.0)
+    for (int i = 0; i < DSP::blockSize; ++i)
     {
-        osc->currentPhase -= 1.0;
-        osc->wrapped = true; // Phase wrapped forward
+        // Compute phase increment and update phase
+        phase += osc->phaseIncrement;
+
+        // Wrap phase to stay within [0.0, 1.0) – works in both directions
+        if (phase >= 1.0)
+        {
+            phase -= 1.0;
+            wrapped = true; // Phase wrapped forward
+        }
+        else if (phase < 0.0 && osc->negativeWrappingEnabled)
+        {
+            phase += 1.0;
+            wrapped = true; // Phase wrapped backward
+        }
+
+        // Raw sawtooth signal from -1.0 to +1.0
+        osc->BufferLeft[i] = osc->BufferRight[i] = 2.0 * phase - 1.0;
     }
-    else if (osc->currentPhase < 0.0 && osc->negativeWrappingEnabled)
-    {
-        osc->currentPhase += 1.0;
-        osc->wrapped = true; // Phase wrapped backward
-    }
-    
-    // Raw sawtooth signal from -1.0 to +1.0
-    left = right = 2.0 * osc->currentPhase - 1.0;
+
+    osc->currentPhase = phase;
+    osc->wrapped = wrapped;
 }

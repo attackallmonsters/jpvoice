@@ -4,7 +4,7 @@
 SupersawOscillator::SupersawOscillator()
 {
     // to avoid vtable lookup
-    sampleFunc = &SupersawOscillator::getSampleIntern;
+    sampleFunc = &SupersawOscillator::setSamplesIntern;
 
     for (int i = 0; i < NUM_VOICES; ++i)
     {
@@ -20,57 +20,61 @@ void SupersawOscillator::setDetune(double value)
     detune = clamp(value, 0.0, 1.0) * 0.25;
 }
 
-// Generates the next audio sample based on the current frequency and sample rate
-void SupersawOscillator::getSampleIntern(DSPBase *dsp, double &left, double &right)
+// Next sample block generation
+void SupersawOscillator::setSamplesIntern(DSP *dsp)
 {
     SupersawOscillator *osc = static_cast<SupersawOscillator *>(dsp);
 
-    left = right = 0.0;
-    osc->wrapped = false;
-    osc->snycDone = false;   // Avoids sync reset on every saw oscillator
+    bool wrapped = false;
+    double left, right;
 
-    for (int i = 0; i < NUM_VOICES; ++i)
+    for (int i = 0; i < DSP::blockSize; ++i)
     {
-        SupersawVoice &v = osc->voices[i];
+        left = right = 0.0;
 
-        // Calculate per-voice frequency with detune
-        double detune_factor = v.detune_ratio * osc->detune;
-        double voice_freq = osc->calculatedFrequency * (1.0 + detune_factor);
-
-        // Convert to phase increment for this voice
-        double phaseInc = voice_freq / osc->sampleRate;
-
-        // Sawtooth signal in range [-1.0, +1.0]
-        double val = 2.0 * v.phase - 1.0;
-
-        // Update phase
-        v.phase += phaseInc;
-        if (v.phase >= 1.0 && !osc->snycDone)
+        for (int vIdx = 0; vIdx < NUM_VOICES; ++vIdx)
         {
-            v.phase -= 1.0;
-            osc->wrapped = true;
-            osc->snycDone = true;
-        }
-        else if (v.phase < 0.0 && osc->negativeWrappingEnabled)
-        {
-            v.phase += 1.0;
-            osc->wrapped = true; // Phase wrapped backward
-            osc->snycDone = true;
+            SupersawVoice &v = osc->voices[vIdx];
+
+            // Calculate per-voice frequency with detune
+            double detune_factor = v.detune_ratio * osc->detune;
+            double voice_freq = osc->calculatedFrequency * (1.0 + detune_factor);
+
+            // Convert to phase increment for this voice
+            double phaseInc = voice_freq / DSP::sampleRate;
+
+            // Sawtooth signal in range [-1.0, +1.0]
+            double val = 2.0 * v.phase - 1.0;
+
+            // Update phase
+            v.phase += phaseInc;
+            if (v.phase >= 1.0 && !wrapped)
+            {
+                v.phase -= 1.0;
+                wrapped = true;
+            }
+            else if (v.phase < 0.0 && osc->negativeWrappingEnabled)
+            {
+                v.phase += 1.0;
+                wrapped = true;
+            }
+
+            // Panning based on voice index (-1.0 to +1.0)
+            double pan = static_cast<double>(vIdx) / (NUM_VOICES - 1) * 2.0 - 1.0;
+            double gainL = std::sqrt(0.5 * (1.0 - pan));
+            double gainR = std::sqrt(0.5 * (1.0 + pan));
+
+            // Accumulate stereo output
+            left += val * v.amp_ratio * gainL;
+            right += val * v.amp_ratio * gainR;
         }
 
-        // Panning based on voice index (-1.0 to +1.0)
-        double pan = static_cast<double>(i) / (NUM_VOICES - 1) * 2.0 - 1.0;
-        double gainL = std::sqrt(0.5 * (1.0 - pan));
-        double gainR = std::sqrt(0.5 * (1.0 + pan));
-
-        // Accumulate stereo output
-        left += val * v.amp_ratio * gainL;
-        right += val * v.amp_ratio * gainR;
+        // Normalize output
+        osc->BufferLeft[i] = left * osc->norm;
+        osc->BufferRight[i] = right * osc->norm;
     }
 
-    // Normalize output
-    left *= osc->norm;
-    right *= osc->norm;
+    osc->wrapped = wrapped;
 }
 
 // Resets the internal phase of all voices

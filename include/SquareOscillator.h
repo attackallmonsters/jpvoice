@@ -17,8 +17,8 @@ public:
     void setDutyCycle(double value) override;
 
 private:
-    // Generates the next audio sample
-    static void getSampleIntern(DSPBase *dsp, double &left, double &right);
+    // Next sample block generation
+    static void setSamplesIntern(DSP *dsp);
     
     double dutyCycle = 0.5; // Duty cycle for square oscillator
 };

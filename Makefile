@@ -23,7 +23,7 @@ BIN_DIR = out
 
 # === Pure Data sources ===
 PD_SOURCES = \
-	$(PD_SRC_DIR)/jpvoice~.cpp \
+	$(SRC_DIR)/DSP.cpp \
 	$(SRC_DIR)/Voice.cpp \
 	$(SRC_DIR)/SupersawOscillator.cpp \
 	$(SRC_DIR)/SineOscillator.cpp \
@@ -31,7 +31,8 @@ PD_SOURCES = \
 	$(SRC_DIR)/TriangleOscillator.cpp \
 	$(SRC_DIR)/SquareOscillator.cpp \
 	$(SRC_DIR)/NoiseGenerator.cpp \
-	$(SRC_DIR)/LadderFilter.cpp
+	$(SRC_DIR)/LadderFilter.cpp \
+	$(PD_SRC_DIR)/jpvoice~.cpp
 
 PD_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(PD_SOURCES))
 PD_TARGET = $(BIN_DIR)/jpvoice~.pd_linux

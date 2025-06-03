@@ -1,5 +1,6 @@
 // jpvoice.cpp - Pure Data external wrapping the Voice audio synthesis class
 #include "m_pd.h"
+#include "DSP.h"
 #include "Voice.h"
 #include "clamp.h"
 
@@ -363,19 +364,17 @@ t_int *jpvoice_tilde_perform(t_int *w)
     t_sample *outR = (t_sample *)(w[5]);
     int n = (int)(w[6]);
 
-    if (n > 1024)
-    {
-        post("Blocksize too large: %d > 1024", n);
-        return (w + 5);
-    }
+    x->voice->setCutoffFrequency(cutoff);
+    x->voice->setResonance(reso);
+    x->voice->computeSamples();
 
-    for (int i = 0; i < n; i++)
+    double* bufL = x->voice->BufferLeft;
+    double* bufR = x->voice->BufferRight;
+
+    for (int i = 0; i < n; ++i)
     {
-        x->voice->setCutoffFrequency(cutoff);
-        x->voice->setResonance(reso);
-        x->voice->getSample(x->left, x->right);
-        outL[i] = static_cast<t_sample>(x->left);
-        outR[i] = static_cast<t_sample>(x->right);
+        outL[i] = static_cast<t_sample>(bufL[i]);
+        outR[i] = static_cast<t_sample>(bufR[i]);
     }
 
     return (w + 7);
@@ -385,7 +384,10 @@ t_int *jpvoice_tilde_perform(t_int *w)
 void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 {
     x->samplerate = sp[0]->s_sr;
+
     x->voice->setSampleRate(x->samplerate);
+    x->voice->setBlockSize(sp[0]->s_n);
+
     dsp_add(jpvoice_tilde_perform, 6,
             x,
             sp[0]->s_vec, // in_cutoff

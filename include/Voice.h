@@ -9,6 +9,7 @@
 #include "TriangleOscillator.h"
 #include "SquareOscillator.h"
 #include "LadderFilter.h"
+#include "DSP.h"
 
 // The PI
 #ifndef M_PI
@@ -17,7 +18,7 @@
 
 // The Voice class manages two oscillators and handles interactions like
 // Frequency Modulation (FM) and Oscillator Sync between them.
-class Voice
+class Voice : public DSP
 {
 public:
     // Constructor: requires two Oscillator pointers and the global sample rateSample
@@ -47,8 +48,11 @@ public:
     // Enables negative phase wrapping
     void setNegativeWrappingEnabled(bool enabled);
 
-    // Sets teh sample rate for signal calculation
+    // Sets the sample rate for signal calculation
     void setSampleRate(double rate);
+
+    // Sets the size of the current audio buffer
+    void setBlockSize(int size);
 
     // Sets the frequency of oscillator 1/carrier
     void setFrequency(double f);
@@ -92,12 +96,10 @@ public:
     // Sets the filter stage
     void setFilterStage(FilterStage stage);
 
-    // Computes and returns one audio sample by combining both oscillators at a given sample rate
-    void getSample(double &left, double &right);
+    // Next sample block generation
+    void computeSamples();
 
 private:
-    double sampleRate; // Audio system samplerate
-
     Oscillator *carrier;           // Carrier oscillator (may be modulated)
     Oscillator *modulator;         // Modulator oscillator (for FM or sync)
     Oscillator *carrierTmp;        // Carrier oscillator (may be modulated)
@@ -145,6 +147,7 @@ private:
     double amp_carrier;
     double amp_modulator;
     double amp_oscmix;
+    double amp_osc_noise;
     double amp_noise;
 
     // Feedback

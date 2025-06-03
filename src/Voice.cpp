@@ -2,6 +2,7 @@
 #include "Voice.h"
 #include "clamp.h"
 #include "VoiceOptions.h"
+#include "dsp_util.h"
 
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
@@ -92,19 +93,13 @@ void Voice::setNegativeWrappingEnabled(bool enabled)
 // Sets teh sample rate for signal calculation
 void Voice::setSampleRate(double rate)
 {
-    sampleRate = clamp(rate, 44100.0, 96000.0);
+    DSP::setSampleRate(rate);
+}
 
-    noise->setSampleRate(sampleRate);
-    supersawCarrier->setSampleRate(sampleRate);
-    sineCarrier->setSampleRate(sampleRate);
-    sineModulator->setSampleRate(sampleRate);
-    sawCarrier->setSampleRate(sampleRate);
-    sawModulator->setSampleRate(sampleRate);
-    squareCarrier->setSampleRate(sampleRate);
-    squareModulator->setSampleRate(sampleRate);
-    trianlgeCarrier->setSampleRate(sampleRate);
-    triangleModulator->setSampleRate(sampleRate);
-    filter->setSampleRate(sampleRate);
+// Sets the size of the current audio buffer
+void Voice::setBlockSize(int size)
+{
+    DSP::setBlockSize(size);
 }
 
 // Sets the current frequency
@@ -254,47 +249,45 @@ void Voice::setFilterStage(FilterStage stage)
     filter->setFilterStage(stage);
 }
 
-// Computes and returns a single audio sample from the voice.
-// Takes two input frequencies (for carrier and modulator) and the current sample rate.
-// Depending on the modulation settings, the sample result is computed differently.
-void Voice::getSample(double &left, double &right)
+// Next sample block generation
+void Voice::computeSamples()
 {
     // --- Step 1: Get stereo signal from the modulator oscillator ---
     // This signal will be used either for frequency modulation or direct audio mixing.
-    modulator->getSample(modulatorSampleLeft, modulatorSampleRight);
+    modulator->setSamples();
 
     // --- Step 2: Apply Through Zero Frequency Modulation if enabled ---
     // Use the average (mono) value of the stereo modulator signal
     // to modulate the frequency of the carrier oscillator.
-    if (modulationIndex > 0)
-    {
-        double frequencyCarrier;
-        double modulatorSample = 0.5 * (modulatorSampleLeft + modulatorSampleRight); // Convert to mono
+    // if (modulationIndex > 0)
+    // {
+    //     double frequencyCarrier;
+    //     double modulatorSample = 0.5 * (modulatorSampleLeft + modulatorSampleRight); // Convert to mono
 
-        switch (fmType)
-        {
-        case FMType::Linear:
-            frequencyCarrier = frequency + modulatorSample * modulationIndex;
-            break;
+    //     switch (fmType)
+    //     {
+    //     case FMType::Linear:
+    //         frequencyCarrier = frequency + modulatorSample * modulationIndex;
+    //         break;
 
-        case FMType::Relative:
-            frequencyCarrier = frequency + modulatorSample * modulationIndex * frequency;
-            break;
+    //     case FMType::Relative:
+    //         frequencyCarrier = frequency + modulatorSample * modulationIndex * frequency;
+    //         break;
 
-        case FMType::ThroughZero:
-            frequencyCarrier = frequency + modulatorSample * modulationIndex;
-            break;
-        default:
-            frequencyCarrier = frequency;
-            break;
-        }
+    //     case FMType::ThroughZero:
+    //         frequencyCarrier = frequency + modulatorSample * modulationIndex;
+    //         break;
+    //     default:
+    //         frequencyCarrier = frequency;
+    //         break;
+    //     }
 
-        carrier->setCalculatedFrequency(frequencyCarrier); // Set the modulated frequency
-    }
+    //     carrier->setCalculatedFrequency(frequencyCarrier); // Set the modulated frequency
+    // }
 
     // --- Step 3: Generate the stereo output from the carrier oscillator ---
     // This will either be used directly (in FM mode) or mixed with the modulator signal.
-    carrier->getSample(carrierSampleLeft, carrierSampleRight);
+    carrier->setSamples();
 
     // --- Step 4: Sync handling ---
     // If sync is enabled and the carrier oscillator has wrapped (phase reset),
@@ -302,35 +295,54 @@ void Voice::getSample(double &left, double &right)
     if (syncEnabled && carrier->hasWrapped())
     {
         modulator->resetPhase();
+        carrier->unWrap();
     }
 
-    // --- Step 5.2: Mix the carrier and modulator signals using an equal-power crossfade.
-    // The oscmix parameter defines the mix balance (0.0 = only carrier, 1.0 = only modulator).
-    amp_carrier = std::cos(oscmix * 0.5 * M_PI);
-    amp_modulator = std::sin(oscmix * 0.5 * M_PI);
-
-    mixSampleLeft = amp_carrier * (carrierSampleLeft + lastSampleCarrierLeft) + amp_modulator * (modulatorSampleLeft + lastSampleModulatorLeft);
-    mixSampleRight = amp_carrier * (carrierSampleRight + lastSampleCarrierRight) + amp_modulator * (modulatorSampleRight + lastSampleModulatorRight);
-
-    lastSampleCarrierLeft = carrierSampleLeft * feedbackAmountCarrier;
-    lastSampleCarrierRight = carrierSampleRight * feedbackAmountCarrier;
-    lastSampleModulatorLeft = modulatorSampleLeft * feedbackAmountModulator;
-    lastSampleModulatorRight = modulatorSampleRight * feedbackAmountModulator;
-
-    // --- Step 6: Add noise to the signal, if enabled ---
     if (noisemix > 0)
     {
-        // Get stereo signal from the noise generator.
-        noise->getSample(noiseSampleLeft, noiseSampleRight);
-
-        // Apply another equal-power crossfade between the oscillator signal and noise.
-        // noisemix controls how much noise is mixed in (0.0 = no noise, 1.0 = only noise).
-        amp_oscmix = std::cos(noisemix * 0.5 * M_PI);
-        amp_noise = std::sin(noisemix * 0.5 * M_PI);
-
-        mixSampleLeft = amp_oscmix * mixSampleLeft + amp_noise * noiseSampleLeft;
-        mixSampleRight = amp_oscmix * mixSampleRight + amp_noise * noiseSampleRight;
+        noise->setSamples();
     }
+
+    // --- Step 5: Mix the carrier, modulator, feedback and noise signals using an equal-power crossfade
+    amp_carrier = std::cos(oscmix * 0.5 * M_PI);
+    amp_modulator = std::sin(oscmix * 0.5 * M_PI);
+    amp_osc_noise = std::cos(noisemix * 0.5 * M_PI);
+    amp_noise = std::sin(noisemix * 0.5 * M_PI);
+
+    for (int i = 0; i < DSP::blockSize; ++i)
+    {
+        BufferLeft[i] = fast_tanh(carrier->BufferLeft[i]);
+        BufferRight[i] = fast_tanh(carrier->BufferRight[i]);
+        continue;
+        double carrierLeft = carrier->BufferLeft[i];
+        double carrierRight = carrier->BufferRight[i];
+        double modLeft = modulator->BufferLeft[i];
+        double modRight = modulator->BufferRight[i];
+
+        // Mix mit Feedback
+        double mixL = amp_carrier * (carrierLeft + lastSampleCarrierLeft) + amp_modulator * (modLeft + lastSampleModulatorLeft);
+        double mixR = amp_carrier * (carrierRight + lastSampleCarrierRight) + amp_modulator * (modRight + lastSampleModulatorRight);
+
+        lastSampleCarrierLeft = carrierLeft * feedbackAmountCarrier;
+        lastSampleCarrierRight = carrierRight * feedbackAmountCarrier;
+        lastSampleModulatorLeft = modLeft * feedbackAmountModulator;
+        lastSampleModulatorRight = modRight * feedbackAmountModulator;
+
+        // Noise (optional)
+        if (noisemix > 0)
+        {
+            mixL = amp_osc_noise * mixL + amp_noise * noise->BufferLeft[i];
+            mixR = amp_osc_noise * mixR + amp_noise * noise->BufferRight[i];
+        }
+
+        // Clipping (optional)
+        BufferLeft[i] = fast_tanh(mixL);
+        BufferRight[i] = fast_tanh(mixR);
+    }
+
+    // Step 6: apply ladder filter
+    filter->setBuffer(BufferLeft, BufferRight);
+    filter->setSamples();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)
@@ -339,44 +351,32 @@ void Voice::getSample(double &left, double &right)
 
         if (fadeCounter <= fadeLength)
         {
-            // Fade out: Linearly reduce output volume
-            fadeValue = 1.0 - (double(fadeCounter) / fadeLength);
+            fadeValue = 1.0 - (double(fadeCounter) / fadeLength); // Fade out
         }
         else if (fadeCounter == fadeLength + 1)
         {
             if (carrier != carrierTmp)
-            {
                 carrier = carrierTmp;
-            }
 
             if (modulator != modulatorTmp)
-            {
                 modulator = modulatorTmp;
-            }
         }
         else if (fadeCounter <= fadeLength * 2)
         {
-            // Fade in: Linearly restore output volume
-            fadeValue = (double(fadeCounter - fadeLength) / fadeLength);
+            fadeValue = (double(fadeCounter - fadeLength) / fadeLength); // Fade in
         }
         else
         {
-            // Fade process complete: reset state
             applyOscillators = false;
             fadeValue = 1.0;
             fadeCounter = 0;
         }
 
-        // Apply fade value to both channels
-        mixSampleLeft *= fadeValue;
-        mixSampleRight *= fadeValue;
+        // Apply fade to entire output buffer
+        for (int i = 0; i < DSP::blockSize; ++i)
+        {
+            BufferLeft[i] *= fadeValue;
+            BufferRight[i] *= fadeValue;
+        }
     }
-
-    // Filter currently not working
-    filter->getSample(mixSampleLeft, mixSampleRight);
-
-    // --- Step 8: Final output assignment ---
-    // Clip & write the final stereo output sample to the provided references.
-    left = std::tanh(mixSampleLeft);
-    right = std::tanh(mixSampleRight);
 }

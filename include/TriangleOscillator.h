@@ -14,6 +14,6 @@ public:
     TriangleOscillator();
 
 private:
-    // Generates the next audio sample
-    static void getSampleIntern(DSPBase *dsp, double &left, double &right);
+    // Next sample block generation
+    static void setSamplesIntern(DSP *dsp);
 };

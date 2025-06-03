@@ -14,5 +14,6 @@ public:
     SawOscillator();
 
 private:
-    static void getSampleIntern(DSPBase *dsp, double &left, double &right);
+    // Next sample block generation
+    static void setSamplesIntern(DSP *dsp);
 };

@@ -33,11 +33,10 @@ public:
     void setDetune(double value) override;
 
 private:
-    // Generates the next audio sample
-    static void getSampleIntern(DSPBase *dsp, double &left, double &right);
+    // Next sample block generation
+    static void setSamplesIntern(DSP *dsp);
     
     SupersawVoice voices[NUM_VOICES]; // All detuned voices
     double detune = 0.0;              // Voices detune
     double norm = 0.9;                // Loudness normalization
-    bool snycDone;                    // Sync indicator
 };

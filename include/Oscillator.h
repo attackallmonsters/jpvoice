@@ -2,13 +2,13 @@
 
 #include <cmath>
 #include "clamp.h"
-#include "DSPBase.h"
+#include "DSP.h"
 
 // Abstract base class for all oscillator types.
 // This class provides a common interface and shared internal phase state
 // for generating periodic waveforms based on frequency and sample rate.
 // Concrete subclasses must implement their specific waveform behavior.
-class Oscillator : public DSPBase
+class Oscillator : public DSP
 {
 public:
     // Oscillator is initialized with current phase
@@ -28,20 +28,6 @@ public:
     {
         currentPhase = 0.0;
         wrapped = false;
-    }
-
-    // Sets the audio systems current sampling rate
-    void setSampleRate(double value)
-    {
-        clampmin(value, 0.0);
-        sampleRate = value;
-        setFrequency(frequency);
-    }
-
-    // Gets the current sampling rate
-    double getSampeRate()
-    {
-        return sampleRate;
     }
 
     // Sets the desired oscillator frequency in Hertz
@@ -83,7 +69,7 @@ public:
         calculatedFrequency = f * std::pow(2.0, semitoneOffset / 12.0);
 
         // Update phase increment for waveform generation
-        phaseIncrement = calculatedFrequency / sampleRate;
+        phaseIncrement = calculatedFrequency / DSP::sampleRate;
     }
 
     // Gets the current frequency
@@ -104,13 +90,20 @@ public:
         return wrapped;
     }
 
+    // Resets the wrap status
+    void unWrap()
+    {
+        wrapped = false;
+    }
+
+protected:
+    bool syncEnabled;                    // Enables or disable block wise phase synchronization
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
-    double sampleRate;                   // The audio systems current sampling rate
     double frequency;                    // The desired oscillator frequency in Hertz
     double calculatedFrequency;          // The calculated FM frequency in Hertz
     double pitchOffset;                  // offset in half tones
     double fineTune;                     // fine tune in cent
     double phaseIncrement;               // Increment based on frquency and sample rate
     double currentPhase;                 // Current phase of the oscillator in radians [0, 2π]
-    bool wrapped = false;                // True when pahse wrapped
+    bool wrapped = false;                // True when phase wrapped
 };

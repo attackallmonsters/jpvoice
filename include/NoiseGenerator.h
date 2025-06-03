@@ -16,9 +16,9 @@ public:
     void setType(NoiseType type);
 
 private:
-// Returns a single noise sample; frequency and sampleRate are unused but kept for compatibility
-    static void getSampleIntern(DSPBase *osc, double &left, double &right);
-    
+    // Next sample block generation
+    static void setSamplesIntern(DSP *dsp);
+
     // Random number generator for white noise source
     std::mt19937 rng;
 
