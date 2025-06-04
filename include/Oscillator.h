@@ -68,9 +68,9 @@ public:
     // Resets the wrap status
     void unWrap();
 
-    // Input buffer for FM, etc.
-    DSPBuffer *inBufferL;
-    DSPBuffer *inBufferR;
+    // Buffer for FM
+    DSPBuffer *modBufferL;
+    DSPBuffer *modBufferR;
 
     // Input buffer for FM, etc.
     DSPBuffer outBufferL;

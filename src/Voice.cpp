@@ -153,7 +153,7 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     carrier->setNegativeWrappingEnabled(negativeWrappingEnabled);
     carrier->setFMType(fmType);
     carrier->setFMModIndex(modulationIndex);
-    
+
     applyOscillators = true;
 }
 
@@ -250,31 +250,13 @@ void Voice::computeSamples()
     // --- Step 2: Apply Through Zero Frequency Modulation if enabled ---
     // Use the average (mono) value of the stereo modulator signal
     // to modulate the frequency of the carrier oscillator.
-    // if (modulationIndex > 0)
-    // {
-    //     double frequencyCarrier;
-    //     double modulatorSample = 0.5 * (modulatorSampleLeft + modulatorSampleRight); // Convert to mono
-
-    //     switch (fmType)
-    //     {
-    //     case FMType::Linear:
-    //         frequencyCarrier = frequency + modulatorSample * modulationIndex;
-    //         break;
-
-    //     case FMType::Relative:
-    //         frequencyCarrier = frequency + modulatorSample * modulationIndex * frequency;
-    //         break;
-
-    //     case FMType::ThroughZero:
-    //         frequencyCarrier = frequency + modulatorSample * modulationIndex;
-    //         break;
-    //     default:
-    //         frequencyCarrier = frequency;
-    //         break;
-    //     }
-
-    //     carrier->setCalculatedFrequency(frequencyCarrier); // Set the modulated frequency
-    // }
+    if (modulationIndex > 0)
+    {
+        // TODO: Only assign once because from then on the buffers are identical
+        // If this is done on oscillator switch, modBufferL is invalid (and modBufferR valid)
+        carrier->modBufferL = &modulator->outBufferL;
+        carrier->modBufferR = &modulator->outBufferR;
+    }
 
     // --- Step 3: Generate the stereo output from the carrier oscillator ---
     // This will either be used directly (in FM mode) or mixed with the modulator signal.

@@ -2,7 +2,7 @@
 #include "clamp.h"
 
 // no FM
-static double fmNone(const double &base, const double &/*mod*/, const double &/*index*/)
+static double fmNone(const double &base, const double & /*mod*/, const double & /*index*/)
 {
     return base;
 }
@@ -30,6 +30,7 @@ Oscillator::Oscillator()
     // to avoid vtable lookup
     sampleFunc = &Oscillator::setSamplesIntern;
     computeSampleFunc = &Oscillator::noopComputeSampleFunc;
+    fmFunc = fmThroughZero;
 }
 
 // Resets the internal oscillator phase to 0.0.
@@ -155,8 +156,64 @@ void Oscillator::noopComputeSampleFunc(Oscillator *, const double &phase, double
 }
 
 // Next sample block generation
-void Oscillator::setSamplesIntern(DSPObject *)
+void Oscillator::setSamplesIntern(DSPObject *dsp)
 {
+    Oscillator *osc = static_cast<Oscillator *>(dsp);
 
+    double phase = osc->currentPhase;
+    bool wrappedFlag = false;
+    double baseFreq = osc->frequency;
+    double index = osc->modulationIndex;
+    double sr = DSP::sampleRate;
+    double phaseIncrement = osc->phaseIncrement;
+    double left, right;
+    bool negativeWrappingEnabled = osc->negativeWrappingEnabled;
+    size_t blocksize = DSP::blockSize;
+
+    if (index > 0.0)
+    {
+        for (size_t i = 0; i < blocksize; ++i)
+        {
+            double mod = 0.5 * ((*osc->modBufferL)[i] + (*osc->modBufferR)[i]);
+            double freq = osc->fmFunc(baseFreq, mod, index);
+            double inc = freq / sr;
+
+            phase += inc;
+
+            if (phase >= 1.0)
+            {
+                phase -= 1.0;
+                wrappedFlag = true;
+            }
+            else if (phase < 0.0 && negativeWrappingEnabled)
+            {
+                phase += 1.0;
+                wrappedFlag = true;
+            }
+
+            osc->computeSampleFunc(osc, phase, left, right);
+            osc->outBufferL[i] = left;
+            osc->outBufferR[i] = right;
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < blocksize; ++i)
+        {
+            phase += phaseIncrement;
+
+            if (phase >= 1.0)
+            {
+                phase -= 1.0;
+                wrappedFlag = true;
+            }
+
+            osc->computeSampleFunc(osc, phase, left, right);
+            osc->outBufferL[i] = left;
+            osc->outBufferR[i] = right;
+        }
+    }
+
+    osc->currentPhase = phase;
+    osc->wrapped = wrappedFlag;
 }
-
