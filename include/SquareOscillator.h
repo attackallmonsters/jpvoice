@@ -17,8 +17,8 @@ public:
     void setDutyCycle(double value) override;
 
 private:
-    // Next sample block generation
-    static void setSamplesIntern(DSPObject *dsp);
+    // Sample calculation without looking up vtable
+    static void computeSampleFuncIntern(Oscillator *, const double &, double &, double &);
     
     double dutyCycle = 0.5; // Duty cycle for square oscillator
 };

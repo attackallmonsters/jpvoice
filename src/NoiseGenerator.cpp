@@ -4,8 +4,7 @@
 // Constructor: seeds RNG and sets noise type
 NoiseGenerator::NoiseGenerator()
 {
-    // to avoid vtable lookup
-    sampleFunc = &NoiseGenerator::setSamplesIntern;
+    computeSampleFunc = &NoiseGenerator::computeSampleFuncIntern;
 
     // WHite noise is default
     setType(NoiseType::White);
@@ -21,36 +20,32 @@ void NoiseGenerator::setType(NoiseType type)
     noiseType = type;
 }
 
-// Next sample block generation
-void NoiseGenerator::setSamplesIntern(DSPObject *dsp)
+void NoiseGenerator::computeSampleFuncIntern(Oscillator *osc, const double & /*phase*/, double &left, double &right)
 {
-    NoiseGenerator *osc = static_cast<NoiseGenerator *>(dsp);
+    NoiseGenerator *noise = static_cast<NoiseGenerator *>(osc);
 
-    for (size_t i = 0; i < DSP::blockSize; ++i)
+    // Generate white noise sample in range [-1.0, 1.0]
+    double white = noise->dist(noise->rng);
+
+    // If white noise is selected, return it directly
+    if (noise->noiseType == NoiseType::White)
     {
-        // Generate white noise sample in range [-1.0, 1.0]
-        double white = osc->dist(osc->rng);
-
-        // If white noise is selected, return it directly
-        if (osc->noiseType == NoiseType::White)
-        {
-            osc->outBufferL[i] = osc->outBufferR[i] = white;
-            continue;
-        }
-
-        // --- Paul Kellet's Pink Noise Filter ---
-        // Each term simulates a low-pass filter with different time constants
-        // The coefficients are empirically derived for pink noise behavior
-        osc->b0 = 0.99886 * osc->b0 + white * 0.0555179;
-        osc->b1 = 0.99332 * osc->b1 + white * 0.0750759;
-        osc->b2 = 0.96900 * osc->b2 + white * 0.1538520;
-        osc->b3 = 0.86650 * osc->b3 + white * 0.3104856;
-        osc->b4 = 0.55000 * osc->b4 + white * 0.5329522;
-        osc->b5 = -0.7616 * osc->b5 - white * 0.0168980;
-        double pink = osc->b0 + osc->b1 + osc->b2 + osc->b3 + osc->b4 + osc->b5 + osc->b6 + white * 0.5362;
-        osc->b6 = white * 0.115926;
-
-        // Scale output to normalize level (empirical factor)
-        osc->outBufferL[i] = osc->outBufferR[i] = pink * 0.11;
+        left = right = white;
+        return;
     }
+
+    // --- Paul Kellet's Pink Noise Filter ---
+    // Each term simulates a low-pass filter with different time constants
+    // The coefficients are empirically derived for pink noise behavior
+    noise->b0 = 0.99886 * noise->b0 + white * 0.0555179;
+    noise->b1 = 0.99332 * noise->b1 + white * 0.0750759;
+    noise->b2 = 0.96900 * noise->b2 + white * 0.1538520;
+    noise->b3 = 0.86650 * noise->b3 + white * 0.3104856;
+    noise->b4 = 0.55000 * noise->b4 + white * 0.5329522;
+    noise->b5 = -0.7616 * noise->b5 - white * 0.0168980;
+    double pink = noise->b0 + noise->b1 + noise->b2 + noise->b3 + noise->b4 + noise->b5 + noise->b6 + white * 0.5362;
+    noise->b6 = white * 0.115926;
+
+    // Scale output to normalize level (empirical factor)
+    left = right = pink * 0.11;
 }

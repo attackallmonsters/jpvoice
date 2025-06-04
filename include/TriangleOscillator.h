@@ -3,8 +3,6 @@
 #pragma once
 
 #include "Oscillator.h"
-#include <vector>
-#include <cmath>
 
 // Triangle oscillator generates triangle waveform
 class TriangleOscillator : public Oscillator
@@ -14,6 +12,6 @@ public:
     TriangleOscillator();
 
 private:
-    // Next sample block generation
-    static void setSamplesIntern(DSPObject *dsp);
+    // Sample calculation without looking up vtable
+    static void computeSampleFuncIntern(Oscillator *, const double &, double &, double &);
 };

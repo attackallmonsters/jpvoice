@@ -28,6 +28,21 @@ Voice::~Voice()
     delete triangleModulator;
 }
 
+// Sets the type of FM to use
+void Voice::setFMType(FMType fm)
+{
+    fmType = fm;
+    carrier->setFMType(fmType);
+}
+
+// Sets the modulation index for frequency modulation.
+// This controls the intensity of the frequency modulation effect.
+void Voice::setFMModIndex(double index)
+{
+    modulationIndex = index;
+    carrier->setFMModIndex(modulationIndex);
+}
+
 // Enables or disables oscillator synchronization.
 // When enabled and carrier wraps its phase, modulator will be reset to phase 0.
 void Voice::setSyncEnabled(bool enabled)
@@ -55,33 +70,6 @@ void Voice::setFineTune(double fine)
 {
     fineTune = clamp(fine, -100.0, 100.0);
     modulator->setFineTune(fineTune);
-}
-
-// Sets the type of FM to use
-void Voice::setFMType(FMType fm)
-{
-    fmType = fm;
-    negativeWrappingEnabled = fmType == FMType::ThroughZero;
-    carrier->setNegativeWrappingEnabled(negativeWrappingEnabled);
-
-    if (fmType == FMType::Relative && modulationIndex > 30.0)
-    {
-        setFMModIndex(30);
-    }
-}
-
-// Sets the modulation index for frequency modulation.
-// This controls the intensity of the frequency modulation effect.
-void Voice::setFMModIndex(double index)
-{
-    double modmax = (fmType == FMType::Relative) ? 30 : 1000;
-    modulationIndex = clamp(index, 0.0, modmax);
-
-    if (modulationIndex == 0)
-    {
-        carrier->setFrequency(frequency);
-        return;
-    }
 }
 
 // Enables negative phase wrapping
@@ -163,6 +151,9 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 
     carrierTmp->setFrequency(f);
     carrier->setNegativeWrappingEnabled(negativeWrappingEnabled);
+    carrier->setFMType(fmType);
+    carrier->setFMModIndex(modulationIndex);
+    
     applyOscillators = true;
 }
 
@@ -342,7 +333,7 @@ void Voice::computeSamples()
     // filter->bufferR = &mixBufferR;
 
     // Calculate the samples to be filtered
-    //filter->setSamples();
+    // filter->setSamples();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)

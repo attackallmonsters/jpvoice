@@ -12,6 +12,8 @@ struct SupersawVoice
     double phase;
     double detune_ratio;
     double amp_ratio;
+    double gainL;
+    double gainR;
 };
 
 constexpr int NUM_VOICES = 7;
@@ -33,8 +35,8 @@ public:
     void setDetune(double value) override;
 
 private:
-    // Next sample block generation
-    static void setSamplesIntern(DSPObject *dsp);
+    // Sample calculation without looking up vtable
+    static void computeSampleFuncIntern(Oscillator *, const double &, double &, double &);
     
     SupersawVoice voices[NUM_VOICES]; // All detuned voices
     double detune = 0.0;              // Voices detune

@@ -27,6 +27,13 @@ public:
     // Destructor: deletes both oscillator instances
     ~Voice();
 
+    // Sets the type of FM to use
+    void setFMType(FMType fm);
+
+    // Sets the modulation index for frequency modulation.
+    // This controls the intensity of the frequency modulation effect.
+    void setFMModIndex(double index);
+
     // Enables or disables oscillator sync
     void setSyncEnabled(bool enabled);
 
@@ -38,12 +45,6 @@ public:
 
     // Sets the fine tunig for the modulator
     void setFineTune(double fine);
-
-    // Sets the type of FM to use
-    void setFMType(FMType fm);
-
-    // Sets the modulation index used when FM is active
-    void setFMModIndex(double index);
 
     // Enables negative phase wrapping
     void setNegativeWrappingEnabled(bool enabled);
@@ -111,13 +112,14 @@ private:
 
     double frequency = 220.0; // Current frequency
 
-    double oscmix = 0.0;                 // Mix carrier <=> modulator
-    double noisemix = 0.0;               // Mix oscillators <=> noise
-    bool syncEnabled = false;            // True if Sync is active
     FMType fmType = FMType::ThroughZero; // The FM operation mode
-    bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
     double modulationIndex = 0;          // FM depth: how much modulator modulates carrier
 
+    double oscmix = 0.0;                 // Mix carrier <=> modulator
+    double noisemix = 0.0;               // Mix oscillators <=> noise
+    bool syncEnabled = false;            // True if Sync is active    
+    bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
+    
     double detune = 0;       // Detune factor supersaw oszillator
     double pulseWidth = 0.5; // Pulse width square oscillator
     double pitchOffset = 0;  // Pitch offset modulator

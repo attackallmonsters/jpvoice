@@ -18,8 +18,8 @@ public:
     void setType(NoiseType type);
 
 private:
-    // Next sample block generation
-    static void setSamplesIntern(DSPObject *dsp);
+    // Sample calculation without looking up vtable
+    static void computeSampleFuncIntern(Oscillator *, const double &, double &, double &);
 
     // Random number generator for white noise source
     std::mt19937 rng;
