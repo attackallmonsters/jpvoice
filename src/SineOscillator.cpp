@@ -6,14 +6,14 @@ SineOscillator::SineOscillator()
     sampleFunc = &SineOscillator::setSamplesIntern;
 }
 
-void SineOscillator::setSamplesIntern(DSP *dsp)
+void SineOscillator::setSamplesIntern(DSPObject *dsp)
 {
     SineOscillator *osc = static_cast<SineOscillator *>(dsp);
 
     double phase = osc->currentPhase;
     bool wrapped = false;
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Update phase – phaseIncrement may be positive (normal FM) or negative (through-zero FM)
         phase += osc->phaseIncrement;
@@ -32,7 +32,7 @@ void SineOscillator::setSamplesIntern(DSP *dsp)
 
         // Generate sine wave: use 2π * phase
         // Direction of phase naturally controls direction of waveform
-        osc->BufferLeft[i] = osc->BufferRight[i] = std::sin(phase * 2.0 * M_PI);
+        osc->outBufferL[i] = osc->outBufferR[i] = std::sin(phase * 2.0 * M_PI);
     }
 
     osc->currentPhase = phase;

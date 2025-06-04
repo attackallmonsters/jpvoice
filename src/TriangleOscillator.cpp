@@ -7,14 +7,14 @@ TriangleOscillator::TriangleOscillator()
 }
 
 // Next sample block generation
-void TriangleOscillator::setSamplesIntern(DSP *dsp)
+void TriangleOscillator::setSamplesIntern(DSPObject *dsp)
 {
     TriangleOscillator *osc = static_cast<TriangleOscillator *>(dsp);
 
     double phase = osc->currentPhase;
     bool wrapped = false;
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Compute the phase increment based on the current frequency and sample rate
         phase += osc->phaseIncrement;
@@ -33,7 +33,7 @@ void TriangleOscillator::setSamplesIntern(DSP *dsp)
 
         // Triangle waveform: linear ramp up and down from -1 to +1
         // Formula: 4 * |x - 0.5| - 1 for x in [0, 1)
-        osc->BufferLeft[i] = osc->BufferRight[i] = 4.0 * std::abs(phase - 0.5) - 1.0;
+        osc->outBufferL[i] = osc->outBufferR[i] = 4.0 * std::abs(phase - 0.5) - 1.0;
     }
 
     osc->currentPhase = phase;

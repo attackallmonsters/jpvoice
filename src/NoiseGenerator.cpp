@@ -22,11 +22,11 @@ void NoiseGenerator::setType(NoiseType type)
 }
 
 // Next sample block generation
-void NoiseGenerator::setSamplesIntern(DSP *dsp)
+void NoiseGenerator::setSamplesIntern(DSPObject *dsp)
 {
     NoiseGenerator *osc = static_cast<NoiseGenerator *>(dsp);
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Generate white noise sample in range [-1.0, 1.0]
         double white = osc->dist(osc->rng);
@@ -34,7 +34,7 @@ void NoiseGenerator::setSamplesIntern(DSP *dsp)
         // If white noise is selected, return it directly
         if (osc->noiseType == NoiseType::White)
         {
-            osc->BufferLeft[i] = osc->BufferRight[i] = white;
+            osc->outBufferL[i] = osc->outBufferR[i] = white;
             continue;
         }
 
@@ -51,6 +51,6 @@ void NoiseGenerator::setSamplesIntern(DSP *dsp)
         osc->b6 = white * 0.115926;
 
         // Scale output to normalize level (empirical factor)
-        osc->BufferLeft[i] = osc->BufferRight[i] = pink * 0.11;
+        osc->outBufferL[i] = osc->outBufferR[i] = pink * 0.11;
     }
 }

@@ -6,7 +6,7 @@
 
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
-Voice::Voice() : carrier(nullptr), modulator(nullptr)
+Voice::Voice()
 {
     carrier = supersawCarrier;
     modulator = sineModulator;
@@ -309,12 +309,12 @@ void Voice::computeSamples()
     amp_osc_noise = std::cos(noisemix * 0.5 * M_PI);
     amp_noise = std::sin(noisemix * 0.5 * M_PI);
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        double carrierLeft = carrier->BufferLeft[i];
-        double carrierRight = carrier->BufferRight[i];
-        double modLeft = modulator->BufferLeft[i];
-        double modRight = modulator->BufferRight[i];
+        double carrierLeft = carrier->outBufferL[i];
+        double carrierRight = carrier->outBufferR[i];
+        double modLeft = modulator->outBufferL[i];
+        double modRight = modulator->outBufferR[i];
 
         // Mix mit Feedback
         double mixL = amp_carrier * (carrierLeft + lastSampleCarrierLeft) + amp_modulator * (modLeft + lastSampleModulatorLeft);
@@ -328,21 +328,21 @@ void Voice::computeSamples()
         // Noise (optional)
         if (noisemix > 0)
         {
-            mixL = amp_osc_noise * mixL + amp_noise * noise->BufferLeft[i];
-            mixR = amp_osc_noise * mixR + amp_noise * noise->BufferRight[i];
+            mixL = amp_osc_noise * mixL + amp_noise * noise->outBufferL[i];
+            mixR = amp_osc_noise * mixR + amp_noise * noise->outBufferR[i];
         }
 
-        // Clipping (optional)
-        BufferLeft[i] = fast_tanh(mixL);
-        BufferRight[i] = fast_tanh(mixR);
+        // Clipping
+        mixBufferL[i] = fast_tanh(mixL);
+        mixBufferR[i] = fast_tanh(mixR);
     }
 
-    // Step 6: assign buffer to ladder filter
-    filter->copyBuffer(BufferLeft, BufferRight);
-    // Calculate filterd samples
-    filter->setSamples();
-    // copy back to this instance
-    copyBuffer(filter->BufferLeft, filter->BufferRight);
+    // Step 6: assign buffers to ladder filter
+    // filter->bufferL = &mixBufferL;
+    // filter->bufferR = &mixBufferR;
+
+    // Calculate the samples to be filtered
+    //filter->setSamples();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)
@@ -373,10 +373,10 @@ void Voice::computeSamples()
         }
 
         // Apply fade to entire output buffer
-        for (int i = 0; i < DSP::blockSize; ++i)
+        for (size_t i = 0; i < DSP::blockSize; ++i)
         {
-            BufferLeft[i] *= fadeValue;
-            BufferRight[i] *= fadeValue;
+            mixBufferL[i] *= fadeValue;
+            mixBufferR[i] *= fadeValue;
         }
     }
 }

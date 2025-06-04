@@ -4,8 +4,11 @@
 #include <algorithm>
 
 // Constructor with optional initial size (default: 1024 samples)
-DSPBuffer::DSPBuffer(size_t size = 1024)
-    : buffer(size, 0.0) {}
+DSPBuffer::DSPBuffer()
+{
+    buffer.resize(1024, 0.0);
+    bufferOrig = &buffer;
+}
 
 // Resize the internal buffer and initialize new elements to 0.0
 void DSPBuffer::resize(size_t newSize)
@@ -77,22 +80,15 @@ void DSPBuffer::set(const double *source)
 }
 
 // Switches the current buffer to a source buffer (shallow reference switch)
-void DSPBuffer::switchTo(DSPBuffer& buf)
+void DSPBuffer::switchTo(DSPBuffer &buf)
 {
-    if (!bufferOrig)
-        bufferOrig = &buffer; // Save current buffer
-
     buffer = std::move(buf.buffer); // Move external buffer in
 }
 
 // Restores the buffer reference previously changed with switchTo
 void DSPBuffer::restore()
 {
-    if (bufferOrig)
-    {
-        buffer = std::move(*bufferOrig); // Restore saved buffer
-        bufferOrig = nullptr;
-    }
+    buffer = std::move(*bufferOrig); // Restore saved buffer
 }
 
 // Create and return a deep copy of this buffer

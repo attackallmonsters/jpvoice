@@ -2,6 +2,8 @@
 
 #include "Oscillator.h"
 #include "VoiceOptions.h"
+#include "DSP.h"
+#include "DSPObject.h"
 #include <random>
 
 // A subclass of Oscillator that generates noise instead of periodic waveforms.
@@ -17,7 +19,7 @@ public:
 
 private:
     // Next sample block generation
-    static void setSamplesIntern(DSP *dsp);
+    static void setSamplesIntern(DSPObject *dsp);
 
     // Random number generator for white noise source
     std::mt19937 rng;

@@ -49,7 +49,7 @@ void LadderFilter::setFilterStage(FilterStage stage)
 }
 
 // Next sample block generation
-void LadderFilter::setSamplesIntern(DSP *dsp)
+void LadderFilter::setSamplesIntern(DSPObject *dsp)
 {
     LadderFilter *flt = static_cast<LadderFilter *>(dsp);
 
@@ -70,10 +70,10 @@ void LadderFilter::setSamplesIntern(DSP *dsp)
     else
         compensation = 1.0 / std::pow(1.0 + g, 1.0);
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        double left = flt->BufferLeft[i];
-        double right = flt->BufferRight[i];
+        double left = (*flt->bufferL)[i];
+        double right = (*flt->bufferR)[i];
 
         // Feedback calculation
         double inputL, inputR;
@@ -103,13 +103,13 @@ void LadderFilter::setSamplesIntern(DSP *dsp)
 
         if (flt->filterStage == FilterStage::TwoPole)
         {
-            flt->BufferLeft[i] = fast_tanh(s2L * compensation);
-            flt->BufferRight[i] = fast_tanh(s2R * compensation);
+            (*flt->bufferL)[i] = fast_tanh(s2L * compensation);
+            (*flt->bufferR)[i] = fast_tanh(s2R * compensation);
         }
         else
         {
-            flt->BufferLeft[i] = fast_tanh(s4L * compensation);
-            flt->BufferRight[i] = fast_tanh(s4R * compensation);
+            (*flt->bufferL)[i] = fast_tanh(s4L * compensation);
+            (*flt->bufferR)[i] = fast_tanh(s4R * compensation);
         }
     }
 

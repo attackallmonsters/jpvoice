@@ -9,7 +9,6 @@ double DSP::sampleRate = 44100.0;
 DSP::DSP()
 {
     sampleRate = 44100.0;
-    sampleFunc = noopSampleFunc;
 }
 
 // Destructor
@@ -27,15 +26,4 @@ void DSP::setBlockSize(size_t size)
 void DSP::setSampleRate(double rate)
 {
     sampleRate = clampmin(rate, 1.0);
-}
-
-// Gets the current sampling rate
-double DSP::getSampleRate() const
-{
-    return sampleRate;
-}
-
-// Dummy SampleFunc
-void DSP::noopSampleFunc(DSP *)
-{
 }

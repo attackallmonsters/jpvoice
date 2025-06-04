@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "VoiceOptions.h"
 #include "DSP.h"
+#include "DSPObject.h"
 
 enum class FilterStage
 {
@@ -12,7 +13,7 @@ enum class FilterStage
 
 // A zero-delay feedback (ZDF) multimode filter using the TPT (Topology-Preserving Transform) structure.
 // This filter provides 12 dB/oct lowpass, highpass, and bandpass outputs, switchable via setMode().
-class LadderFilter : public DSP
+class LadderFilter : public DSPObject
 {
 public:
     // Constructor: sets sample rate and initializes internal state and coefficients
@@ -36,9 +37,12 @@ public:
     // Reset the internal state variables
     void reset();
 
+    // The samples to be filtered
+    DSPBuffer *bufferL;
+    DSPBuffer *bufferR;
 private:
     // Next sample block generation
-    static void setSamplesIntern(DSP *dsp);
+    static void setSamplesIntern(DSPObject *dsp);
 
     FilterStage filterStage; // filter calculation stages
 

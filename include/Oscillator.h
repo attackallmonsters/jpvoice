@@ -3,13 +3,14 @@
 #include <cmath>
 #include "clamp.h"
 #include "DSP.h"
+#include "DSPObject.h"
 #include "DSPBuffer.h"
 
 // Abstract base class for all oscillator types.
 // This class provides a common interface and shared internal phase state
 // for generating periodic waveforms based on frequency and sample rate.
 // Concrete subclasses must implement their specific waveform behavior.
-class Oscillator : public DSP
+class Oscillator : public DSPObject
 {
 public:
     // Oscillator is initialized with current phase
@@ -98,9 +99,12 @@ public:
     }
 
     // Input buffer for FM, etc.
-    DSPBuffer inBuffer;
-    // Output buffer
-    DSPBuffer outBuffer;
+    DSPBuffer *inBufferL;
+    DSPBuffer *inBufferR;
+
+    // Input buffer for FM, etc.
+    DSPBuffer outBufferL;
+    DSPBuffer outBufferR;
 
 protected:
     bool syncEnabled;                    // Enables or disable block wise phase synchronization

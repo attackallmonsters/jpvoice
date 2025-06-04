@@ -9,7 +9,7 @@ class DSPBuffer
 {
 public:
     // Constructor with optional initial size (default: 1024 samples)
-    explicit DSPBuffer(size_t size);
+    explicit DSPBuffer();
 
     // Resize the internal buffer and initialize new elements to 0.0
     void resize(size_t newSize);

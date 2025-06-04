@@ -21,14 +21,14 @@ void SupersawOscillator::setDetune(double value)
 }
 
 // Next sample block generation
-void SupersawOscillator::setSamplesIntern(DSP *dsp)
+void SupersawOscillator::setSamplesIntern(DSPObject *dsp)
 {
-    SupersawOscillator *osc = static_cast<SupersawOscillator *>(dsp);
+    SupersawOscillator *osc = static_cast<SupersawOscillator *>(dsp); 
 
     bool wrapped = false;
     double left, right;
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         left = right = 0.0;
 
@@ -70,8 +70,8 @@ void SupersawOscillator::setSamplesIntern(DSP *dsp)
         }
 
         // Normalize output
-        osc->BufferLeft[i] = left * osc->norm;
-        osc->BufferRight[i] = right * osc->norm;
+        osc->outBufferL[i] = left * osc->norm;
+        osc->outBufferR[i] = right * osc->norm;
     }
 
     osc->wrapped = wrapped;

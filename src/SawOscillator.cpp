@@ -7,14 +7,14 @@ SawOscillator::SawOscillator()
 }
 
 // Next sample block generation
-void SawOscillator::setSamplesIntern(DSP *dsp)
+void SawOscillator::setSamplesIntern(DSPObject *dsp)
 {
     SawOscillator *osc = static_cast<SawOscillator *>(dsp);
 
     double phase = osc->currentPhase;
     bool wrapped = false;
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         // Compute phase increment and update phase
         phase += osc->phaseIncrement;
@@ -32,7 +32,7 @@ void SawOscillator::setSamplesIntern(DSP *dsp)
         }
 
         // Raw sawtooth signal from -1.0 to +1.0
-        osc->BufferLeft[i] = osc->BufferRight[i] = 2.0 * phase - 1.0;
+        osc->outBufferL[i] = osc->outBufferR[i] = 2.0 * phase - 1.0;
     }
 
     osc->currentPhase = phase;

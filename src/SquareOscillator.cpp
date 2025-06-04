@@ -7,14 +7,14 @@ SquareOscillator::SquareOscillator()
     sampleFunc = &SquareOscillator::setSamplesIntern;
 }
 
-void SquareOscillator::setSamplesIntern(DSP *dsp)
+void SquareOscillator::setSamplesIntern(DSPObject *dsp)
 {
     SquareOscillator *osc = static_cast<SquareOscillator *>(dsp);
 
     double phase = osc->currentPhase;
     bool wrapped = false;
 
-    for (int i = 0; i < DSP::blockSize; ++i)
+    for (size_t i = 0; i < DSP::blockSize; ++i)
     {
         phase += osc->phaseIncrement;
         
@@ -31,7 +31,7 @@ void SquareOscillator::setSamplesIntern(DSP *dsp)
         }
 
         // Generate square wave: output +1.0 if phase is less than dutyCycle, else -1.0
-        osc->BufferLeft[i] = osc->BufferRight[i] = (phase < osc->dutyCycle) ? 1.0 : -1.0;
+        osc->outBufferL[i] = osc->outBufferR[i] = (phase < osc->dutyCycle) ? 1.0 : -1.0;
     }
 
     osc->currentPhase = phase;

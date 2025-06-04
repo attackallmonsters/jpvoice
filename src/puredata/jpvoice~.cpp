@@ -368,8 +368,8 @@ t_int *jpvoice_tilde_perform(t_int *w)
     x->voice->setResonance(reso);
     x->voice->computeSamples();
 
-    double* bufL = x->voice->BufferLeft;
-    double* bufR = x->voice->BufferRight;
+    double* bufL = x->voice->mixBufferL.data();
+    double* bufR = x->voice->mixBufferR.data();
 
     for (int i = 0; i < n; ++i)
     {

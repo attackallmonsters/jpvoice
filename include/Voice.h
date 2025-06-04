@@ -99,6 +99,9 @@ public:
     // Next sample block generation
     void computeSamples();
 
+    DSPBuffer mixBufferL;  // Mixing buffer left channel
+    DSPBuffer mixBufferR;  // Mixing buffer right channel
+
 private:
     Oscillator *carrier;           // Carrier oscillator (may be modulated)
     Oscillator *modulator;         // Modulator oscillator (for FM or sync)

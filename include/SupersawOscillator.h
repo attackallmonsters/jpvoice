@@ -34,7 +34,7 @@ public:
 
 private:
     // Next sample block generation
-    static void setSamplesIntern(DSP *dsp);
+    static void setSamplesIntern(DSPObject *dsp);
     
     SupersawVoice voices[NUM_VOICES]; // All detuned voices
     double detune = 0.0;              // Voices detune

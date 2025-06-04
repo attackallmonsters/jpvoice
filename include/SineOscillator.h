@@ -15,5 +15,5 @@ public:
 
 private:
     // Next sample block generation
-    static void setSamplesIntern(DSP *dsp);
+    static void setSamplesIntern(DSPObject *dsp);
 };

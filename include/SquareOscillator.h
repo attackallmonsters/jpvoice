@@ -18,7 +18,7 @@ public:
 
 private:
     // Next sample block generation
-    static void setSamplesIntern(DSP *dsp);
+    static void setSamplesIntern(DSPObject *dsp);
     
     double dutyCycle = 0.5; // Duty cycle for square oscillator
 };
