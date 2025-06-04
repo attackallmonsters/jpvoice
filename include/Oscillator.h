@@ -3,6 +3,7 @@
 #include <cmath>
 #include "clamp.h"
 #include "DSP.h"
+#include "DSPBuffer.h"
 
 // Abstract base class for all oscillator types.
 // This class provides a common interface and shared internal phase state
@@ -95,6 +96,11 @@ public:
     {
         wrapped = false;
     }
+
+    // Input buffer for FM, etc.
+    DSPBuffer inBuffer;
+    // Output buffer
+    DSPBuffer outBuffer;
 
 protected:
     bool syncEnabled;                    // Enables or disable block wise phase synchronization

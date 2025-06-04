@@ -2,7 +2,7 @@
 #include "DSP.h"
 #include <cstring>
 
-int DSP::blockSize = 64;
+size_t DSP::blockSize = 64;
 double DSP::sampleRate = 44100.0;
 
 // Contructor
@@ -18,7 +18,7 @@ DSP::~DSP()
 }
 
 // Sets the block size
-void DSP::setBlockSize(int size)
+void DSP::setBlockSize(size_t size)
 {
     blockSize = size;
 }
@@ -33,19 +33,6 @@ void DSP::setSampleRate(double rate)
 double DSP::getSampleRate() const
 {
     return sampleRate;
-}
-
-// Copies external buffers to the internal buffers
-void DSP::copyBuffer(double *srcBufL, double *srcBufR)
-{
-    std::memcpy(BufferLeft, srcBufL, sizeof(double) * blockSize);
-    std::memcpy(BufferRight, srcBufR, sizeof(double) * blockSize);
-}
-
-// Generates the next audio sample block
-void DSP::setSamples()
-{
-    (*sampleFunc)(this);
 }
 
 // Dummy SampleFunc

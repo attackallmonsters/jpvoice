@@ -24,6 +24,7 @@ BIN_DIR = out
 # === Pure Data sources ===
 PD_SOURCES = \
 	$(SRC_DIR)/DSP.cpp \
+	$(SRC_DIR)/DSPBuffer.cpp \
 	$(SRC_DIR)/Voice.cpp \
 	$(SRC_DIR)/SupersawOscillator.cpp \
 	$(SRC_DIR)/SineOscillator.cpp \
