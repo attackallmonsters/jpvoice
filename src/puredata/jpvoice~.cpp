@@ -18,6 +18,9 @@ typedef struct _jpvoice
     double left;
     double right;
     double samplerate;
+
+    DSPBuffer *cutoffBuf;
+    DSPBuffer *resoBuf;
 } t_jpvoice;
 
 // Frequency of carrier set via list [f1 freq(
@@ -299,9 +302,10 @@ void jpvoice_tilde_cutoff(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    double fc = atom_getfloat(argv);
+    double cf = atom_getfloat(argv);
 
-    x->voice->setCutoffFrequency(fc);
+    x->cutoffBuf->fill(cf);
+    x->voice->setCutoffFrequency(x->cutoffBuf);
 }
 
 void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
@@ -314,7 +318,8 @@ void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     double r = atom_getfloat(argv);
 
-    x->voice->setResonance(r * 10.0);
+    x->resoBuf->fill(r);
+    x->voice->setCutoffFrequency(x->resoBuf);
 }
 
 void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
@@ -330,42 +335,22 @@ void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setDrive(d * 20.0);
 }
 
-void jpvoice_tilde_stages(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
-{
-    if (argc < 1)
-    {
-        post("[jpvoice~] usage: stage (0 = two pole, 1 = four pole)");
-        return;
-    }
-
-    int s = atom_getint(argv);
-
-    switch (s)
-    {
-    case 0:
-        x->voice->setFilterStage(FilterStage::TwoPole);
-        break;
-    case 1:
-        x->voice->setFilterStage(FilterStage::FourPole);
-        break;
-    default:
-        x->voice->setFilterStage(FilterStage::TwoPole);
-        break;
-    }
-}
-
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
     t_jpvoice *x = (t_jpvoice *)(w[1]);
-    float cutoff = static_cast<float>(((t_sample *)(w[2]))[0]);
-    float reso = static_cast<float>(((t_sample *)(w[3]))[0]);
+    t_sample *cutoff = (t_sample *)(w[2]);
+    t_sample *reso = (t_sample *)(w[3]);
     t_sample *outL = (t_sample *)(w[4]);
     t_sample *outR = (t_sample *)(w[5]);
     int n = (int)(w[6]);
 
-    x->voice->setCutoffFrequency(cutoff);
-    x->voice->setResonance(reso);
+    x->cutoffBuf->set(cutoff);
+    x->voice->setCutoffFrequency(x->cutoffBuf);
+
+    x->resoBuf->set(reso);
+    x->voice->setResonance(x->resoBuf);
+
     x->voice->computeSamples();
 
     double* bufL = x->voice->mixBufferL.data();
@@ -410,6 +395,9 @@ void *jpvoice_tilde_new()
     x->left_out = outlet_new(&x->x_obj, &s_signal);
     x->right_out = outlet_new(&x->x_obj, &s_signal);
 
+    x->cutoffBuf = new DSPBuffer();
+    x->resoBuf = new DSPBuffer();
+
     return (void *)x;
 }
 
@@ -422,6 +410,8 @@ void jpvoice_tilde_free(t_jpvoice *x)
     outlet_free(x->right_out);
 
     delete x->voice;
+    delete x->cutoffBuf;
+    delete x->resoBuf;
 }
 
 // Setup function
@@ -453,5 +443,4 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_stages, gensym("stages"), A_GIMME, 0);
 }

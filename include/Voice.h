@@ -8,7 +8,7 @@
 #include "SawOscillator.h"
 #include "TriangleOscillator.h"
 #include "SquareOscillator.h"
-#include "LadderFilter.h"
+#include "MS20Filter.h"
 #include "DSP.h"
 
 // The PI
@@ -86,16 +86,13 @@ public:
     void setFilterMode(FilterMode mode);
 
     // Sets the cutoff frequency
-    void setCutoffFrequency(double frequency);
+    void setCutoffFrequency(DSPBuffer *buffer);
 
     // Sets the filter resonance
-    void setResonance(double value);
+    void setResonance(DSPBuffer *buffer);
 
     // Sets the filter drive
     void setDrive(double value);
-
-    // Sets the filter stage
-    void setFilterStage(FilterStage stage);
 
     // Next sample block generation
     void computeSamples();
@@ -142,7 +139,7 @@ private:
     TriangleOscillator *triangleModulator = new TriangleOscillator();
     
     // Multi mode filter
-    LadderFilter *filter = new LadderFilter();
+    MS20Filter *filter = new MS20Filter();
 
     // DSP working vars
     double carrierSampleLeft, carrierSampleRight;

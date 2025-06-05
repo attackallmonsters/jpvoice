@@ -217,27 +217,21 @@ void Voice::setFilterMode(FilterMode /*mode*/)
 }
 
 // Sets the cutoff frequency
-void Voice::setCutoffFrequency(double frequency)
+void Voice::setCutoffFrequency(DSPBuffer *buffer)
 {
-    filter->setCutoff(frequency);
+    filter->setCutoff(buffer);
 }
 
 // Sets the filter resonance
-void Voice::setResonance(double value)
+void Voice::setResonance(DSPBuffer *buffer)
 {
-    filter->setResonance(value);
+    filter->setResonance(buffer);
 }
 
 // Sets the filter drive
-void Voice::setDrive(double value)
+void Voice::setDrive(double /*value*/)
 {
-    filter->setDrive(value);
-}
-
-// Sets the filter stage
-void Voice::setFilterStage(FilterStage stage)
-{
-    filter->setFilterStage(stage);
+    //filter->setDrive(value);
 }
 
 // Next sample block generation
@@ -311,11 +305,10 @@ void Voice::computeSamples()
     }
 
     // Step 6: assign buffers to ladder filter
-    // filter->bufferL = &mixBufferL;
-    // filter->bufferR = &mixBufferR;
+    filter->setSampleBuffers(&mixBufferL, &mixBufferR);
 
     // Calculate the samples to be filtered
-    // filter->setSamples();
+    filter->setSamples();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)

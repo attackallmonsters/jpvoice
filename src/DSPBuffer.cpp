@@ -20,7 +20,7 @@ void DSPBuffer::resize(size_t newSize)
 // Set all buffer elements to 0.0
 void DSPBuffer::clear()
 {
-    std::fill(buffer.begin(), buffer.end(), 0.0);
+    std::fill(buffer.begin(), buffer.begin() + DSP::blockSize, 0.0);
 }
 
 // Return a mutable pointer to the internal buffer data
@@ -77,6 +77,12 @@ void DSPBuffer::set(const float *source)
 void DSPBuffer::set(const double *source)
 {
     std::copy(source, source + DSP::blockSize, buffer.begin());
+}
+
+// Fill the buffer with a constant value
+void DSPBuffer::fill(double value)
+{
+    std::fill(buffer.begin(), buffer.begin() + DSP::blockSize, value);
 }
 
 // Switches the current buffer to a source buffer (shallow reference switch)

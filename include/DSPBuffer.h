@@ -44,6 +44,9 @@ public:
     // Copy raw data from an external double array into the buffer
     void set(const double *source);
 
+    // Fill the buffer with a constant value
+    void fill(double value);
+
     // Switches the current buffer to a source buffer.
     void switchTo(DSPBuffer &buf);
 

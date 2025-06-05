@@ -70,10 +70,14 @@ void LadderFilter::processBlock(DSPObject *dsp)
     else
         compensation = 1.0 / std::pow(1.0 + g, 1.0);
 
-    for (size_t i = 0; i < DSP::blockSize; ++i)
+    size_t blocksize = DSP::blockSize;
+    double left;
+    double right;
+
+    for (size_t i = 0; i < blocksize; ++i)
     {
-        double left = (*flt->bufferL)[i];
-        double right = (*flt->bufferR)[i];
+        left = (*flt->bufferL)[i];
+        right = (*flt->bufferR)[i];
 
         // Feedback calculation
         double inputL, inputR;
