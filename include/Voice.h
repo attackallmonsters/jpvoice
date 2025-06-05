@@ -8,7 +8,7 @@
 #include "SawOscillator.h"
 #include "TriangleOscillator.h"
 #include "SquareOscillator.h"
-#include "MS20Filter.h"
+#include "KorgonFilter.h"
 #include "DSP.h"
 #include "dsp_types.h"
 
@@ -140,7 +140,7 @@ private:
     TriangleOscillator *triangleModulator = new TriangleOscillator();
     
     // Multi mode filter
-    MS20Filter *filter = new MS20Filter();
+    KorgonFilter *filter = new KorgonFilter();
 
     // DSP working vars
     dsp_float carrierSampleLeft, carrierSampleRight;

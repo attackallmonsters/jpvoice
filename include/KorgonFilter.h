@@ -5,11 +5,11 @@
 #include "DSPBuffer.h"
 #include "dsp_types.h"
 
-class MS20Filter : public DSPObject
+class KorgonFilter : public DSPObject
 {
 public:
     // Constructor with sample rate
-    explicit MS20Filter();
+    explicit KorgonFilter();
 
     // Sets the filter drive
     void setDrive(dsp_float value);

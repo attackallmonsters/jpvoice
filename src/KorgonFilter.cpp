@@ -1,5 +1,5 @@
-// === ms20filter.cpp ===
-#include "MS20Filter.h"
+// === KorgonFilter.cpp ===
+#include "KorgonFilter.h"
 #include "DSPObject.h"
 #include "dsp_util.h"
 #include "clamp.h"
@@ -7,43 +7,43 @@
 #include "dsp_types.h"
 
 // Constructor with sample rate
-MS20Filter::MS20Filter()
+KorgonFilter::KorgonFilter()
 {
     y1L = y1R = y2L = y2R = 0.0;
     T = 1.0 / DSP::sampleRate;
     drive = 1.0;
-    registerBlockProcessor(&MS20Filter::processBlock);
+    registerBlockProcessor(&KorgonFilter::processBlock);
 }
 
 // Set the cutoff frequency and update coefficients
-void MS20Filter::setCutoff(DSPBuffer *buffer)
+void KorgonFilter::setCutoff(DSPBuffer *buffer)
 {
     cutoffBuffer = buffer;
 }
 
 // Set the resonance amount
-void MS20Filter::setResonance(DSPBuffer *buffer)
+void KorgonFilter::setResonance(DSPBuffer *buffer)
 {
     resoBuffer = buffer;
 }
 
 // Assigns the samples to process
-void MS20Filter::setSampleBuffers(DSPBuffer *samplesL, DSPBuffer *samplesR)
+void KorgonFilter::setSampleBuffers(DSPBuffer *samplesL, DSPBuffer *samplesR)
 {
     bufferL = samplesL;
     bufferR = samplesR;
 }
 
 // Sets the filter drive
-void MS20Filter::setDrive(dsp_float value)
+void KorgonFilter::setDrive(dsp_float value)
 {
     drive = clamp(value, 0.0, 1.0) * 1.0 + 1.0;
 }
 
 // Process a single sample through the MS-20 style lowpass filter
-void MS20Filter::processBlock(DSPObject *dsp)
+void KorgonFilter::processBlock(DSPObject *dsp)
 {
-    MS20Filter *flt = static_cast<MS20Filter *>(dsp);
+    KorgonFilter *flt = static_cast<KorgonFilter *>(dsp);
 
     size_t blocksize = DSP::blockSize;
     dsp_float left, right;
@@ -118,7 +118,7 @@ void MS20Filter::processBlock(DSPObject *dsp)
 }
 
 // Optional: reset internal state variables
-void MS20Filter::reset()
+void KorgonFilter::reset()
 {
     y1L = 0.0;
     y2L = 0.0;
@@ -127,7 +127,7 @@ void MS20Filter::reset()
 }
 
 // Emulate diode clipping behavior with tanh nonlinearity
-dsp_float MS20Filter::nonlinearFeedback(dsp_float s)
+dsp_float KorgonFilter::nonlinearFeedback(dsp_float s)
 {
     return s * 1.5; // Gain scales the nonlinearity
 }
