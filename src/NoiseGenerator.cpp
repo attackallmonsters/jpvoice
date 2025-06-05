@@ -1,5 +1,6 @@
 #include "NoiseGenerator.h"
 #include <chrono> // Used to seed the RNG with high-resolution time
+#include "dsp_types.h"
 
 // Constructor: seeds RNG and sets noise type
 NoiseGenerator::NoiseGenerator()
@@ -20,12 +21,12 @@ void NoiseGenerator::setType(NoiseType type)
     noiseType = type;
 }
 
-void NoiseGenerator::generateSample(Oscillator *osc, const double & /*phase*/, double &left, double &right)
+void NoiseGenerator::generateSample(Oscillator *osc, const dsp_float & /*phase*/, dsp_float &left, dsp_float &right)
 {
     NoiseGenerator *noise = static_cast<NoiseGenerator *>(osc);
 
     // Generate white noise sample in range [-1.0, 1.0]
-    double white = noise->dist(noise->rng);
+    dsp_float white = noise->dist(noise->rng);
 
     // If white noise is selected, return it directly
     if (noise->noiseType == NoiseType::White)
@@ -43,7 +44,7 @@ void NoiseGenerator::generateSample(Oscillator *osc, const double & /*phase*/, d
     noise->b3 = 0.86650 * noise->b3 + white * 0.3104856;
     noise->b4 = 0.55000 * noise->b4 + white * 0.5329522;
     noise->b5 = -0.7616 * noise->b5 - white * 0.0168980;
-    double pink = noise->b0 + noise->b1 + noise->b2 + noise->b3 + noise->b4 + noise->b5 + noise->b6 + white * 0.5362;
+    dsp_float pink = noise->b0 + noise->b1 + noise->b2 + noise->b3 + noise->b4 + noise->b5 + noise->b6 + white * 0.5362;
     noise->b6 = white * 0.115926;
 
     // Scale output to normalize level (empirical factor)

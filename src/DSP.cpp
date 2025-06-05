@@ -1,9 +1,10 @@
 #include "clamp.h"
 #include "DSP.h"
 #include <cstring>
+#include "dsp_types.h"
 
 size_t DSP::blockSize = 64;
-double DSP::sampleRate = 44100.0;
+dsp_float DSP::sampleRate = 44100.0;
 
 // Contructor
 DSP::DSP()
@@ -23,7 +24,7 @@ void DSP::setBlockSize(size_t size)
 }
 
 // Sets the audio systems current sampling rate
-void DSP::setSampleRate(double rate)
+void DSP::setSampleRate(dsp_float rate)
 {
     sampleRate = clampmin(rate, 1.0);
 }

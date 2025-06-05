@@ -5,6 +5,7 @@
 #include "Oscillator.h"
 #include <vector>
 #include <cmath>
+#include "dsp_types.h"
 
 // Squaretooth oscillator generates square waveform
 class SquareOscillator : public Oscillator
@@ -14,11 +15,11 @@ public:
     SquareOscillator();
 
     // Sets the duty cycle for PWM
-    void setDutyCycle(double value) override;
+    void setDutyCycle(dsp_float value) override;
 
 private:
     // Sample calculation without looking up vtable
-    static void generateSample(Oscillator *, const double &, double &, double &);
+    static void generateSample(Oscillator *, const dsp_float &, dsp_float &, dsp_float &);
     
-    double dutyCycle = 0.5; // Duty cycle for square oscillator
+    dsp_float dutyCycle = 0.5; // Duty cycle for square oscillator
 };

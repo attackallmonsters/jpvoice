@@ -4,6 +4,7 @@
 #include "VoiceOptions.h"
 #include "DSP.h"
 #include "DSPObject.h"
+#include "dsp_types.h"
 
 enum class FilterStage
 {
@@ -20,13 +21,13 @@ public:
     LadderFilter();
 
     // Set the cutoff frequency in Hz (limited to Nyquist range)
-    void setCutoff(double freq);
+    void setCutoff(dsp_float freq);
 
     // Set the resonance amount (typically 0.0 to ~4.0 for self-oscillation)
-    void setResonance(double res);
+    void setResonance(dsp_float res);
 
     // Set the drive amount
-    void setDrive(double drv);
+    void setDrive(dsp_float drv);
 
     // Choose filter mode: LPF12, BPF12, or HPF12
     void setMode(FilterMode mode);
@@ -47,12 +48,12 @@ private:
     FilterStage filterStage; // filter calculation stages
 
     // --- Parameters ---
-    double cutoff;         // Cutoff frequency in Hz
-    double resonance;      // Resonance amount (Q control)
-    double drive;          // filter drive
+    dsp_float cutoff;         // Cutoff frequency in Hz
+    dsp_float resonance;      // Resonance amount (Q control)
+    dsp_float drive;          // filter drive
     FilterMode filterMode; // Selected filter mode
 
     // --- Internal state ---
-    double s1L, s2L, s3L, s4L;
-    double s1R, s2R, s3R, s4R;
+    dsp_float s1L, s2L, s3L, s4L;
+    dsp_float s1R, s2R, s3R, s4R;
 };

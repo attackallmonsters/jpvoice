@@ -1,26 +1,27 @@
 #include "Oscillator.h"
 #include "clamp.h"
+#include "dsp_types.h"
 
 // no FM
-static double fmNone(const double &base, const double & /*mod*/, const double & /*index*/)
+static dsp_float fmNone(const dsp_float &base, const dsp_float & /*mod*/, const dsp_float & /*index*/)
 {
     return base;
 }
 
 // Linear FM
-static double fmLinear(const double &base, const double &mod, const double &index)
+static dsp_float fmLinear(const dsp_float &base, const dsp_float &mod, const dsp_float &index)
 {
     return base + mod * index;
 }
 
 // Relative FM
-static double fmRelative(const double &base, const double &mod, const double &index)
+static dsp_float fmRelative(const dsp_float &base, const dsp_float &mod, const dsp_float &index)
 {
     return base + mod * index * base;
 }
 
 // Trough Zero FM
-static double fmThroughZero(const double &base, const double &mod, const double &index)
+static dsp_float fmThroughZero(const dsp_float &base, const dsp_float &mod, const dsp_float &index)
 {
     return base + mod * index;
 }
@@ -47,7 +48,7 @@ void Oscillator::resetPhase()
 }
 
 // Sets the desired oscillator frequency in Hertz
-void Oscillator::setFrequency(double value)
+void Oscillator::setFrequency(dsp_float value)
 {
     frequency = clampmin(value, 0.0);
     setCalculatedFrequency(frequency);
@@ -61,7 +62,7 @@ void Oscillator::setPitchOffset(int value)
 }
 
 // Sets the fine tuning in cent
-void Oscillator::setFineTune(double value)
+void Oscillator::setFineTune(dsp_float value)
 {
     fineTune = clamp(value, -100.0, 100.0);
     setCalculatedFrequency(frequency);
@@ -76,10 +77,10 @@ void Oscillator::setNegativeWrappingEnabled(bool enabled)
 // Calculates the effective frequency based on base frequency,
 // pitch offset (in semitones), and fine-tuning (in cents).
 // Then updates the phase increment accordingly.
-void Oscillator::setCalculatedFrequency(double f)
+void Oscillator::setCalculatedFrequency(dsp_float f)
 {
     // Convert pitch offset and fine tune to a total semitone offset
-    double semitoneOffset = static_cast<double>(pitchOffset) + (fineTune / 100.0);
+    dsp_float semitoneOffset = static_cast<dsp_float>(pitchOffset) + (fineTune / 100.0);
 
     // Apply equal temperament formula: f = f0 * 2^(n/12)
     calculatedFrequency = f * std::pow(2.0, semitoneOffset / 12.0);
@@ -89,13 +90,13 @@ void Oscillator::setCalculatedFrequency(double f)
 }
 
 // Gets the current frequency
-double Oscillator::getFrequency()
+dsp_float Oscillator::getFrequency()
 {
     return frequency;
 }
 
 // Gets the calculated FM frequency
-double Oscillator::getCalculatedFrequency()
+dsp_float Oscillator::getCalculatedFrequency()
 {
     return calculatedFrequency;
 }
@@ -143,9 +144,9 @@ void Oscillator::setFMType(FMType fm)
 
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
-void Oscillator::setFMModIndex(double index)
+void Oscillator::setFMModIndex(dsp_float index)
 {
-    double modmax = (fmType == FMType::Relative) ? 30 : 1000;
+    dsp_float modmax = (fmType == FMType::Relative) ? 30 : 1000;
     modulationIndex = clamp(index, 0.0, modmax);
 
     if (modulationIndex == 0)
@@ -156,7 +157,7 @@ void Oscillator::setFMModIndex(double index)
 }
 
 // Dummy ComputeSampleFunc for setSamples
-void Oscillator::generateSample(Oscillator *, const double &phase, double &left, double &right)
+void Oscillator::generateSample(Oscillator *, const dsp_float &phase, dsp_float &left, dsp_float &right)
 {
     left = right = std::sin(phase * 2.0 * M_PI); // Sine generator
 }
@@ -166,13 +167,13 @@ void Oscillator::processBlock(DSPObject *dsp)
 {
     Oscillator *osc = static_cast<Oscillator *>(dsp);
 
-    double phase = osc->currentPhase;
+    dsp_float phase = osc->currentPhase;
     bool wrappedFlag = false;
-    double baseFreq = osc->frequency;
-    double index = osc->modulationIndex;
-    double sr = DSP::sampleRate;
-    double phaseIncrement = osc->phaseIncrement;
-    double left, right;
+    dsp_float baseFreq = osc->frequency;
+    dsp_float index = osc->modulationIndex;
+    dsp_float sr = DSP::sampleRate;
+    dsp_float phaseIncrement = osc->phaseIncrement;
+    dsp_float left, right;
     bool negativeWrappingEnabled = osc->negativeWrappingEnabled;
     size_t blocksize = DSP::blockSize;
 
@@ -180,9 +181,9 @@ void Oscillator::processBlock(DSPObject *dsp)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            double mod = 0.5 * ((*osc->modBufferL)[i] + (*osc->modBufferR)[i]);
-            double freq = osc->fmFunc(baseFreq, mod, index);
-            double inc = freq / sr;
+            dsp_float mod = 0.5 * ((*osc->modBufferL)[i] + (*osc->modBufferR)[i]);
+            dsp_float freq = osc->fmFunc(baseFreq, mod, index);
+            dsp_float inc = freq / sr;
 
             phase += inc;
 

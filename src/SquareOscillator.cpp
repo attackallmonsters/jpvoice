@@ -1,5 +1,6 @@
 #include "SquareOscillator.h"
 #include "clamp.h"
+#include "dsp_types.h"
 
 SquareOscillator::SquareOscillator()
 {
@@ -7,7 +8,7 @@ SquareOscillator::SquareOscillator()
     registerSampleGenerator(&SquareOscillator::generateSample);
 }
 
-void SquareOscillator::generateSample(Oscillator *osc, const double &phase, double &left, double &right)
+void SquareOscillator::generateSample(Oscillator *osc, const dsp_float &phase, dsp_float &left, dsp_float &right)
 {
     SquareOscillator *square = static_cast<SquareOscillator *>(osc);
 
@@ -16,7 +17,7 @@ void SquareOscillator::generateSample(Oscillator *osc, const double &phase, doub
 }
 
 // Sets the duty cycle for PWM
-void SquareOscillator::setDutyCycle(double value)
+void SquareOscillator::setDutyCycle(dsp_float value)
 {
     dutyCycle = clamp(value, 0.05, 0.95);
 }

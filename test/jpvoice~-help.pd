@@ -333,7 +333,7 @@
 #X floatatom 275 51 7 0 0 1 % - - 0;
 #X obj 175 84 * 100;
 #X obj 100 110 s reso;
-#X obj 100 75 * 10;
+#X obj 100 75 * 20;
 #X connect 0 0 3 0;
 #X connect 0 0 5 0;
 #X connect 1 0 2 0;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "dsp_types.h"
 
 class DSP
 {
@@ -15,11 +16,11 @@ public:
     static void setBlockSize(size_t size);
 
     // Sets the sample rate
-    static void setSampleRate(double rate);
+    static void setSampleRate(dsp_float rate);
 
     // The max block size
     static constexpr int maxBlockSize = 1024; // Buffer size
 
-    static double sampleRate; // The audio systems current sampling rate
+    static dsp_float sampleRate; // The audio systems current sampling rate
     static size_t blockSize;  // The sample buffer size
 };

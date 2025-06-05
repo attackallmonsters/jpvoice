@@ -10,6 +10,7 @@
 #include "SquareOscillator.h"
 #include "MS20Filter.h"
 #include "DSP.h"
+#include "dsp_types.h"
 
 // The PI
 #ifndef M_PI
@@ -32,37 +33,37 @@ public:
 
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.
-    void setFMModIndex(double index);
+    void setFMModIndex(dsp_float index);
 
     // Enables or disables oscillator sync
     void setSyncEnabled(bool enabled);
 
     // Sets the duty cycle
-    void setDutyCycle(double cycle);
+    void setDutyCycle(dsp_float cycle);
 
     // Sets the pitch offset for the modulator
-    void setPitchOffset(double offset);
+    void setPitchOffset(dsp_float offset);
 
     // Sets the fine tunig for the modulator
-    void setFineTune(double fine);
+    void setFineTune(dsp_float fine);
 
     // Enables negative phase wrapping
     void setNegativeWrappingEnabled(bool enabled);
 
     // Sets the sample rate for signal calculation
-    void setSampleRate(double rate);
+    void setSampleRate(dsp_float rate);
 
     // Sets the size of the current audio buffer
     void setBlockSize(int size);
 
     // Sets the frequency of oscillator 1/carrier
-    void setFrequency(double f);
+    void setFrequency(dsp_float f);
 
     // Sets the volume level of the oscillators
-    void setOscillatorMix(double mix);
+    void setOscillatorMix(dsp_float mix);
 
     // Sets the volume level of the noise generator
-    void setNoiseMix(double mix);
+    void setNoiseMix(dsp_float mix);
 
     // Assigns the carrier oscillator
     void setCarrierOscillatorType(CarrierOscillatiorType oscillatorType);
@@ -74,25 +75,25 @@ public:
     void setNoiseType(NoiseType type);
 
     // Sets the detune factor
-    void setDetune(double value);
+    void setDetune(dsp_float value);
 
     // Sets the feedback amount for the carrier
-    void setFeedbackCarrier(double feedback);
+    void setFeedbackCarrier(dsp_float feedback);
 
     // Sets the feedback amount for the modulator
-    void setFeedbackModulator(double feedback);
+    void setFeedbackModulator(dsp_float feedback);
 
     // Sets the filter type
     void setFilterMode(FilterMode mode);
 
     // Sets the cutoff frequency
-    void setCutoffFrequency(DSPBuffer *buffer);
+    void setFilterCutoff(DSPBuffer *buffer);
 
     // Sets the filter resonance
-    void setResonance(DSPBuffer *buffer);
+    void setFilterResonance(DSPBuffer *buffer);
 
     // Sets the filter drive
-    void setDrive(double value);
+    void setFilterDrive(dsp_float value);
 
     // Next sample block generation
     void computeSamples();
@@ -107,24 +108,24 @@ private:
     Oscillator *modulatorTmp;      // Modulator oscillator (for FM or sync)
     bool applyOscillators = false; // Indicates that an oscillator has changed
 
-    double frequency = 220.0; // Current frequency
+    dsp_float frequency = 220.0; // Current frequency
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
-    double modulationIndex = 0;          // FM depth: how much modulator modulates carrier
+    dsp_float modulationIndex = 0;          // FM depth: how much modulator modulates carrier
 
-    double oscmix = 0.0;                 // Mix carrier <=> modulator
-    double noisemix = 0.0;               // Mix oscillators <=> noise
+    dsp_float oscmix = 0.0;                 // Mix carrier <=> modulator
+    dsp_float noisemix = 0.0;               // Mix oscillators <=> noise
     bool syncEnabled = false;            // True if Sync is active    
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
     
-    double detune = 0;       // Detune factor supersaw oszillator
-    double pulseWidth = 0.5; // Pulse width square oscillator
-    double pitchOffset = 0;  // Pitch offset modulator
-    double fineTune = 0;     // Fine tune modulator
+    dsp_float detune = 0;       // Detune factor supersaw oszillator
+    dsp_float pulseWidth = 0.5; // Pulse width square oscillator
+    dsp_float pitchOffset = 0;  // Pitch offset modulator
+    dsp_float fineTune = 0;     // Fine tune modulator
 
     int fadeCounter = 0;       // Amplitude for param change
     const int fadeLength = 32; // Fade in/out samples for param change
-    double fadeValue = 1.0;    // Current amplitude for param change
+    dsp_float fadeValue = 1.0;    // Current amplitude for param change
 
     // Oscillators
     NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
@@ -142,21 +143,21 @@ private:
     MS20Filter *filter = new MS20Filter();
 
     // DSP working vars
-    double carrierSampleLeft, carrierSampleRight;
-    double modulatorSampleLeft, modulatorSampleRight;
-    double noiseSampleLeft, noiseSampleRight;
-    double mixSampleLeft, mixSampleRight;
-    double amp_carrier;
-    double amp_modulator;
-    double amp_oscmix;
-    double amp_osc_noise;
-    double amp_noise;
+    dsp_float carrierSampleLeft, carrierSampleRight;
+    dsp_float modulatorSampleLeft, modulatorSampleRight;
+    dsp_float noiseSampleLeft, noiseSampleRight;
+    dsp_float mixSampleLeft, mixSampleRight;
+    dsp_float amp_carrier;
+    dsp_float amp_modulator;
+    dsp_float amp_oscmix;
+    dsp_float amp_osc_noise;
+    dsp_float amp_noise;
 
     // Feedback
-    double lastSampleCarrierLeft;
-    double lastSampleCarrierRight;
-    double lastSampleModulatorLeft;
-    double lastSampleModulatorRight;
-    double feedbackAmountCarrier = 0.0;
-    double feedbackAmountModulator = 0.0;
+    dsp_float lastSampleCarrierLeft;
+    dsp_float lastSampleCarrierRight;
+    dsp_float lastSampleModulatorLeft;
+    dsp_float lastSampleModulatorRight;
+    dsp_float feedbackAmountCarrier = 0.0;
+    dsp_float feedbackAmountModulator = 0.0;
 };

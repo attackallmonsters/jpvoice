@@ -1,6 +1,7 @@
 #include "TriangleOscillator.h"
 #include <vector>
 #include <cmath>
+#include "dsp_types.h"
 
 TriangleOscillator::TriangleOscillator()
 {
@@ -8,7 +9,7 @@ TriangleOscillator::TriangleOscillator()
     registerSampleGenerator(&TriangleOscillator::generateSample);
 }
 
-void TriangleOscillator::generateSample(Oscillator * /*osc*/, const double &phase, double &left, double &right)
+void TriangleOscillator::generateSample(Oscillator * /*osc*/, const dsp_float &phase, dsp_float &left, dsp_float &right)
 {
     left = right = 4.0 * std::abs(phase - 0.5) - 1.0;
 }

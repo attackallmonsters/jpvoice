@@ -5,6 +5,7 @@
 #include "Oscillator.h"
 #include <vector>
 #include <cmath>
+#include "dsp_types.h"
 
 // Sine oscillator generates sine waveform
 class SineOscillator : public Oscillator
@@ -15,5 +16,5 @@ public:
 
 private:
     // Sample calculation without looking up vtable
-    static void generateSample(Oscillator *, const double &, double &, double &);
+    static void generateSample(Oscillator *, const dsp_float &, dsp_float &, dsp_float &);
 };

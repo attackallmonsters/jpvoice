@@ -2,6 +2,7 @@
 #include "DSP.h"
 #include "DSPBuffer.h"
 #include <algorithm>
+#include "dsp_types.h"
 
 // Constructor with optional initial size (default: 1024 samples)
 DSPBuffer::DSPBuffer()
@@ -24,13 +25,13 @@ void DSPBuffer::clear()
 }
 
 // Return a mutable pointer to the internal buffer data
-double *DSPBuffer::data()
+dsp_float *DSPBuffer::data()
 {
     return buffer.data();
 }
 
 // Return a const pointer to the internal buffer data
-const double *DSPBuffer::data() const
+const dsp_float *DSPBuffer::data() const
 {
     return buffer.data();
 }
@@ -42,19 +43,19 @@ size_t DSPBuffer::size() const
 }
 
 // Element access by index (read/write)
-double &DSPBuffer::operator[](size_t index)
+dsp_float &DSPBuffer::operator[](size_t index)
 {
     return buffer[index];
 }
 
 // Element access by index (read-only for const instances)
-const double &DSPBuffer::operator[](size_t index) const
+const dsp_float &DSPBuffer::operator[](size_t index) const
 {
     return buffer[index];
 }
 
 // Multiply all buffer samples by a scalar gain value
-void DSPBuffer::applyGain(double gain)
+void DSPBuffer::applyGain(dsp_float gain)
 {
     for (auto &sample : buffer)
         sample *= gain;
@@ -70,17 +71,17 @@ void DSPBuffer::set(const DSPBuffer &other)
 void DSPBuffer::set(const float *source)
 {
     for (size_t i = 0; i < DSP::blockSize; ++i)
-        buffer[i] = static_cast<double>(source[i]);
+        buffer[i] = static_cast<dsp_float>(source[i]);
 }
 
-// Copy raw data from an external double array into the buffer
+// Copy raw data from an external dsp_float array into the buffer
 void DSPBuffer::set(const double *source)
 {
     std::copy(source, source + DSP::blockSize, buffer.begin());
 }
 
 // Fill the buffer with a constant value
-void DSPBuffer::fill(double value)
+void DSPBuffer::fill(dsp_float value)
 {
     std::fill(buffer.begin(), buffer.begin() + DSP::blockSize, value);
 }

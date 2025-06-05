@@ -3,6 +3,7 @@
 #include "DSP.h"
 #include "Voice.h"
 #include "clamp.h"
+#include "dsp_types.h"
 
 static t_class *jpvoice_class;
 
@@ -15,9 +16,9 @@ typedef struct _jpvoice
     t_inlet *in_reso;
     t_outlet *left_out;
     t_outlet *right_out;
-    double left;
-    double right;
-    double samplerate;
+    dsp_float left;
+    dsp_float right;
+    dsp_float samplerate;
 
     DSPBuffer *cutoffBuf;
     DSPBuffer *resoBuf;
@@ -31,7 +32,7 @@ void jpvoice_tilde_f(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         pd_error(x, "[jpvoice~]: expected float argument 0 - n for carrier frequency f1: [f1 f(");
         return;
     }
-    double f = atom_getfloat(argv);
+    dsp_float f = atom_getfloat(argv);
     x->voice->setFrequency(f);
 }
 
@@ -44,7 +45,7 @@ void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    double offset = clamp(atom_getfloat(argv), -24.0f, 24.0f);
+    dsp_float offset = clamp(atom_getfloat(argv), -24.0f, 24.0f);
     x->voice->setPitchOffset(offset);
 }
 
@@ -57,7 +58,7 @@ void jpvoice_tilde_fine(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    double finetune = clamp(atom_getfloat(argv), -100.0f, 100.0f);
+    dsp_float finetune = clamp(atom_getfloat(argv), -100.0f, 100.0f);
     x->voice->setFineTune(finetune);
 }
 
@@ -70,7 +71,7 @@ void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    double detune = clamp(atom_getfloat(argv), 0.0f, 1.0f);
+    dsp_float detune = clamp(atom_getfloat(argv), 0.0f, 1.0f);
     x->voice->setDetune(detune);
 }
 
@@ -218,7 +219,7 @@ void jpvoice_tilde_fmmod(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    double idx = clampmin(static_cast<float>(atom_getfloat(argv)), 0.0f);
+    dsp_float idx = clampmin(static_cast<float>(atom_getfloat(argv)), 0.0f);
     x->voice->setFMModIndex(idx);
 }
 
@@ -275,7 +276,7 @@ void jpvoice_tilde_carrierfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    double fb = atom_getfloat(argv);
+    dsp_float fb = atom_getfloat(argv);
 
     x->voice->setFeedbackCarrier(fb);
 }
@@ -289,7 +290,7 @@ void jpvoice_tilde_modulatorfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         return;
     }
 
-    double fb = atom_getfloat(argv);
+    dsp_float fb = atom_getfloat(argv);
 
     x->voice->setFeedbackModulator(fb);
 }
@@ -298,41 +299,41 @@ void jpvoice_tilde_cutoff(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc < 1)
     {
-        post("[jpvoice~] usage: cutoff (amount 0.0 – samplerate / 2)");
+        post("[jpvoice~] usage: filter cutoff (amount 0.0 – samplerate / 2)");
         return;
     }
 
-    double cf = atom_getfloat(argv);
+    dsp_float cf = atom_getfloat(argv);
 
     x->cutoffBuf->fill(cf);
-    x->voice->setCutoffFrequency(x->cutoffBuf);
+    x->voice->setFilterCutoff(x->cutoffBuf);
 }
 
 void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc < 1)
     {
-        post("[jpvoice~] usage: reso (amount 0.0 – 1.0)");
+        post("[jpvoice~] usage: filter reso (amount 0.0 – 1.0)");
         return;
     }
 
-    double r = atom_getfloat(argv);
+    dsp_float r = atom_getfloat(argv);
 
     x->resoBuf->fill(r);
-    x->voice->setCutoffFrequency(x->resoBuf);
+    x->voice->setFilterResonance(x->resoBuf);
 }
 
 void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc < 1)
     {
-        post("[jpvoice~] usage: drive (amount 0.0 – 1.0)");
+        post("[jpvoice~] usage: filter drive (amount 0.0 – 1.0)");
         return;
     }
 
-    double d = atom_getfloat(argv);
+    dsp_float d = atom_getfloat(argv);
 
-    x->voice->setDrive(d * 20.0);
+    x->voice->setFilterDrive(d * 20.0);
 }
 
 // DSP perform function
@@ -346,15 +347,15 @@ t_int *jpvoice_tilde_perform(t_int *w)
     int n = (int)(w[6]);
 
     x->cutoffBuf->set(cutoff);
-    x->voice->setCutoffFrequency(x->cutoffBuf);
+    x->voice->setFilterCutoff(x->cutoffBuf);
 
     x->resoBuf->set(reso);
-    x->voice->setResonance(x->resoBuf);
+    x->voice->setFilterResonance(x->resoBuf);
 
     x->voice->computeSamples();
 
-    double* bufL = x->voice->mixBufferL.data();
-    double* bufR = x->voice->mixBufferR.data();
+    dsp_float* bufL = x->voice->mixBufferL.data();
+    dsp_float* bufR = x->voice->mixBufferR.data();
 
     for (int i = 0; i < n; ++i)
     {

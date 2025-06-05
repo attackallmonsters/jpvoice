@@ -1,9 +1,10 @@
-// DSPBuffer: A utility class for managing a dynamic buffer of double-precision audio samples.
+// DSPBuffer: A utility class for managing a dynamic buffer of dsp_float-precision audio samples.
 // Provides common operations such as resize, clear, gain application, and deep copying.
 
 #pragma once
 #include <vector>
 #include <cstddef>
+#include "dsp_types.h"
 
 class DSPBuffer
 {
@@ -18,22 +19,22 @@ public:
     void clear();
 
     // Return a mutable pointer to the internal buffer data
-    double *data();
+    dsp_float *data();
 
     // Return a const pointer to the internal buffer data
-    const double *data() const;
+    const dsp_float *data() const;
 
     // Return the number of elements in the buffer
     size_t size() const;
 
     // Element access by index (read/write)
-    double &operator[](size_t index);
+    dsp_float &operator[](size_t index);
 
     // Element access by index (read-only for const instances)
-    const double &operator[](size_t index) const;
+    const dsp_float &operator[](size_t index) const;
 
     // Multiply all buffer samples by a scalar gain value
-    void applyGain(double gain);
+    void applyGain(dsp_float gain);
 
     // Copy contents from another DSPBuffer instance
     void set(const DSPBuffer &other);
@@ -41,11 +42,11 @@ public:
     // Copy raw data from an external float array into the buffer
     void set(const float *source);
 
-    // Copy raw data from an external double array into the buffer
+    // Copy raw data from an external dsp_float array into the buffer
     void set(const double *source);
 
     // Fill the buffer with a constant value
-    void fill(double value);
+    void fill(dsp_float value);
 
     // Switches the current buffer to a source buffer.
     void switchTo(DSPBuffer &buf);
@@ -57,6 +58,6 @@ public:
     DSPBuffer clone() const;
 
 private:
-    std::vector<double> buffer;               // Internal buffer storage
-    std::vector<double> *bufferOrig = nullptr; // Internal buffer storage
+    std::vector<dsp_float> buffer;               // Internal buffer storage
+    std::vector<dsp_float> *bufferOrig = nullptr; // Internal buffer storage
 };

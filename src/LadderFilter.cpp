@@ -2,6 +2,7 @@
 #include "dsp_util.h"
 #include "clamp.h"
 #include "dsp_util.h"
+#include "dsp_types.h"
 
 // Konstruktor mit Defaultwerten
 LadderFilter::LadderFilter()
@@ -18,19 +19,19 @@ LadderFilter::LadderFilter()
 }
 
 // Set cutoff frequency in Hz
-void LadderFilter::setCutoff(double freq)
+void LadderFilter::setCutoff(dsp_float freq)
 {
     cutoff = clamp(freq, 1.0, sampleRate * 0.45);
 }
 
 // Set resonance
-void LadderFilter::setResonance(double res)
+void LadderFilter::setResonance(dsp_float res)
 {
     resonance = clamp(res, 0.0, 6.0);
 }
 
 // Set resonance
-void LadderFilter::setDrive(double drv)
+void LadderFilter::setDrive(dsp_float drv)
 {
     drive = clamp(drv, 1.0, 20.0);
 }
@@ -54,25 +55,25 @@ void LadderFilter::processBlock(DSPObject *dsp)
     LadderFilter *flt = static_cast<LadderFilter *>(dsp);
 
     // Load previous filter states
-    double s1L = flt->s1L, s2L = flt->s2L, s3L = flt->s3L, s4L = flt->s4L;
-    double s1R = flt->s1R, s2R = flt->s2R, s3R = flt->s3R, s4R = flt->s4R;
+    dsp_float s1L = flt->s1L, s2L = flt->s2L, s3L = flt->s3L, s4L = flt->s4L;
+    dsp_float s1R = flt->s1R, s2R = flt->s2R, s3R = flt->s3R, s4R = flt->s4R;
 
     // Compute g from the cutoff frequency (normalized angular frequency)
-    double g = tan(M_PI * flt->cutoff / DSP::sampleRate);
+    dsp_float g = tan(M_PI * flt->cutoff / DSP::sampleRate);
 
     // Compute the smoothing coefficient (1-pole lowpass response)
-    double alpha = g / (1.0 + g);
+    dsp_float alpha = g / (1.0 + g);
 
     // Gain copmpensation
-    double compensation;
+    dsp_float compensation;
     if (flt->filterStage == FilterStage::TwoPole)
         compensation = 1.0 / std::pow(1.0 + g, 0.5);
     else
         compensation = 1.0 / std::pow(1.0 + g, 1.0);
 
     size_t blocksize = DSP::blockSize;
-    double left;
-    double right;
+    dsp_float left;
+    dsp_float right;
 
     for (size_t i = 0; i < blocksize; ++i)
     {
@@ -80,7 +81,7 @@ void LadderFilter::processBlock(DSPObject *dsp)
         right = (*flt->bufferR)[i];
 
         // Feedback calculation
-        double inputL, inputR;
+        dsp_float inputL, inputR;
         if (flt->filterStage == FilterStage::TwoPole)
         {
             inputL = fast_tanh(flt->drive * 0.5 * left) - flt->resonance * fast_tanh(flt->drive * s2L);

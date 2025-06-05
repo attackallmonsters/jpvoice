@@ -13,7 +13,7 @@ CXX = g++
 # -fPIC: generate position-independent code (useful for shared libraries)
 # -Iinclude: add 'include' directory to the header search path
 # -MMD -MP: generate dependency files for header tracking
-CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP
+CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -DUSE_DOUBLE_PRECISION
 
 # === Directory layout ===
 SRC_DIR = src

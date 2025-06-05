@@ -3,6 +3,7 @@
 #include "clamp.h"
 #include "VoiceOptions.h"
 #include "dsp_util.h"
+#include "dsp_types.h"
 
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
@@ -37,7 +38,7 @@ void Voice::setFMType(FMType fm)
 
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
-void Voice::setFMModIndex(double index)
+void Voice::setFMModIndex(dsp_float index)
 {
     modulationIndex = index;
     carrier->setFMModIndex(modulationIndex);
@@ -51,22 +52,22 @@ void Voice::setSyncEnabled(bool enabled)
 }
 
 // Sets the duty cycle
-void Voice::setDutyCycle(double cycle)
+void Voice::setDutyCycle(dsp_float cycle)
 {
-    double dutyCycle = clamp(cycle, 0.0, 1.0);
+    dsp_float dutyCycle = clamp(cycle, 0.0, 1.0);
     squareModulator->setDutyCycle(dutyCycle);
     squareCarrier->setDutyCycle(dutyCycle);
 }
 
 // Sets the pitch offset for the modulator
-void Voice::setPitchOffset(double offset)
+void Voice::setPitchOffset(dsp_float offset)
 {
     pitchOffset = clamp(offset, -24.0, 24.0);
     modulator->setPitchOffset(pitchOffset);
 }
 
 // Sets the fine tunig for the modulator
-void Voice::setFineTune(double fine)
+void Voice::setFineTune(dsp_float fine)
 {
     fineTune = clamp(fine, -100.0, 100.0);
     modulator->setFineTune(fineTune);
@@ -79,7 +80,7 @@ void Voice::setNegativeWrappingEnabled(bool enabled)
 }
 
 // Sets teh sample rate for signal calculation
-void Voice::setSampleRate(double rate)
+void Voice::setSampleRate(dsp_float rate)
 {
     DSP::setSampleRate(rate);
 }
@@ -91,7 +92,7 @@ void Voice::setBlockSize(int size)
 }
 
 // Sets the current frequency
-void Voice::setFrequency(double f)
+void Voice::setFrequency(dsp_float f)
 {
     carrier->setFrequency(f);
     modulator->setFrequency(f);
@@ -99,20 +100,20 @@ void Voice::setFrequency(double f)
 }
 
 // Sets the detune factorjpvoice_tilde_sync
-void Voice::setDetune(double value)
+void Voice::setDetune(dsp_float value)
 {
     carrier->setDetune(value);
     modulator->setDetune(value);
 }
 
 // Sets the volume level of the oscillators
-void Voice::setOscillatorMix(double mix)
+void Voice::setOscillatorMix(dsp_float mix)
 {
     oscmix = clamp(mix, 0.0, 1.0);
 }
 
 // Sets the volume level of the noise generator
-void Voice::setNoiseMix(double mix)
+void Voice::setNoiseMix(dsp_float mix)
 {
     noisemix = clamp(mix, 0.0, 1.0);
 }
@@ -120,7 +121,7 @@ void Voice::setNoiseMix(double mix)
 // Assigns the carrier oscillator
 void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 {
-    double f = (carrier) ? carrier->getFrequency() : 0.0;
+    dsp_float f = (carrier) ? carrier->getFrequency() : 0.0;
 
     switch (oscillatorType)
     {
@@ -160,7 +161,7 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 // Assigns the modulation oscillator
 void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
 {
-    double f = (modulator) ? modulator->getFrequency() : 0.0;
+    dsp_float f = (modulator) ? modulator->getFrequency() : 0.0;
 
     switch (oscillatorType)
     {
@@ -199,13 +200,13 @@ void Voice::setNoiseType(NoiseType type)
 }
 
 // Sets the feedback amount for the carrier
-void Voice::setFeedbackCarrier(double feedback)
+void Voice::setFeedbackCarrier(dsp_float feedback)
 {
     feedbackAmountCarrier = clamp(feedback, 0.0, 2.0);
 }
 
 // Sets the feedback amount for the modulator
-void Voice::setFeedbackModulator(double feedback)
+void Voice::setFeedbackModulator(dsp_float feedback)
 {
     feedbackAmountModulator = clamp(feedback, 0.0, 2.0);
 }
@@ -217,21 +218,21 @@ void Voice::setFilterMode(FilterMode /*mode*/)
 }
 
 // Sets the cutoff frequency
-void Voice::setCutoffFrequency(DSPBuffer *buffer)
+void Voice::setFilterCutoff(DSPBuffer *buffer)
 {
     filter->setCutoff(buffer);
 }
 
 // Sets the filter resonance
-void Voice::setResonance(DSPBuffer *buffer)
+void Voice::setFilterResonance(DSPBuffer *buffer)
 {
     filter->setResonance(buffer);
 }
 
 // Sets the filter drive
-void Voice::setDrive(double /*value*/)
+void Voice::setFilterDrive(dsp_float value)
 {
-    //filter->setDrive(value);
+    filter->setDrive(value);
 }
 
 // Next sample block generation
@@ -278,14 +279,14 @@ void Voice::computeSamples()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        double carrierLeft = carrier->outBufferL[i];
-        double carrierRight = carrier->outBufferR[i];
-        double modLeft = modulator->outBufferL[i];
-        double modRight = modulator->outBufferR[i];
+        dsp_float carrierLeft = carrier->outBufferL[i];
+        dsp_float carrierRight = carrier->outBufferR[i];
+        dsp_float modLeft = modulator->outBufferL[i];
+        dsp_float modRight = modulator->outBufferR[i];
 
         // Mix mit Feedback
-        double mixL = amp_carrier * (carrierLeft + lastSampleCarrierLeft) + amp_modulator * (modLeft + lastSampleModulatorLeft);
-        double mixR = amp_carrier * (carrierRight + lastSampleCarrierRight) + amp_modulator * (modRight + lastSampleModulatorRight);
+        dsp_float mixL = amp_carrier * (carrierLeft + lastSampleCarrierLeft) + amp_modulator * (modLeft + lastSampleModulatorLeft);
+        dsp_float mixR = amp_carrier * (carrierRight + lastSampleCarrierRight) + amp_modulator * (modRight + lastSampleModulatorRight);
 
         lastSampleCarrierLeft = carrierLeft * feedbackAmountCarrier;
         lastSampleCarrierRight = carrierRight * feedbackAmountCarrier;
@@ -317,7 +318,7 @@ void Voice::computeSamples()
 
         if (fadeCounter <= fadeLength)
         {
-            fadeValue = 1.0 - (double(fadeCounter) / fadeLength); // Fade out
+            fadeValue = 1.0 - (dsp_float(fadeCounter) / fadeLength); // Fade out
         }
         else if (fadeCounter == fadeLength + 1)
         {
@@ -329,7 +330,7 @@ void Voice::computeSamples()
         }
         else if (fadeCounter <= fadeLength * 2)
         {
-            fadeValue = (double(fadeCounter - fadeLength) / fadeLength); // Fade in
+            fadeValue = (dsp_float(fadeCounter - fadeLength) / fadeLength); // Fade in
         }
         else
         {

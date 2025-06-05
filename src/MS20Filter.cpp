@@ -2,13 +2,16 @@
 #include "MS20Filter.h"
 #include "DSPObject.h"
 #include "dsp_util.h"
+#include "clamp.h"
 #include <cmath>
+#include "dsp_types.h"
 
 // Constructor with sample rate
 MS20Filter::MS20Filter()
 {
     y1L = y1R = y2L = y2R = 0.0;
     T = 1.0 / DSP::sampleRate;
+    drive = 1.0;
     registerBlockProcessor(&MS20Filter::processBlock);
 }
 
@@ -31,22 +34,30 @@ void MS20Filter::setSampleBuffers(DSPBuffer *samplesL, DSPBuffer *samplesR)
     bufferR = samplesR;
 }
 
+// Sets the filter drive
+void MS20Filter::setDrive(dsp_float value)
+{
+    drive = clamp(value, 0.0, 1.0) * 1.0 + 1.0;
+}
+
 // Process a single sample through the MS-20 style lowpass filter
 void MS20Filter::processBlock(DSPObject *dsp)
 {
     MS20Filter *flt = static_cast<MS20Filter *>(dsp);
 
     size_t blocksize = DSP::blockSize;
-    double left, right;
-    double cutoff, reso;
-    double wc, alpha;
-    double feedback;
-    double x1;
-    double y1L = flt->y1L;
-    double y2L = flt->y2L;
-    double y1R = flt->y1R;
-    double y2R = flt->y2R;
-    double T = flt->T;
+    dsp_float left, right;
+    dsp_float cutoff, reso;
+    dsp_float wc, alpha;
+    dsp_float feedback;
+    dsp_float x1;
+    dsp_float y1L = flt->y1L;
+    dsp_float y2L = flt->y2L;
+    dsp_float y1R = flt->y1R;
+    dsp_float y2R = flt->y2R;
+    dsp_float T = flt->T;
+    dsp_float drive = flt->drive;
+    dsp_float reso_scale;
 
     for (size_t i = 0; i < blocksize; ++i)
     {
@@ -55,13 +66,22 @@ void MS20Filter::processBlock(DSPObject *dsp)
         cutoff = (*flt->cutoffBuffer)[i];
         reso = (*flt->resoBuffer)[i];
 
+        if (cutoff > 15000.0)
+        {
+            (*flt->bufferL)[i] = left;
+            (*flt->bufferR)[i] = right;
+            continue;
+        }
+
+        reso_scale = (cutoff <= 2500.0) ? 1.0 : clamp(1.0 - (cutoff - 2500.0) / 7500.0, 0.0, 1.0);
+
         // Calculate coefficient based on cutoff
         wc = 2.0 * M_PI * cutoff;
 
         alpha = wc * T / (1.0 + wc * T); // Bilinear transform approximation
 
         // === left ===
-        feedback = fast_tanh(reso * nonlinearFeedback(y2L - left));
+        feedback = clamp(reso * reso_scale * (y2L - left), -15.0, 15.0);
 
         // First integrator (emulating Sallen-Key stage)
         x1 = left - feedback;
@@ -70,10 +90,13 @@ void MS20Filter::processBlock(DSPObject *dsp)
         // Second integrator
         y2L += alpha * (y1L - y2L);
 
-        (*flt->bufferL)[i] = y2L;
+        // Apply asymmetric soft clip
+        left = y2L * drive;
+        left = (right >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
+        (*flt->bufferL)[i] = left;
 
         // === right ===
-        feedback = fast_tanh(reso * nonlinearFeedback(y2R - right));
+        feedback = clamp(reso * reso_scale * (y2R - left), -15.0, 15.0);
 
         // First integrator (emulating Sallen-Key stage)
         x1 = right - feedback;
@@ -82,7 +105,10 @@ void MS20Filter::processBlock(DSPObject *dsp)
         // Second integrator
         y2R += alpha * (y1R - y2R);
 
-        (*flt->bufferR)[i] = y2R;
+        // Apply asymmetric soft clip
+        right = y2R * drive;
+        right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
+        (*flt->bufferR)[i] = right;
     }
 
     flt->y1L = y1L;
@@ -101,7 +127,7 @@ void MS20Filter::reset()
 }
 
 // Emulate diode clipping behavior with tanh nonlinearity
-double MS20Filter::nonlinearFeedback(double s)
+dsp_float MS20Filter::nonlinearFeedback(dsp_float s)
 {
     return s * 1.5; // Gain scales the nonlinearity
 }
