@@ -108,7 +108,7 @@ private:
     Oscillator *modulatorTmp;      // Modulator oscillator (for FM or sync)
     bool applyOscillators = false; // Indicates that an oscillator has changed
 
-    dsp_float frequency = 220.0; // Current frequency
+    dsp_float frequency = 0.0; // Current frequency
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
     dsp_float modulationIndex = 0;          // FM depth: how much modulator modulates carrier

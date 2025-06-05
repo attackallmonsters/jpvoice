@@ -14,7 +14,7 @@ DSPObject::~DSPObject()
 }
 
 // Generates the next audio sample block
-void DSPObject::setSamples()
+void DSPObject::generateBlock()
 {
     (*processBlockFunc)(this);
 }

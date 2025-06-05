@@ -13,7 +13,19 @@ CXX = g++
 # -fPIC: generate position-independent code (useful for shared libraries)
 # -Iinclude: add 'include' directory to the header search path
 # -MMD -MP: generate dependency files for header tracking
-CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -DUSE_DOUBLE_PRECISION
+UNAME := $(shell uname -m)
+
+ifeq ($(UNAME),x86_64)
+	CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -DUSE_DOUBLE_PRECISION
+endif
+
+ifeq ($(UNAME),armv7l)
+    CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -mfpu=neon -mfloat-abi=hard -march=armv7-a
+endif
+
+ifeq ($(UNAME),aarch64)
+    CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -DUSE_DOUBLE_PRECISION
+endif
 
 # === Directory layout ===
 SRC_DIR = src

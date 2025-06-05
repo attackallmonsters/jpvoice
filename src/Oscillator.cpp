@@ -169,13 +169,20 @@ void Oscillator::processBlock(DSPObject *dsp)
 
     dsp_float phase = osc->currentPhase;
     bool wrappedFlag = false;
-    dsp_float baseFreq = osc->frequency;
+    dsp_float baseFreq = osc->calculatedFrequency;
     dsp_float index = osc->modulationIndex;
     dsp_float sr = DSP::sampleRate;
     dsp_float phaseIncrement = osc->phaseIncrement;
     dsp_float left, right;
     bool negativeWrappingEnabled = osc->negativeWrappingEnabled;
     size_t blocksize = DSP::blockSize;
+    
+    if (baseFreq == 0)
+    {
+        osc->outBufferL.fill(0.0f);
+        osc->outBufferR.fill(0.0f);
+        return;
+    }
 
     if (index > 0.0)
     {

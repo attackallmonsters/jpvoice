@@ -14,14 +14,14 @@ public:
     virtual ~DSPObject();
 
     // Calculates the next sample buffer
-    void setSamples();
-    
+    void generateBlock();
+
 protected:
     // Avoid vtable lookup, implementation on derived class
     using BlockProcessor = void (*)(DSPObject *);
 
     // Derived class registers the function for sample block generation
-    void registerBlockProcessor(BlockProcessor f);    
+    void registerBlockProcessor(BlockProcessor f);
 
 private:
     // Dummy SampleFunc for setSamples

@@ -240,7 +240,7 @@ void Voice::computeSamples()
 {
     // --- Step 1: Get stereo signal from the modulator oscillator ---
     // This signal will be used either for frequency modulation or direct audio mixing.
-    modulator->setSamples();
+    modulator->generateBlock();
 
     // --- Step 2: Apply Through Zero Frequency Modulation if enabled ---
     // Use the average (mono) value of the stereo modulator signal
@@ -255,7 +255,7 @@ void Voice::computeSamples()
 
     // --- Step 3: Generate the stereo output from the carrier oscillator ---
     // This will either be used directly (in FM mode) or mixed with the modulator signal.
-    carrier->setSamples();
+    carrier->generateBlock();
 
     // --- Step 4: Sync handling ---
     // If sync is enabled and the carrier oscillator has wrapped (phase reset),
@@ -268,7 +268,7 @@ void Voice::computeSamples()
 
     if (noisemix > 0)
     {
-        noise->setSamples();
+        noise->generateBlock();
     }
 
     // --- Step 5: Mix the carrier, modulator, feedback and noise signals using an equal-power crossfade
@@ -309,7 +309,7 @@ void Voice::computeSamples()
     filter->setSampleBuffers(&mixBufferL, &mixBufferR);
 
     // Calculate the samples to be filtered
-    filter->setSamples();
+    filter->generateBlock();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)
