@@ -42,7 +42,7 @@ public:
     DSPBuffer *bufferR;
 private:
     // Next sample block generation
-    static void setSamplesIntern(DSPObject *dsp);
+    static void processBlock(DSPObject *dsp);
 
     FilterStage filterStage; // filter calculation stages
 

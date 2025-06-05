@@ -4,7 +4,7 @@
 // Constructor: seeds RNG and sets noise type
 NoiseGenerator::NoiseGenerator()
 {
-    computeSampleFunc = &NoiseGenerator::computeSampleFuncIntern;
+    registerSampleGenerator(&NoiseGenerator::generateSample);
 
     // WHite noise is default
     setType(NoiseType::White);
@@ -20,7 +20,7 @@ void NoiseGenerator::setType(NoiseType type)
     noiseType = type;
 }
 
-void NoiseGenerator::computeSampleFuncIntern(Oscillator *osc, const double & /*phase*/, double &left, double &right)
+void NoiseGenerator::generateSample(Oscillator *osc, const double & /*phase*/, double &left, double &right)
 {
     NoiseGenerator *noise = static_cast<NoiseGenerator *>(osc);
 

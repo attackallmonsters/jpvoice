@@ -14,7 +14,7 @@ LadderFilter::LadderFilter()
     filterStage = FilterStage::TwoPole;
 
     // to avoid vtable lookup
-    sampleFunc = &LadderFilter::setSamplesIntern;
+    registerBlockProcessor(&LadderFilter::processBlock);
 }
 
 // Set cutoff frequency in Hz
@@ -49,7 +49,7 @@ void LadderFilter::setFilterStage(FilterStage stage)
 }
 
 // Next sample block generation
-void LadderFilter::setSamplesIntern(DSPObject *dsp)
+void LadderFilter::processBlock(DSPObject *dsp)
 {
     LadderFilter *flt = static_cast<LadderFilter *>(dsp);
 

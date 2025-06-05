@@ -19,7 +19,7 @@ public:
 
 private:
     // Sample calculation without looking up vtable
-    static void computeSampleFuncIntern(Oscillator *, const double &, double &, double &);
+    static void generateSample(Oscillator *, const double &, double &, double &);
 
     // Random number generator for white noise source
     std::mt19937 rng;

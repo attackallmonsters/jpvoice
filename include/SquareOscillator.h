@@ -18,7 +18,7 @@ public:
 
 private:
     // Sample calculation without looking up vtable
-    static void computeSampleFuncIntern(Oscillator *, const double &, double &, double &);
+    static void generateSample(Oscillator *, const double &, double &, double &);
     
     double dutyCycle = 0.5; // Duty cycle for square oscillator
 };

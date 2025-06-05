@@ -89,16 +89,19 @@ protected:
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
     double modulationIndex = 0;          // FM depth: how much modulator modulates carrier
-    FMCalcFunc fmFunc;                   // FM calculation method
-
-    // Next sample block generation
-    static void setSamplesIntern(DSPObject *dsp);
 
     // Avoid vtable lookup for sample calculation
-    using ComputeSampleFunc = void (*)(Oscillator * /*osc*/, const double & /*phase*/, double & /*left*/, double & /*right*/);
-    ComputeSampleFunc computeSampleFunc;
-
+    using SampleGenerator = void (*)(Oscillator * /*osc*/, const double & /*phase*/, double & /*left*/, double & /*right*/);
+    
+    // Derived classes registers sample generator
+    void registerSampleGenerator(SampleGenerator sg);
 private:
+    FMCalcFunc fmFunc; // FM calculation method
+    SampleGenerator generateSampleFunc; // Sample generation ba derived class
+
+    // Next sample block generation
+    static void processBlock(DSPObject *dsp);
+
     // Dummy ComputeSampleFunc for setSamples
-    static void noopComputeSampleFunc(Oscillator * /*osc*/, const double & /*phase*/, double & /*left*/, double & /*right*/);
+    static void generateSample(Oscillator * /*osc*/, const double & /*phase*/, double & /*left*/, double & /*right*/);
 };

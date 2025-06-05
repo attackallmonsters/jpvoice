@@ -5,7 +5,7 @@
 // Contructor
 DSPObject::DSPObject()
 {
-    sampleFunc = noopSampleFunc;
+    processBlockFunc = defaultBlockProcess;
 }
 
 // Destructor
@@ -16,10 +16,15 @@ DSPObject::~DSPObject()
 // Generates the next audio sample block
 void DSPObject::setSamples()
 {
-    (*sampleFunc)(this);
+    (*processBlockFunc)(this);
 }
 
-// Dummy SampleFunc
-void DSPObject::noopSampleFunc(DSPObject *)
+void DSPObject::registerBlockProcessor(BlockProcessor f)
+{
+    processBlockFunc = f;
+}
+
+// Dummy block process
+void DSPObject::defaultBlockProcess(DSPObject *)
 {
 }

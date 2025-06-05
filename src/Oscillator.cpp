@@ -28,9 +28,15 @@ static double fmThroughZero(const double &base, const double &mod, const double 
 Oscillator::Oscillator()
 {
     // to avoid vtable lookup
-    sampleFunc = &Oscillator::setSamplesIntern;
-    computeSampleFunc = &Oscillator::noopComputeSampleFunc;
+    registerBlockProcessor(&Oscillator::processBlock);
+    generateSampleFunc = &Oscillator::generateSample;
     fmFunc = fmThroughZero;
+}
+
+// Derived classes registers sample generator
+void Oscillator::registerSampleGenerator(SampleGenerator sg)
+{
+    generateSampleFunc = sg;
 }
 
 // Resets the internal oscillator phase to 0.0.
@@ -150,13 +156,13 @@ void Oscillator::setFMModIndex(double index)
 }
 
 // Dummy ComputeSampleFunc for setSamples
-void Oscillator::noopComputeSampleFunc(Oscillator *, const double &phase, double &left, double &right)
+void Oscillator::generateSample(Oscillator *, const double &phase, double &left, double &right)
 {
-    left = right = 2.0 * phase - 1.0; // Generates a sawtooth
+    left = right = std::sin(phase * 2.0 * M_PI); // Sine generator
 }
 
 // Next sample block generation
-void Oscillator::setSamplesIntern(DSPObject *dsp)
+void Oscillator::processBlock(DSPObject *dsp)
 {
     Oscillator *osc = static_cast<Oscillator *>(dsp);
 
@@ -191,7 +197,7 @@ void Oscillator::setSamplesIntern(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            osc->computeSampleFunc(osc, phase, left, right);
+            osc->generateSampleFunc(osc, phase, left, right);
             osc->outBufferL[i] = left;
             osc->outBufferR[i] = right;
         }
@@ -208,7 +214,7 @@ void Oscillator::setSamplesIntern(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            osc->computeSampleFunc(osc, phase, left, right);
+            osc->generateSampleFunc(osc, phase, left, right);
             osc->outBufferL[i] = left;
             osc->outBufferR[i] = right;
         }

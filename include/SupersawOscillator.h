@@ -36,7 +36,7 @@ public:
 
 private:
     // Sample calculation without looking up vtable
-    static void computeSampleFuncIntern(Oscillator *, const double &, double &, double &);
+    static void generateSample(Oscillator *, const double &, double &, double &);
     
     SupersawVoice voices[NUM_VOICES]; // All detuned voices
     double detune = 0.0;              // Voices detune

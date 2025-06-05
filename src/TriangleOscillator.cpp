@@ -5,10 +5,10 @@
 TriangleOscillator::TriangleOscillator()
 {
     // to avoid vtable lookup
-    computeSampleFunc = &TriangleOscillator::computeSampleFuncIntern;
+    registerSampleGenerator(&TriangleOscillator::generateSample);
 }
 
-void TriangleOscillator::computeSampleFuncIntern(Oscillator * /*osc*/, const double &phase, double &left, double &right)
+void TriangleOscillator::generateSample(Oscillator * /*osc*/, const double &phase, double &left, double &right)
 {
     left = right = 4.0 * std::abs(phase - 0.5) - 1.0;
 }

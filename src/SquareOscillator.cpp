@@ -4,10 +4,10 @@
 SquareOscillator::SquareOscillator()
 {
     // to avoid vtable lookup
-    computeSampleFunc = &SquareOscillator::computeSampleFuncIntern;
+    registerSampleGenerator(&SquareOscillator::generateSample);
 }
 
-void SquareOscillator::computeSampleFuncIntern(Oscillator *osc, const double &phase, double &left, double &right)
+void SquareOscillator::generateSample(Oscillator *osc, const double &phase, double &left, double &right)
 {
     SquareOscillator *square = static_cast<SquareOscillator *>(osc);
 

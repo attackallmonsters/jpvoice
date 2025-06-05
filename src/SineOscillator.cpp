@@ -3,10 +3,10 @@
 SineOscillator::SineOscillator()
 {
     // to avoid vtable lookup
-    computeSampleFunc = &SineOscillator::computeSampleFuncIntern;
+    registerSampleGenerator(&SineOscillator::generateSample);
 }
 
-void SineOscillator::computeSampleFuncIntern(Oscillator * /*osc*/, const double &phase, double &left, double &right)
+void SineOscillator::generateSample(Oscillator * /*osc*/, const double &phase, double &left, double &right)
 {
     left = right = std::sin(phase * 2.0 * M_PI);
 }
