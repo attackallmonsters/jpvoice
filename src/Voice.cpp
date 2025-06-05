@@ -327,6 +327,8 @@ void Voice::computeSamples()
 
             if (modulator != modulatorTmp)
                 modulator = modulatorTmp;
+
+            filter->reset();
         }
         else if (fadeCounter <= fadeLength * 2)
         {

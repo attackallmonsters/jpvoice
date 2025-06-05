@@ -92,11 +92,11 @@ void MS20Filter::processBlock(DSPObject *dsp)
 
         // Apply asymmetric soft clip
         left = y2L * drive;
-        left = (right >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
+        left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
         (*flt->bufferL)[i] = left;
 
         // === right ===
-        feedback = clamp(reso * reso_scale * (y2R - left), -15.0, 15.0);
+        feedback = clamp(reso * reso_scale * (y2R - right), -15.0, 15.0);
 
         // First integrator (emulating Sallen-Key stage)
         x1 = right - feedback;
