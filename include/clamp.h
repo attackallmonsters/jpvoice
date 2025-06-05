@@ -1,17 +1,17 @@
 #pragma once
 
 #include "dsp_types.h"
-template <typename T>
+template <typename T, typename U, typename V>
 // Clamp min/max function
-constexpr T clamp(const T &val, const T &minVal, const T &maxVal)
+constexpr T clamp(const T &val, const U &minVal, const V &maxVal)
 {
 
-    return (val < minVal) ? minVal : ((val > maxVal) ? maxVal : val);
+    return (val < minVal) ? static_cast<T>(minVal) : ((val > maxVal) ? static_cast<T>(maxVal) : val);
 }
 
 // Clamp min function
-template <typename T>
-constexpr T clampmin(const T &val, const T &minVal)
+template <typename T, typename U>
+constexpr T clampmin(const T &val, const U &minVal)
 {
     return (val < minVal) ? static_cast<T>(minVal) : val;
 }
