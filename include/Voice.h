@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DCBlocker.h"
 #include "Oscillator.h"
 #include "VoiceOptions.h"
 #include "NoiseGenerator.h"
@@ -143,10 +144,9 @@ private:
     KorgonFilter *filter = new KorgonFilter();
 
     // DSP working vars
-    dsp_float carrierSampleLeft, carrierSampleRight;
-    dsp_float modulatorSampleLeft, modulatorSampleRight;
-    dsp_float noiseSampleLeft, noiseSampleRight;
-    dsp_float mixSampleLeft, mixSampleRight;
+    dsp_float carrierLeft, carrierRight;
+    dsp_float modLeft, modRight;
+    dsp_float mixL, mixR;
     dsp_float amp_carrier;
     dsp_float amp_modulator;
     dsp_float amp_oscmix;
@@ -160,4 +160,10 @@ private:
     dsp_float lastSampleModulatorRight;
     dsp_float feedbackAmountCarrier = 0.0;
     dsp_float feedbackAmountModulator = 0.0;
+
+    // Filter for oscillator feedback
+    DCBlocker dcBlockerCarrierL;
+    DCBlocker dcBlockerCarrierR;
+    DCBlocker dcBlockerModulatorL;
+    DCBlocker dcBlockerModulatorR;
 };

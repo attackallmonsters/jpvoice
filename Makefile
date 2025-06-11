@@ -38,6 +38,7 @@ PD_SOURCES = \
 	$(SRC_DIR)/DSP.cpp \
 	$(SRC_DIR)/DSPBuffer.cpp \
 	$(SRC_DIR)/DSPObject.cpp \
+	$(SRC_DIR)/DCBlocker.cpp \
 	$(SRC_DIR)/Voice.cpp \
 	$(SRC_DIR)/Oscillator.cpp \
 	$(SRC_DIR)/SupersawOscillator.cpp \

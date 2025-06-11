@@ -50,6 +50,9 @@ void Oscillator::resetPhase()
 // Sets the desired oscillator frequency in Hertz
 void Oscillator::setFrequency(dsp_float value)
 {
+    if (value == frequency)
+        return;
+
     frequency = clampmin(value, 0.0);
     setCalculatedFrequency(frequency);
 }
@@ -111,6 +114,13 @@ bool Oscillator::hasWrapped()
 void Oscillator::unWrap()
 {
     wrapped = false;
+}
+
+// Sets the input/output buffer size
+void Oscillator::setBlockSize(int size)
+{
+    outBufferL.resize(size);
+    outBufferR.resize(size);
 }
 
 // Sets the type of FM to use
@@ -176,13 +186,6 @@ void Oscillator::processBlock(DSPObject *dsp)
     dsp_float left, right;
     bool negativeWrappingEnabled = osc->negativeWrappingEnabled;
     size_t blocksize = DSP::blockSize;
-    
-    if (baseFreq == 0)
-    {
-        osc->outBufferL.fill(0.0f);
-        osc->outBufferR.fill(0.0f);
-        return;
-    }
 
     if (index > 0.0)
     {

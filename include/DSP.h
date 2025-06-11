@@ -19,8 +19,11 @@ public:
     static void setSampleRate(dsp_float rate);
 
     // The max block size
-    static constexpr int maxBlockSize = 1024; // Buffer size
+    static constexpr size_t maxBlockSize = 2048;
 
-    static dsp_float sampleRate; // The audio systems current sampling rate
-    static size_t blockSize;  // The sample buffer size
+    // The audio systems current sampling rate
+    static dsp_float sampleRate; 
+
+    // The audio systems current sample block size
+    static size_t blockSize;  
 };

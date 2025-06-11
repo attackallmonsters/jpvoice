@@ -3,18 +3,19 @@
 #include "DSPBuffer.h"
 #include <algorithm>
 #include "dsp_types.h"
+#include "clamp.h"
 
-// Constructor with optional initial size (default: 1024 samples)
+// Constructor with optional initial size (default: 2048 samples)
 DSPBuffer::DSPBuffer()
 {
-    buffer.resize(1024, 0.0);
+    buffer.resize(DSP::maxBlockSize, 0.0);
     bufferOrig = &buffer;
 }
 
 // Resize the internal buffer and initialize new elements to 0.0
 void DSPBuffer::resize(size_t newSize)
 {
-    buffer.resize(newSize, 0.0);
+    buffer.resize(clamp(newSize , static_cast<size_t>(1), DSP::maxBlockSize), 0.0);
     bufferOrig = &buffer;
 }
 

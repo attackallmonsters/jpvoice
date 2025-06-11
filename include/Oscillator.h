@@ -69,6 +69,9 @@ public:
     // Resets the wrap status
     void unWrap();
 
+    // Sets the output sample block size
+    void setBlockSize(int size);
+
     // Buffer for FM
     DSPBuffer *modBufferL;
     DSPBuffer *modBufferR;

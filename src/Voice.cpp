@@ -89,6 +89,20 @@ void Voice::setSampleRate(dsp_float rate)
 void Voice::setBlockSize(int size)
 {
     DSP::setBlockSize(size);
+
+    noise->setBlockSize(size);
+    supersawCarrier->setBlockSize(size);
+    sineCarrier->setBlockSize(size);
+    sineModulator->setBlockSize(size);
+    sawCarrier->setBlockSize(size);
+    sawModulator->setBlockSize(size);
+    squareCarrier->setBlockSize(size);
+    squareModulator->setBlockSize(size);
+    trianlgeCarrier->setBlockSize(size);
+    triangleModulator->setBlockSize(size);
+
+    mixBufferL.resize(size);
+    mixBufferR.resize(size);
 }
 
 // Sets the current frequency
@@ -161,8 +175,6 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 // Assigns the modulation oscillator
 void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
 {
-    dsp_float f = (modulator) ? modulator->getFrequency() : 0.0;
-
     switch (oscillatorType)
     {
     case ModulatorOscillatorType::Saw:
@@ -187,7 +199,7 @@ void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
         return;
     }
 
-    modulatorTmp->setFrequency(f);
+    modulatorTmp->setFrequency(frequency);
     modulatorTmp->setPitchOffset(pitchOffset);
     modulatorTmp->setFineTune(fineTune);
     applyOscillators = true;
@@ -279,21 +291,27 @@ void Voice::computeSamples()
 
     for (size_t i = 0; i < DSP::blockSize; ++i)
     {
-        dsp_float carrierLeft = carrier->outBufferL[i];
-        dsp_float carrierRight = carrier->outBufferR[i];
-        dsp_float modLeft = modulator->outBufferL[i];
-        dsp_float modRight = modulator->outBufferR[i];
+        carrierLeft = carrier->outBufferL[i] + lastSampleCarrierLeft * feedbackAmountCarrier;
+        carrierRight = carrier->outBufferR[i] + lastSampleCarrierRight * feedbackAmountCarrier;
+        modLeft = modulator->outBufferL[i] + lastSampleModulatorLeft * feedbackAmountModulator;
+        modRight = modulator->outBufferR[i] + lastSampleModulatorRight * feedbackAmountModulator;
 
-        // Mix mit Feedback
-        dsp_float mixL = amp_carrier * (carrierLeft + lastSampleCarrierLeft) + amp_modulator * (modLeft + lastSampleModulatorLeft);
-        dsp_float mixR = amp_carrier * (carrierRight + lastSampleCarrierRight) + amp_modulator * (modRight + lastSampleModulatorRight);
+        mixL = amp_carrier * carrierLeft + amp_modulator * modLeft;
+        mixR = amp_carrier * carrierRight + amp_modulator * modRight;
 
-        lastSampleCarrierLeft = carrierLeft * feedbackAmountCarrier;
-        lastSampleCarrierRight = carrierRight * feedbackAmountCarrier;
-        lastSampleModulatorLeft = modLeft * feedbackAmountModulator;
-        lastSampleModulatorRight = modRight * feedbackAmountModulator;
+        if (feedbackAmountCarrier > 0)
+        {
+            lastSampleCarrierLeft = fast_tanh(carrierLeft);
+            lastSampleCarrierRight = fast_tanh(carrierRight);
+        }
 
-        // Noise (optional)
+        if (feedbackAmountModulator > 0)
+        {
+            lastSampleModulatorLeft = fast_tanh(modLeft);
+            lastSampleModulatorRight = fast_tanh(modRight);
+        }
+
+        // // Noise (optional)
         if (noisemix > 0)
         {
             mixL = amp_osc_noise * mixL + amp_noise * noise->outBufferL[i];
@@ -301,8 +319,8 @@ void Voice::computeSamples()
         }
 
         // Clipping
-        mixBufferL[i] = fast_tanh(mixL);
-        mixBufferR[i] = fast_tanh(mixR);
+        mixBufferL[i] = mixL;
+        mixBufferR[i] = mixR;
     }
 
     // Step 6: assign buffers to ladder filter
