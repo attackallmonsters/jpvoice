@@ -8,7 +8,7 @@ SquareOscillator::SquareOscillator()
     registerSampleGenerator(&SquareOscillator::generateSample);
 }
 
-void SquareOscillator::generateSample(Oscillator *osc, const dsp_float &phase, dsp_float &left, dsp_float &right)
+void SquareOscillator::generateSample(Oscillator *osc, const dsp_float & /*frequency*/, const dsp_float &phase, dsp_float &left, dsp_float &right)
 {
     SquareOscillator *square = static_cast<SquareOscillator *>(osc);
 

@@ -17,6 +17,11 @@ DSP::~DSP()
 {
 }
 
+// Initializes a DSP-Object
+void DSP::Initialize()
+{
+}
+
 // Sets the block size
 void DSP::setBlockSize(size_t size)
 {

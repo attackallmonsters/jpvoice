@@ -12,6 +12,9 @@ public:
     // Dtor
     virtual ~DSP();
 
+    // Initializes a DSP-Object
+    virtual void Initialize();
+
     // Sets the block size
     static void setBlockSize(size_t size);
 

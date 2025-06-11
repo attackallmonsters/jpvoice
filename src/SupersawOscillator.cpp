@@ -25,7 +25,7 @@ void SupersawOscillator::setDetune(dsp_float value)
     detune = clamp(value, 0.0, 1.0) * 0.25;
 }
 
-void SupersawOscillator::generateSample(Oscillator *osc, const dsp_float & /*phase*/, dsp_float &left, dsp_float &right)
+void SupersawOscillator::generateSample(Oscillator *osc, const dsp_float & /*frequency*/, const dsp_float & /*phase*/, dsp_float &left, dsp_float &right)
 {
     SupersawOscillator *ssaw = static_cast<SupersawOscillator *>(osc);
 

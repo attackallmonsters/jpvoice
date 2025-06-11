@@ -47,8 +47,14 @@ PD_SOURCES = \
 	$(SRC_DIR)/TriangleOscillator.cpp \
 	$(SRC_DIR)/SquareOscillator.cpp \
 	$(SRC_DIR)/NoiseGenerator.cpp \
+	$(SRC_DIR)/WaveformGenerator.cpp \
+	$(SRC_DIR)/WavetableOscillator.cpp \
+	$(SRC_DIR)/SineWavetable.cpp \
+	$(SRC_DIR)/SawWavetable.cpp \
+	$(SRC_DIR)/SquareWavetable.cpp \
+	$(SRC_DIR)/TriangleWavetable.cpp \
 	$(SRC_DIR)/KorgonFilter.cpp \
-	$(PD_SRC_DIR)/jpvoice~.cpp
+	$(PD_SRC_DIR)/jpvoice~.cpp 
 
 PD_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(PD_SOURCES))
 PD_TARGET = $(BIN_DIR)/jpvoice~.pd_linux

@@ -20,7 +20,7 @@ public:
 
 private:
     // Sample calculation without looking up vtable
-    static void generateSample(Oscillator *, const dsp_float &, dsp_float &, dsp_float &);
+    static void generateSample(Oscillator *, const dsp_float & /*frequency*/, const dsp_float &, dsp_float &, dsp_float &);
 
     // Random number generator for white noise source
     std::mt19937 rng;

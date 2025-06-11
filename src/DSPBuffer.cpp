@@ -15,7 +15,7 @@ DSPBuffer::DSPBuffer()
 // Resize the internal buffer and initialize new elements to 0.0
 void DSPBuffer::resize(size_t newSize)
 {
-    buffer.resize(clamp(newSize , static_cast<size_t>(1), DSP::maxBlockSize), 0.0);
+    buffer.resize(clampmin(newSize , static_cast<size_t>(1)), 0.0);
     bufferOrig = &buffer;
 }
 

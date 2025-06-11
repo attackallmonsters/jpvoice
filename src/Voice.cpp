@@ -29,6 +29,19 @@ Voice::~Voice()
     delete triangleModulator;
 }
 
+void Voice::Initialize()
+{
+    // Waveform generation
+    sineCarrier->Initialize();
+    sineModulator->Initialize();
+    sawCarrier->Initialize();
+    sawModulator->Initialize();
+    squareCarrier->Initialize();
+    squareModulator->Initialize();
+    trianlgeCarrier->Initialize();
+    triangleModulator->Initialize();
+}
+
 // Sets the type of FM to use
 void Voice::setFMType(FMType fm)
 {
@@ -327,7 +340,7 @@ void Voice::computeSamples()
     filter->setSampleBuffers(&mixBufferL, &mixBufferR);
 
     // Calculate the samples to be filtered
-    filter->generateBlock();
+    //filter->generateBlock();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)

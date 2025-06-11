@@ -373,6 +373,7 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 
     x->voice->setSampleRate(x->samplerate);
     x->voice->setBlockSize(sp[0]->s_n);
+    x->voice->Initialize();
 
     dsp_add(jpvoice_tilde_perform, 6,
             x,

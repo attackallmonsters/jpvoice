@@ -5,8 +5,10 @@
 #include "VoiceOptions.h"
 #include "NoiseGenerator.h"
 #include "SupersawOscillator.h"
-#include "SineOscillator.h"
-#include "SawOscillator.h"
+#include "SineWavetable.h"
+#include "SawWavetable.h"
+#include "TriangleWavetable.h"
+#include "SquareWavetable.h"
 #include "TriangleOscillator.h"
 #include "SquareOscillator.h"
 #include "KorgonFilter.h"
@@ -28,6 +30,9 @@ public:
 
     // Destructor: deletes both oscillator instances
     ~Voice();
+
+    // Initializes the DSP object
+    void Initialize() override;
 
     // Sets the type of FM to use
     void setFMType(FMType fm);
@@ -131,14 +136,14 @@ private:
     // Oscillators
     NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
     SupersawOscillator *supersawCarrier = new SupersawOscillator();
-    SineOscillator *sineCarrier = new SineOscillator();
-    SineOscillator *sineModulator = new SineOscillator();
-    SawOscillator *sawCarrier = new SawOscillator();
-    SawOscillator *sawModulator = new SawOscillator();
-    SquareOscillator *squareCarrier = new SquareOscillator();
-    SquareOscillator *squareModulator = new SquareOscillator();
-    TriangleOscillator *trianlgeCarrier = new TriangleOscillator();
-    TriangleOscillator *triangleModulator = new TriangleOscillator();
+    SineWavetable *sineCarrier = new SineWavetable();
+    SineWavetable *sineModulator = new SineWavetable();
+    SawWavetable *sawCarrier = new SawWavetable();
+    SawWavetable *sawModulator = new SawWavetable();
+    SquareWavetable *squareCarrier = new SquareWavetable();
+    SquareWavetable *squareModulator = new SquareWavetable();
+    TriangleWavetable *trianlgeCarrier = new TriangleWavetable();
+    TriangleWavetable *triangleModulator = new TriangleWavetable();
     
     // Multi mode filter
     KorgonFilter *filter = new KorgonFilter();

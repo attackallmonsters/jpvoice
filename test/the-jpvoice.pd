@@ -24,9 +24,7 @@
 #X obj 119 413 sig~;
 #X obj 119 388 r reso;
 #X obj 184 363 *~;
-#X obj 257 232 r cutoff;
-#X obj 257 257 t b f;
-#X msg 257 303 1;
+#X obj 243 340 r cutoff;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
 #X connect 3 1 5 0;
@@ -39,6 +37,7 @@
 #X connect 9 0 12 1;
 #X connect 10 0 5 1;
 #X connect 10 0 4 1;
+#X connect 10 0 24 0;
 #X connect 11 0 6 0;
 #X connect 12 0 14 0;
 #X connect 13 0 12 0;
@@ -56,7 +55,4 @@
 #X connect 22 0 3 2;
 #X connect 23 0 22 0;
 #X connect 24 0 3 1;
-#X connect 25 0 26 0;
-#X connect 26 0 27 0;
-#X connect 26 1 24 1;
-#X connect 27 0 24 0;
+#X connect 25 0 24 1;

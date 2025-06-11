@@ -167,7 +167,7 @@ void Oscillator::setFMModIndex(dsp_float index)
 }
 
 // Dummy ComputeSampleFunc for setSamples
-void Oscillator::generateSample(Oscillator *, const dsp_float &phase, dsp_float &left, dsp_float &right)
+void Oscillator::generateSample(Oscillator *, const dsp_float & /*frequency*/, const dsp_float &phase, dsp_float &left, dsp_float &right)
 {
     left = right = std::sin(phase * 2.0 * M_PI); // Sine generator
 }
@@ -208,7 +208,7 @@ void Oscillator::processBlock(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            osc->generateSampleFunc(osc, phase, left, right);
+            osc->generateSampleFunc(osc, freq, phase, left, right);
             osc->outBufferL[i] = left;
             osc->outBufferR[i] = right;
         }
@@ -225,7 +225,7 @@ void Oscillator::processBlock(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            osc->generateSampleFunc(osc, phase, left, right);
+            osc->generateSampleFunc(osc, baseFreq, phase, left, right);
             osc->outBufferL[i] = left;
             osc->outBufferR[i] = right;
         }

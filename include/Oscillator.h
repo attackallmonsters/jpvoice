@@ -95,7 +95,7 @@ protected:
     dsp_float modulationIndex = 0;          // FM depth: how much modulator modulates carrier
 
     // Avoid vtable lookup for sample calculation
-    using SampleGenerator = void (*)(Oscillator * /*osc*/, const dsp_float & /*phase*/, dsp_float & /*left*/, dsp_float & /*right*/);
+    using SampleGenerator = void (*)(Oscillator * /*osc*/, const dsp_float & /*frequency*/, const dsp_float & /*phase*/, dsp_float & /*left*/, dsp_float & /*right*/);
     
     // Derived classes registers sample generator
     void registerSampleGenerator(SampleGenerator sg);
@@ -107,5 +107,5 @@ private:
     static void processBlock(DSPObject *dsp);
 
     // Dummy ComputeSampleFunc for setSamples
-    static void generateSample(Oscillator * /*osc*/, const dsp_float & /*phase*/, dsp_float & /*left*/, dsp_float & /*right*/);
+    static void generateSample(Oscillator * /*osc*/, const dsp_float & /*frequency*/, const dsp_float & /*phase*/, dsp_float & /*left*/, dsp_float & /*right*/);
 };
