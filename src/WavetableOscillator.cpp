@@ -1,6 +1,7 @@
 #include "WavetableOscillator.h"
 #include <sys/stat.h> 
 #include <unistd.h>
+#include <sstream>
 
 // Ctor: expects an unique name for the waveform
 // This name is used for managiong wavetable files

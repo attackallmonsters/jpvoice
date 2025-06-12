@@ -6,7 +6,6 @@
 #include <cmath>
 #include <memory>
 #include <fstream>
-#include <filesystem> // C++17
 
 // Internal voice struct used for detuned oscillators
 struct WavetableVoice
