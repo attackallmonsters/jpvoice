@@ -7,7 +7,7 @@
 class SquareWavetable : public WavetableOscillator
 {
 public:
-    SquareWavetable() = default;
+    SquareWavetable() : WavetableOscillator("square") {};
 
 protected:
     // Fills the given buffer with one cycle of a sine waveform

@@ -33,6 +33,9 @@ public:
     // Resets the internal oscillator phase to 0.0.
     virtual void resetPhase();
 
+    // Sets the number of voices
+    virtual void setNumVoices(int /*count*/) {};
+
     // Sets the desired oscillator frequency in Hertz
     void setFrequency(dsp_float value);
 

@@ -1,12 +1,13 @@
 #include "WaveformGenerator.h"
 #include "DSP.h"
 #include "dsp_types.h"
+#include "clamp.h"
 #include <cmath>
 
 void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
                                           dsp_float baseFrequency,
                                           AmplitudeFunction amplitudeFunc,
-                                          int maxHarmonics)
+                                          dsp_float harmonicBoost)
 {
     size_t size = buffer.size();
 
@@ -21,10 +22,7 @@ void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
     const dsp_float nyquist = 0.5 * DSP::sampleRate;
 
     // Maximum number of harmonics allowed without aliasing
-    int harmonics = static_cast<int>(nyquist / baseFrequency);
-
-    if (maxHarmonics > 0 && maxHarmonics < harmonics)
-        harmonics = maxHarmonics;
+    int harmonics = static_cast<int>(nyquist / baseFrequency * (1 + clamp(harmonicBoost, 0, 1) * 9));
 
     // Constant for sine wave computation
     const dsp_float twoPi = 2.0 * M_PI;
@@ -41,7 +39,7 @@ void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
         for (int n = 1; n <= harmonics; ++n)
         {
             // Get amplitude for harmonic n
-            dsp_float amp = amplitudeFunc(n, harmonics);
+            dsp_float amp = amplitudeFunc(n);
 
             // Add sine component for harmonic n at current phase
             sample += amp * std::sin(twoPi * n * phase);

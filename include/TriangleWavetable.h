@@ -7,7 +7,7 @@
 class TriangleWavetable : public WavetableOscillator
 {
 public:
-    TriangleWavetable() = default;
+    TriangleWavetable() : WavetableOscillator("triangle") {};
 
 protected:
     // Fills the given buffer with one cycle of a sine waveform

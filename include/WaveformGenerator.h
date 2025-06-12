@@ -11,7 +11,7 @@ class WaveformGenerator
 public:
     // The amplitude function defines the amplitude of each harmonic (n)
     // up to maxHarmonics. It is user-supplied and determines the waveform shape.
-    using AmplitudeFunction = std::function<dsp_float(int harmonic, int maxHarmonics)>;
+    using AmplitudeFunction = std::function<dsp_float(int harmonic)>;
 
     // Fills the given buffer with one full waveform cycle (0–1 phase range)
     // using additive synthesis. Only harmonics below Nyquist are included.
@@ -20,8 +20,9 @@ public:
     // - baseFrequency: the fundamental frequency (used to limit harmonics)
     // - sampleRate: the system's sample rate
     // - amplitudeFunc: user-supplied function that returns harmonic amplitudes
+    // - harmonicBoost: 0 - 1 (optional aliasing)
     static void generateWavetable(DSPBuffer &buffer,
                                   dsp_float baseFrequency,
                                   AmplitudeFunction amplitudeFunc,
-                                  int maxHarmonics = -1);
+                                  dsp_float harmonicBoost = 0);
 };

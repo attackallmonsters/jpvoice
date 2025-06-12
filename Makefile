@@ -41,7 +41,6 @@ PD_SOURCES = \
 	$(SRC_DIR)/DCBlocker.cpp \
 	$(SRC_DIR)/Voice.cpp \
 	$(SRC_DIR)/Oscillator.cpp \
-	$(SRC_DIR)/SupersawOscillator.cpp \
 	$(SRC_DIR)/SineOscillator.cpp \
 	$(SRC_DIR)/SawOscillator.cpp \
 	$(SRC_DIR)/TriangleOscillator.cpp \

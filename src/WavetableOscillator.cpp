@@ -1,7 +1,12 @@
 #include "WavetableOscillator.h"
 
-WavetableOscillator::WavetableOscillator()
+// Ctor: expects an unique name for the waveform
+// This name is used for managiong wavetable files
+WavetableOscillator::WavetableOscillator(const std::string formName)
 {
+    // set the waveform name
+    waveformName = formName;
+
     // to avoid vtable lookup
     registerSampleGenerator(&WavetableOscillator::generateSample);
 
@@ -12,31 +17,78 @@ WavetableOscillator::WavetableOscillator()
     // Define the corresponding table size for each frequency range
     // Higher frequencies require higher resolution to avoid interpolation artifacts
     tableSizes = {1024, 2048, 4096, 8192, 16384};
+
+    // Initialize wavetable buffers
+    wavetableBuffers.reserve(tableSizes.size());
 }
 
 void WavetableOscillator::Initialize()
 {
     Oscillator::Initialize();
-    
-    // Clear any existing tables
-    wavetableBuffers.clear();
-    wavetableBuffers.reserve(tableSizes.size());
 
-    for (size_t i = 0; i < tableSizes.size(); ++i)
+    DSP::log("Loading wavetable for %s", waveformName.c_str());
+
+    if (!load())
     {
-        size_t size = tableSizes[i];
-        dsp_float freq = baseFrequencies[i];
+        DSP::log("Wavetable for %s does not exist: generating...", waveformName.c_str());
 
-        // Create a new DSPBuffer instance and resize it to the desired table size
-        auto buffer = std::make_unique<DSPBuffer>();
-        buffer->resize(size);
+        for (size_t i = 0; i < tableSizes.size(); ++i)
+        {
+            size_t size = tableSizes[i];
+            dsp_float freq = baseFrequencies[i];
 
-        // Let the subclass generate the actual waveform data
-        createWavetable(*buffer, freq);
+            // Create a new DSPBuffer instance and resize it to the desired table size
+            auto buffer = std::make_unique<DSPBuffer>();
+            buffer->resize(size);
 
-        // Store the buffer for later use (e.g., waveform lookup)
-        wavetableBuffers.push_back(std::move(buffer));
+            // Let the subclass generate the actual waveform data
+            createWavetable(*buffer, freq);
+
+            // Store the buffer for later use (e.g., waveform lookup)
+            wavetableBuffers.push_back(std::move(buffer));
+        }
+
+        DSP::log("Wavetable for %s generated: saving...", waveformName.c_str());
+        save();
+        DSP::log("Wavetable for %s generated saved", waveformName.c_str());
     }
+}
+
+void WavetableOscillator::setNumVoices(int count)
+{
+    // Clamp to [1, 9] and resize
+    numVoices = std::clamp(count, 1, 9);
+    voices.resize(numVoices);
+
+    for (int i = 0; i < numVoices; ++i)
+    {
+        dsp_float center = (numVoices - 1) / 2.0;
+        dsp_float offset = i - center;
+
+        // Spread detune symmetrically
+        voices[i].detune_ratio = detune * offset / center;
+
+        // Equal amplitude for now, normalized by number of voices
+        voices[i].amp_ratio = 3.5 / numVoices;
+
+        // Randomize phase [0.0, 1.0)
+        voices[i].phase = static_cast<dsp_float>(rand()) / RAND_MAX;
+
+        // Stereo panning - from -1.0 (left) to +1.0 (right)
+        dsp_float pan = (numVoices > 1)
+                            ? static_cast<dsp_float>(i) / (numVoices - 1) * 2.0 - 1.0
+                            : 0.0;
+
+        voices[i].gainL = std::sqrt(0.5 * (1.0 - pan));
+        voices[i].gainR = std::sqrt(0.5 * (1.0 + pan));
+    }
+}
+
+// Sets the detune factor
+void WavetableOscillator::setDetune(dsp_float value)
+{
+    detune = clamp(value, 0.0, 1.0) * 0.125;
+    setNumVoices(numVoices);
 }
 
 DSPBuffer *WavetableOscillator::selectTable(double frequency)
@@ -51,25 +103,151 @@ DSPBuffer *WavetableOscillator::selectTable(double frequency)
     return wavetableBuffers.front().get();
 }
 
+// Generates the requested sample for Oscillator
 void WavetableOscillator::generateSample(Oscillator *osc, const dsp_float &frequency, const dsp_float &phase, dsp_float &left, dsp_float &right)
 {
     WavetableOscillator *wto = static_cast<WavetableOscillator *>(osc);
 
-    // Select appropriate wavetable for the given frequency
-    const DSPBuffer &table = *(wto->selectTable(frequency));
-    const size_t tableSize = table.size();
+    if (wto->numVoices > 1)
+    {
+        // Lookup table once for base frequency
+        const DSPBuffer &table = *(wto->selectTable(frequency));
+        size_t tableSize = table.size();
 
-    // Calculate fractional index into the table
-    double index = static_cast<double>(phase) * static_cast<double>(tableSize);
-    size_t i0 = static_cast<size_t>(index) % tableSize; // current index
-    size_t i1 = (i0 + 1) % tableSize;                   // next index
-    double frac = index - static_cast<double>(i0);      // fractional part
+        dsp_float sumL = 0.0;
+        dsp_float sumR = 0.0;
 
-    // Linear interpolation
-    double sample =
-        (1.0 - frac) * table[i0] +
-        frac * table[i1];
+        for (auto &v : wto->voices)
+        {
+            dsp_float voiceFreq = frequency * (1.0 + v.detune_ratio);
 
-    // Write to outputs
-    left = right = static_cast<dsp_float>(sample);
+            // Calculate fractional index into shared table
+            dsp_float index = v.phase * tableSize;
+            size_t i0 = static_cast<size_t>(index);
+            size_t i1 = (i0 + 1) % tableSize;
+            dsp_float frac = index - i0;
+
+            // Linear interpolation
+            dsp_float sample = (1.0 - frac) * table[i0] + frac * table[i1];
+
+            // Apply voice-specific gain and pan
+            sumL += sample * v.amp_ratio * v.gainL;
+            sumR += sample * v.amp_ratio * v.gainR;
+
+            // Phase advance per-voice
+            dsp_float inc = voiceFreq / DSP::sampleRate;
+            v.phase += inc;
+            if (v.phase >= 1.0)
+                v.phase -= 1.0;
+        }
+
+        left = sumL;
+        right = sumR;
+    }
+    else
+    {
+        // Fallback to single-voice mode
+        if (frequency != wto->lastFrequency)
+        {
+            wto->cachedTable = wto->selectTable(frequency);
+            wto->cachedTableSize = wto->cachedTable->size();
+            wto->lastFrequency = frequency;
+        }
+
+        dsp_float index = phase * wto->cachedTableSize;
+        size_t i0 = static_cast<size_t>(index);
+        size_t i1 = (i0 + 1) % wto->cachedTableSize;
+        dsp_float frac = index - i0;
+
+        dsp_float sample = (1.0 - frac) * (*wto->cachedTable)[i0] + frac * (*wto->cachedTable)[i1];
+        left = right = static_cast<dsp_float>(sample);
+    }
+}
+
+bool WavetableOscillator::load()
+{
+    namespace fs = std::filesystem;
+    std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".json";
+
+    if (!fs::exists(fileName))
+        return false;
+
+    std::ifstream inFile(fileName);
+    if (!inFile.is_open())
+        return false;
+
+    try
+    {
+        nlohmann::json jsonData;
+        inFile >> jsonData;
+
+        if (!jsonData.contains("t") || !jsonData["t"].is_array())
+            return false;
+
+        const auto &tablesJson = jsonData["t"];
+
+        wavetableBuffers.clear();
+        baseFrequencies.clear();
+        tableSizes.clear();
+
+        for (const auto &tableEntry : tablesJson)
+        {
+            if (!tableEntry.contains("f") || !tableEntry.contains("s") || !tableEntry.contains("d"))
+                continue;
+
+            double freq = tableEntry["f"];
+            size_t size = tableEntry["s"];
+            const auto &data = tableEntry["d"];
+
+            if (!data.is_array() || data.size() != size)
+                continue;
+
+            DSPBuffer buffer;
+            buffer.resize(size);
+
+            for (size_t i = 0; i < size; ++i)
+                buffer[i] = data[i];
+
+            baseFrequencies.push_back(freq);
+            tableSizes.push_back(size);
+            wavetableBuffers.push_back(std::make_unique<DSPBuffer>(buffer));
+        }
+
+        // Validität prüfen
+        return !wavetableBuffers.empty();
+    }
+    catch (const std::exception &e)
+    {
+        DSP::log("WavetableOscillator::load() %s JSON error: %s", fileName.c_str(), e.what());
+        return false;
+    }
+}
+
+void WavetableOscillator::save() const
+{
+    namespace fs = std::filesystem;
+    fs::create_directories("tables");
+
+    std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".json";
+    nlohmann::json jsonData;
+    jsonData["t"] = nlohmann::json::array();
+
+    for (size_t i = 0; i < wavetableBuffers.size(); ++i)
+    {
+        nlohmann::json tableEntry;
+        tableEntry["f"] = baseFrequencies[i];
+        tableEntry["s"] = tableSizes[i];
+
+        const DSPBuffer &buffer = *wavetableBuffers[i];
+        tableEntry["d"] = nlohmann::json::array();
+        for (size_t j = 0; j < buffer.size(); ++j)
+        {
+            tableEntry["d"].push_back(buffer[j]);
+        }
+
+        jsonData["t"].push_back(std::move(tableEntry));
+    }
+
+    std::ofstream outFile(fileName);
+    outFile << jsonData.dump(0);
 }

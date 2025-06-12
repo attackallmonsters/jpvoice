@@ -5,11 +5,13 @@
 #include "dsp_util.h"
 #include "dsp_types.h"
 
+int Voice::voiceCounter = 0;
+
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
 Voice::Voice()
 {
-    carrier = supersawCarrier;
+    carrier = sawCarrier;
     modulator = sineModulator;
 }
 
@@ -18,7 +20,6 @@ Voice::Voice()
 Voice::~Voice()
 {
     delete noise;
-    delete supersawCarrier;
     delete sineCarrier;
     delete sineModulator;
     delete sawCarrier;
@@ -31,6 +32,10 @@ Voice::~Voice()
 
 void Voice::Initialize()
 {
+    voiceNumber = ++Voice::voiceCounter;
+
+    DSP::log("Initializing jpvoice... %i", voiceNumber);
+
     // Waveform generation
     sineCarrier->Initialize();
     sineModulator->Initialize();
@@ -40,6 +45,8 @@ void Voice::Initialize()
     squareModulator->Initialize();
     trianlgeCarrier->Initialize();
     triangleModulator->Initialize();
+
+    DSP::log("jpvoice... %i initialized", voiceNumber);
 }
 
 // Sets the type of FM to use
@@ -104,7 +111,6 @@ void Voice::setBlockSize(int size)
     DSP::setBlockSize(size);
 
     noise->setBlockSize(size);
-    supersawCarrier->setBlockSize(size);
     sineCarrier->setBlockSize(size);
     sineModulator->setBlockSize(size);
     sawCarrier->setBlockSize(size);
@@ -129,8 +135,18 @@ void Voice::setFrequency(dsp_float f)
 // Sets the detune factorjpvoice_tilde_sync
 void Voice::setDetune(dsp_float value)
 {
-    carrier->setDetune(value);
-    modulator->setDetune(value);
+    detune = value;
+    carrier->setDetune(detune);
+}
+
+// Sets the number of voices
+void Voice::setNumVoices(int count)
+{
+    if (count == numVoices)
+        return;
+
+    numVoices = count;
+    carrier->setNumVoices(numVoices);
 }
 
 // Sets the volume level of the oscillators
@@ -152,9 +168,6 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 
     switch (oscillatorType)
     {
-    case CarrierOscillatiorType::Supersaw:
-        carrierTmp = supersawCarrier;
-        break;
     case CarrierOscillatiorType::Saw:
         carrierTmp = sawCarrier;
         break;
@@ -168,7 +181,7 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
         carrierTmp = sineCarrier;
         break;
     default:
-        carrierTmp = supersawCarrier;
+        carrierTmp = sawCarrier;
         break;
     }
 
@@ -178,9 +191,11 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     }
 
     carrierTmp->setFrequency(f);
-    carrier->setNegativeWrappingEnabled(negativeWrappingEnabled);
-    carrier->setFMType(fmType);
-    carrier->setFMModIndex(modulationIndex);
+    carrierTmp->setNegativeWrappingEnabled(negativeWrappingEnabled);
+    carrierTmp->setFMType(fmType);
+    carrierTmp->setFMModIndex(modulationIndex);
+    carrierTmp->setDetune(detune);
+    carrierTmp->setNumVoices(numVoices);
 
     applyOscillators = true;
 }
@@ -340,7 +355,7 @@ void Voice::computeSamples()
     filter->setSampleBuffers(&mixBufferL, &mixBufferR);
 
     // Calculate the samples to be filtered
-    //filter->generateBlock();
+    filter->generateBlock();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     if (applyOscillators)

@@ -87,22 +87,19 @@ void jpvoice_tilde_carrier(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     switch (atom_getint(argv))
     {
     case 1:
-        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Supersaw);
-        break;
-    case 2:
         x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Saw);
         break;
-    case 3:
+    case 2:
         x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Square);
         break;
-    case 4:
+    case 3:
         x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Triangle);
         break;
-    case 5:
+    case 4:
         x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Sine);
         break;
     default:
-        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Supersaw);
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Saw);
         break;
     }
 }
@@ -223,17 +220,17 @@ void jpvoice_tilde_fmmod(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setFMModIndex(idx);
 }
 
-// Sets the pulse width 0 - 1 [pw f(
-void jpvoice_tilde_pw(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+// Sets the number of voices 1 - 9 [nov f(
+void jpvoice_tilde_nov(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
-        pd_error(x, "[jpvoice~]: expected int argument 0 - 1 for pulse width: [pw f(");
+        pd_error(x, "[jpvoice~]: expected int argument 1 - 9 for number of voices: [nov f(");
         return;
     }
 
-    float idx = clamp(static_cast<float>(atom_getfloat(argv)), 0.0f, 1.0f);
-    x->voice->setDutyCycle(idx);
+    int nov = clamp(static_cast<int>(atom_getfloat(argv)), 0.0f, 9.0f);
+    x->voice->setNumVoices(nov);
 }
 
 // Oscillator sync
@@ -384,10 +381,18 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
             sp[0]->s_n);
 }
 
+void log(const std::string &entry)
+{
+    post("%s", entry.c_str());
+}
+
 // Constructor
 void *jpvoice_tilde_new()
 {
     t_jpvoice *x = (t_jpvoice *)pd_new(jpvoice_class);
+
+    // register logger for DSP objects
+    DSP::registerLogger(&log);
 
     x->voice = new Voice();
 
@@ -438,7 +443,7 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_noisetype, gensym("noisetype"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fmtype, gensym("fmtype"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fmmod, gensym("fmmod"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_pw, gensym("pw"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_nov, gensym("nov"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_carrierfb, gensym("carrierfb"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modulatorfb, gensym("modulatorfb"), A_GIMME, 0);

@@ -5,7 +5,6 @@
 // OScillator types for oscillator 1
 enum class CarrierOscillatiorType
 {
-    Supersaw, // Supersaw oascilator
     Saw,      // Saw oscillator
     Square,   // Sqare oscillator
     Triangle, // Triangle oscillator

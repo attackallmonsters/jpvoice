@@ -2,7 +2,7 @@
 #include <cmath>
 
 // Amplitude function for WaveGenerator
-static dsp_float trianlgeAmplitude(int harmonic, int /*maxHarmonics*/)
+static dsp_float trianlgeAmplitude(int harmonic)
 {
     if (harmonic % 2 == 1)
     {
@@ -16,5 +16,5 @@ static dsp_float trianlgeAmplitude(int harmonic, int /*maxHarmonics*/)
 void TriangleWavetable::createWavetable(DSPBuffer &buffer, dsp_float frequency)
 {
     // Fill one full waveform cycle (0 to 2π) across the buffer
-    WaveformGenerator::generateWavetable(buffer, frequency, trianlgeAmplitude, 15);
+    WaveformGenerator::generateWavetable(buffer, frequency, trianlgeAmplitude, 0.5);
 }

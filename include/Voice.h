@@ -4,7 +4,6 @@
 #include "Oscillator.h"
 #include "VoiceOptions.h"
 #include "NoiseGenerator.h"
-#include "SupersawOscillator.h"
 #include "SineWavetable.h"
 #include "SawWavetable.h"
 #include "TriangleWavetable.h"
@@ -64,6 +63,9 @@ public:
 
     // Sets the frequency of oscillator 1/carrier
     void setFrequency(dsp_float f);
+
+    // Sets the number of voices
+    void setNumVoices(int count);
 
     // Sets the volume level of the oscillators
     void setOscillatorMix(dsp_float mix);
@@ -135,7 +137,6 @@ private:
 
     // Oscillators
     NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
-    SupersawOscillator *supersawCarrier = new SupersawOscillator();
     SineWavetable *sineCarrier = new SineWavetable();
     SineWavetable *sineModulator = new SineWavetable();
     SawWavetable *sawCarrier = new SawWavetable();
@@ -171,4 +172,11 @@ private:
     DCBlocker dcBlockerCarrierR;
     DCBlocker dcBlockerModulatorL;
     DCBlocker dcBlockerModulatorR;
+
+    // Number of voices
+    int numVoices = 1;
+
+    // The voice instance number
+    int voiceNumber = 0;
+    static int voiceCounter;
 };

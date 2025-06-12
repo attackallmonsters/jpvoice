@@ -6,9 +6,14 @@
 class SineWavetable : public WavetableOscillator
 {
 public:
-    SineWavetable() = default;
+    // Ctor
+    SineWavetable() : WavetableOscillator("sine") {};
 
 protected:
     // Fills the given buffer with one cycle of a sine waveform
     void createWavetable(DSPBuffer &buffer, dsp_float frequency) override;
+
+private:
+    // Indicated if the wavetable has been loaded.
+    bool loaded = false;
 };

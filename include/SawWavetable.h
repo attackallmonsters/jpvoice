@@ -7,7 +7,7 @@
 class SawWavetable : public WavetableOscillator
 {
 public:
-    SawWavetable() = default;
+    SawWavetable() : WavetableOscillator("saw") {};
 
 protected:
     // Fills the given buffer with one cycle of a sine waveform
