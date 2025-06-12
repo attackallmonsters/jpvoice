@@ -1,13 +1,10 @@
 #pragma once
 
-#define JSON_NO_CPP_OPTIONAL
-
 #include "Oscillator.h"
 #include "DSPBuffer.h"
 #include <vector>
 #include <cmath>
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <fstream>
 #include <filesystem> // C++17
 

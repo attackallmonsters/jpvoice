@@ -73,7 +73,7 @@
 #X obj 100 164 s param;
 #X obj 100 75 i;
 #X msg 100 139 carrier \$1;
-#X obj 100 100 clip 1 5;
+#X obj 100 100 clip 1 4;
 #X connect 0 0 1 0;
 #X connect 0 0 3 0;
 #X connect 3 0 5 0;

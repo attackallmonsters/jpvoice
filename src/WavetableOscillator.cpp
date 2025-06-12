@@ -57,7 +57,7 @@ void WavetableOscillator::Initialize()
 void WavetableOscillator::setNumVoices(int count)
 {
     // Clamp to [1, 9] and resize
-    numVoices = std::clamp(count, 1, 9);
+    numVoices = clamp(count, 1, 9);
     voices.resize(numVoices);
 
     for (int i = 0; i < numVoices; ++i)
@@ -167,7 +167,7 @@ void WavetableOscillator::generateSample(Oscillator *osc, const dsp_float &frequ
 bool WavetableOscillator::load()
 {
     namespace fs = std::filesystem;
-    std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".json";
+    std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".wave";
 
     if (!fs::exists(fileName))
         return false;
@@ -176,51 +176,55 @@ bool WavetableOscillator::load()
     if (!inFile.is_open())
         return false;
 
-    try
+    wavetableBuffers.clear();
+    baseFrequencies.clear();
+    tableSizes.clear();
+
+    std::string line;
+    while (std::getline(inFile, line))
     {
-        nlohmann::json jsonData;
-        inFile >> jsonData;
+        std::stringstream ss(line);
+        std::string item;
 
-        if (!jsonData.contains("t") || !jsonData["t"].is_array())
-            return false;
-
-        const auto &tablesJson = jsonData["t"];
-
-        wavetableBuffers.clear();
-        baseFrequencies.clear();
-        tableSizes.clear();
-
-        for (const auto &tableEntry : tablesJson)
+        try
         {
-            if (!tableEntry.contains("f") || !tableEntry.contains("s") || !tableEntry.contains("d"))
+            // Frequency
+            if (!std::getline(ss, item, ','))
                 continue;
+            double freq = std::stod(item);
 
-            double freq = tableEntry["f"];
-            size_t size = tableEntry["s"];
-            const auto &data = tableEntry["d"];
-
-            if (!data.is_array() || data.size() != size)
+            // Table size
+            if (!std::getline(ss, item, ','))
                 continue;
+            size_t size = static_cast<size_t>(std::stoul(item));
 
+            // Read samples
             DSPBuffer buffer;
             buffer.resize(size);
 
-            for (size_t i = 0; i < size; ++i)
-                buffer[i] = data[i];
+            size_t sampleCount = 0;
+            while (std::getline(ss, item, ',') && sampleCount < size)
+            {
+                buffer[sampleCount++] = static_cast<dsp_float>(std::stod(item));
+            }
 
+            // Validate
+            if (sampleCount != size)
+                continue;
+
+            // Store all
             baseFrequencies.push_back(freq);
             tableSizes.push_back(size);
-            wavetableBuffers.push_back(std::make_unique<DSPBuffer>(buffer));
+            wavetableBuffers.push_back(std::make_unique<DSPBuffer>(std::move(buffer)));
         }
+        catch (const std::exception &e)
+        {
+            DSP::log("WavetableOscillator::load(): parse error in line: %s", line.c_str());
+            continue;
+        }
+    }
 
-        // Validität prüfen
-        return !wavetableBuffers.empty();
-    }
-    catch (const std::exception &e)
-    {
-        DSP::log("WavetableOscillator::load() %s JSON error: %s", fileName.c_str(), e.what());
-        return false;
-    }
+    return !wavetableBuffers.empty();
 }
 
 void WavetableOscillator::save() const
@@ -228,26 +232,24 @@ void WavetableOscillator::save() const
     namespace fs = std::filesystem;
     fs::create_directories("tables");
 
-    std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".json";
-    nlohmann::json jsonData;
-    jsonData["t"] = nlohmann::json::array();
+    std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".wave";
+    std::ofstream outFile(fileName);
+
+    if (!outFile.is_open())
+        return;
 
     for (size_t i = 0; i < wavetableBuffers.size(); ++i)
     {
-        nlohmann::json tableEntry;
-        tableEntry["f"] = baseFrequencies[i];
-        tableEntry["s"] = tableSizes[i];
-
         const DSPBuffer &buffer = *wavetableBuffers[i];
-        tableEntry["d"] = nlohmann::json::array();
-        for (size_t j = 0; j < buffer.size(); ++j)
+        const size_t tableSize = tableSizes[i];
+        outFile << baseFrequencies[i] << "," << tableSize;
+
+        for (size_t j = 0; j < tableSize; ++j)
         {
-            tableEntry["d"].push_back(buffer[j]);
+            outFile << "," << buffer[j];
         }
 
-        jsonData["t"].push_back(std::move(tableEntry));
+        outFile << "\n"; 
     }
-
-    std::ofstream outFile(fileName);
-    outFile << jsonData.dump(0);
 }
+
