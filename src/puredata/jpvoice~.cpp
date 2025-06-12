@@ -27,18 +27,25 @@ typedef struct _jpvoice
 // Frequency of carrier set via list [f1 freq(
 void jpvoice_tilde_f(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected float argument 0 - n for carrier frequency f1: [f1 f(");
         return;
     }
     dsp_float f = atom_getfloat(argv);
+
     x->voice->setFrequency(f);
 }
 
 // Frequency offset modulator in halftones
 void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected float argument -24 - 24 for modulator offset: [offset f(");
@@ -52,6 +59,9 @@ void jpvoice_tilde_offset(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Frequency fine tuning for modulator -100 - 100 [fine f(
 void jpvoice_tilde_fine(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected float argument -100 - 100 for modulator fine tune: [fine f(");
@@ -65,6 +75,9 @@ void jpvoice_tilde_fine(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Frequency of modulator set via list [detune factor(
 void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected float argument 0 - 1 for detune factor: [detune f(");
@@ -78,6 +91,9 @@ void jpvoice_tilde_detune(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Oscillator type carrier [carrier n( 1 - 5
 void jpvoice_tilde_carrier(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 1 - 5 for carrier oscillator type: [carrier n(");
@@ -107,6 +123,9 @@ void jpvoice_tilde_carrier(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Oscillator type carrier [modulator n( 1 - 4
 void jpvoice_tilde_modulator(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 1 - 4 for modulation oscillator type: [modulator n(");
@@ -136,6 +155,9 @@ void jpvoice_tilde_modulator(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Sets the type of noise to white (0) or pink (1)
 void jpvoice_tilde_noisetype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 0 (white) or 1 (pink) for noise type: [noisetype n(");
@@ -159,6 +181,9 @@ void jpvoice_tilde_noisetype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Oscillator mix [oscmix f(
 void jpvoice_tilde_oscmix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 0 - 1 for oscillator mix: [oscmix f(");
@@ -172,6 +197,9 @@ void jpvoice_tilde_oscmix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Noise mix [noisemix f(
 void jpvoice_tilde_noisemix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 0 - 1 for noise mix: [noisemix f(");
@@ -185,6 +213,9 @@ void jpvoice_tilde_noisemix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Sets the FM modulation type [fmtype f(
 void jpvoice_tilde_fmtype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 0 - n for FM modulation type: [fmtype n(");
@@ -210,6 +241,9 @@ void jpvoice_tilde_fmtype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Sets the FM modulation index [fmmod f(
 void jpvoice_tilde_fmmod(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 0 - n for FM modulation index: [fmmod f(");
@@ -223,6 +257,9 @@ void jpvoice_tilde_fmmod(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Sets the number of voices 1 - 9 [nov f(
 void jpvoice_tilde_nov(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 1 - 9 for number of voices: [nov f(");
@@ -236,6 +273,9 @@ void jpvoice_tilde_nov(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // Oscillator sync
 void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc != 1 || argv[0].a_type != A_FLOAT)
     {
         pd_error(x, "[jpvoice~]: expected int argument 0 (unsynced) or 1 (synced) for oscillator sync: [oscsync n(");
@@ -249,6 +289,9 @@ void jpvoice_tilde_sync(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // [filtermode <0|1|2>] → 0 = LPF12, 1 = BPF12, 2 = HPF12
 void jpvoice_tilde_filtermode(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc < 1)
     {
         post("[jpvoice~] usage: filtermode <1=LPF12 | 2=BPF12 | 3=HPF12>");
@@ -267,6 +310,9 @@ void jpvoice_tilde_filtermode(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // [carrierfb (0 - 1.2)]
 void jpvoice_tilde_carrierfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc < 1)
     {
         post("[jpvoice~] usage: carrierfb (amount 0.0 – 1.2)");
@@ -281,6 +327,9 @@ void jpvoice_tilde_carrierfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 // [carrierfb (0 - 1.2)]
 void jpvoice_tilde_modulatorfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc < 1)
     {
         post("[jpvoice~] usage: modulatorfb (amount 0.0 – 1.2)");
@@ -294,6 +343,9 @@ void jpvoice_tilde_modulatorfb(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
 void jpvoice_tilde_cutoff(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc < 1)
     {
         post("[jpvoice~] usage: filter cutoff (amount 0.0 – samplerate / 2)");
@@ -308,6 +360,9 @@ void jpvoice_tilde_cutoff(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
 void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc < 1)
     {
         post("[jpvoice~] usage: filter reso (amount 0.0 – 1.0)");
@@ -322,6 +377,9 @@ void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
 void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
+    if (!x->voice)
+        return;
+
     if (argc < 1)
     {
         post("[jpvoice~] usage: filter drive (amount 0.0 – 1.0)");
@@ -351,8 +409,8 @@ t_int *jpvoice_tilde_perform(t_int *w)
 
     x->voice->computeSamples();
 
-    dsp_float* bufL = x->voice->mixBufferL.data();
-    dsp_float* bufR = x->voice->mixBufferR.data();
+    dsp_float *bufL = x->voice->mixBufferL.data();
+    dsp_float *bufR = x->voice->mixBufferR.data();
 
     for (int i = 0; i < n; ++i)
     {
@@ -367,6 +425,9 @@ t_int *jpvoice_tilde_perform(t_int *w)
 void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 {
     x->samplerate = sp[0]->s_sr;
+
+    delete x->voice;
+    x->voice = new Voice();
 
     x->voice->setSampleRate(x->samplerate);
     x->voice->setBlockSize(sp[0]->s_n);
@@ -393,8 +454,6 @@ void *jpvoice_tilde_new()
 
     // register logger for DSP objects
     DSP::registerLogger(&log);
-
-    x->voice = new Voice();
 
     x->in_cutoff = inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_signal, &s_signal);
     x->in_reso = inlet_new(&x->x_obj, &x->x_obj.ob_pd, &s_signal, &s_signal);
