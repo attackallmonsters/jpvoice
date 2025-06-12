@@ -1,5 +1,7 @@
 #pragma once
 
+#define JSON_NO_CPP_OPTIONAL
+
 #include "Oscillator.h"
 #include "DSPBuffer.h"
 #include <vector>
