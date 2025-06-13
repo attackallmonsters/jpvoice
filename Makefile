@@ -52,6 +52,11 @@ PD_SOURCES = \
 	$(SRC_DIR)/SawWavetable.cpp \
 	$(SRC_DIR)/SquareWavetable.cpp \
 	$(SRC_DIR)/TriangleWavetable.cpp \
+	$(SRC_DIR)/HarmonicClusterWavetable.cpp \
+	$(SRC_DIR)/FibonacciWavetable.cpp \
+	$(SRC_DIR)/MirrorWavetable.cpp \
+	$(SRC_DIR)/ModuloWavetable.cpp \
+	$(SRC_DIR)/BitWavetable.cpp \
 	$(SRC_DIR)/KorgonFilter.cpp \
 	$(PD_SRC_DIR)/jpvoice~.cpp 
 

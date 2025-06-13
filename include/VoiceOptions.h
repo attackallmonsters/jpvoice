@@ -5,19 +5,28 @@
 // OScillator types for oscillator 1
 enum class CarrierOscillatiorType
 {
-    Saw,      // Saw oscillator
-    Square,   // Sqare oscillator
-    Triangle, // Triangle oscillator
-    Sine      // Sine oscillator
+    Saw,       // Saw oscillator
+    Square,    // Sqare oscillator
+    Triangle,  // Triangle oscillator
+    Sine,      // Sine oscillator
+    Cluster,   // Harmonioc numbers cluster oscillator
+    Fibonacci, // Fibonacci number oscillator
+    Mirror,    // Mirrored signal oscillator
+    Modulo     // Modulo wave ocscillator
 };
 
 // OScillator types for oscillator 1
 enum class ModulatorOscillatorType
 {
-    Saw,      // Saw oscillator
-    Square,   // Square oscillator
-    Triangle, // Triangle oscsillator
-    Sine      // Sine oascilator
+    Saw,       // Saw oscillator
+    Square,    // Square oscillator
+    Triangle,  // Triangle oscsillator
+    Sine,      // Sine oscillator
+    Cluster,   // Harmonioc numbers cluster oscillator
+    Fibonacci, // Fibonacci number oscillator
+    Mirror,    // Mirrored signal oscillator
+    Modulo,    // Modulo wave ocscillator
+    Bit        // Bitcrusher oscillator
 };
 
 // Defines the available types of noise

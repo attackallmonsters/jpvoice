@@ -28,6 +28,15 @@ Voice::~Voice()
     delete squareModulator;
     delete trianlgeCarrier;
     delete triangleModulator;
+    delete clusterCarrier;
+    delete clusterModulator;
+    delete fibonacciCarrier;
+    delete fibonacciModulator;
+    delete mirrorCarrier;
+    delete mirrorModulator;
+    delete moduloCarrier;
+    delete moduloModulator;
+    delete bitModulator;
 }
 
 void Voice::Initialize()
@@ -44,6 +53,8 @@ void Voice::Initialize()
 
     DSP::log("Initializing jpvoice... %i", voiceNumber);
 
+    noise->Initialize();
+
     // Waveform generation
     sawCarrier->Initialize();
     sawModulator->Initialize();
@@ -53,6 +64,15 @@ void Voice::Initialize()
     squareModulator->Initialize();
     trianlgeCarrier->Initialize();
     triangleModulator->Initialize();
+    clusterCarrier->Initialize();
+    clusterModulator->Initialize();
+    fibonacciCarrier->Initialize();
+    fibonacciModulator->Initialize();
+    mirrorCarrier->Initialize();
+    mirrorModulator->Initialize();
+    moduloCarrier->Initialize();
+    moduloModulator->Initialize();
+    bitModulator->Initialize();
 
     mixBufferL.resize(DSP::blockSize);
     mixBufferR.resize(DSP::blockSize);
@@ -166,6 +186,18 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     case CarrierOscillatiorType::Sine:
         carrierTmp = sineCarrier;
         break;
+    case CarrierOscillatiorType::Cluster:
+        carrierTmp = clusterCarrier;
+        break;
+    case CarrierOscillatiorType::Fibonacci:
+        carrierTmp = fibonacciCarrier;
+        break;
+    case CarrierOscillatiorType::Mirror:
+        carrierTmp = mirrorCarrier;
+        break;
+    case CarrierOscillatiorType::Modulo:
+        carrierTmp = moduloCarrier;
+        break;
     default:
         carrierTmp = sawCarrier;
         break;
@@ -202,6 +234,21 @@ void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
         break;
     case ModulatorOscillatorType::Sine:
         modulatorTmp = sineModulator;
+        break;
+    case ModulatorOscillatorType::Cluster:
+        modulatorTmp = clusterModulator;
+        break;
+    case ModulatorOscillatorType::Fibonacci:
+        modulatorTmp = fibonacciModulator;
+        break;
+    case ModulatorOscillatorType::Mirror:
+        modulatorTmp = mirrorModulator;
+        break;
+    case ModulatorOscillatorType::Modulo:
+        modulatorTmp = moduloModulator;
+        break;
+    case ModulatorOscillatorType::Bit:
+        modulatorTmp = bitModulator;
         break;
     default:
         modulatorTmp = sineModulator;

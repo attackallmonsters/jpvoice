@@ -10,6 +10,11 @@
 #include "SquareWavetable.h"
 #include "TriangleOscillator.h"
 #include "SquareOscillator.h"
+#include "HarmonicClusterWavetable.h"
+#include "FibonacciWavetable.h"
+#include "MirrorWavetable.h"
+#include "ModuloWavetable.h"
+#include "BitWavetable.h"
 #include "KorgonFilter.h"
 #include "DSP.h"
 #include "dsp_types.h"
@@ -100,8 +105,8 @@ public:
     // Next sample block generation
     void computeSamples();
 
-    DSPBuffer mixBufferL;  // Mixing buffer left channel
-    DSPBuffer mixBufferR;  // Mixing buffer right channel
+    DSPBuffer mixBufferL; // Mixing buffer left channel
+    DSPBuffer mixBufferR; // Mixing buffer right channel
 
 private:
     Oscillator *carrier;           // Carrier oscillator (may be modulated)
@@ -113,13 +118,13 @@ private:
     dsp_float frequency = 0.0; // Current frequency
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
-    dsp_float modulationIndex = 0;          // FM depth: how much modulator modulates carrier
+    dsp_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
 
-    dsp_float oscmix = 0.0;                 // Mix carrier <=> modulator
-    dsp_float noisemix = 0.0;               // Mix oscillators <=> noise
-    bool syncEnabled = false;            // True if Sync is active    
+    dsp_float oscmix = 0.0;              // Mix carrier <=> modulator
+    dsp_float noisemix = 0.0;            // Mix oscillators <=> noise
+    bool syncEnabled = false;            // True if Sync is active
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
-    
+
     dsp_float detune = 0;       // Detune factor supersaw oszillator
     dsp_float pulseWidth = 0.5; // Pulse width square oscillator
     dsp_float pitchOffset = 0;  // Pitch offset modulator
@@ -127,7 +132,7 @@ private:
 
     int fadeCounter = 0;       // Amplitude for param change
     const int fadeLength = 32; // Fade in/out samples for param change
-    dsp_float fadeValue = 1.0;    // Current amplitude for param change
+    dsp_float fadeValue = 1.0; // Current amplitude for param change
 
     // Oscillators
     NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
@@ -139,7 +144,16 @@ private:
     SquareWavetable *squareModulator = new SquareWavetable();
     TriangleWavetable *trianlgeCarrier = new TriangleWavetable();
     TriangleWavetable *triangleModulator = new TriangleWavetable();
-    
+    HarmonicClusterWavetable *clusterCarrier = new HarmonicClusterWavetable();
+    HarmonicClusterWavetable *clusterModulator = new HarmonicClusterWavetable();
+    FibonacciWavetable *fibonacciCarrier = new FibonacciWavetable();
+    FibonacciWavetable *fibonacciModulator = new FibonacciWavetable();
+    MirrorWavetable *mirrorCarrier = new MirrorWavetable();
+    MirrorWavetable *mirrorModulator = new MirrorWavetable();
+    ModuloWavetable *moduloCarrier = new ModuloWavetable();
+    ModuloWavetable *moduloModulator = new ModuloWavetable();
+    BitWavetable *bitModulator = new BitWavetable();
+
     // Multi mode filter
     KorgonFilter *filter = new KorgonFilter();
 

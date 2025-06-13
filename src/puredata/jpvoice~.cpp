@@ -115,6 +115,18 @@ void jpvoice_tilde_carrier(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     case 4:
         x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Sine);
         break;
+    case 5:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Cluster);
+        break;
+    case 6:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Fibonacci);
+        break;
+    case 7:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Mirror);
+        break;
+    case 8:
+        x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Modulo);
+        break;
     default:
         x->voice->setCarrierOscillatorType(CarrierOscillatiorType::Saw);
         break;
@@ -146,6 +158,21 @@ void jpvoice_tilde_modulator(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
         break;
     case 4:
         x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Sine);
+        break;
+    case 5:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Cluster);
+        break;
+    case 6:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Fibonacci);
+        break;
+    case 7:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Mirror);
+        break;
+    case 8:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Modulo);
+        break;
+    case 9:
+        x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Bit);
         break;
     default:
         x->voice->setModulatorOscillatorType(ModulatorOscillatorType::Sine);
@@ -431,8 +458,8 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
     DSP::InitializeAudio(x->samplerate, x->blockSize);
 
     delete x->voice;
-    x->voice = new Voice();   
-    
+    x->voice = new Voice();
+
     x->voice->Initialize();
 
     dsp_add(jpvoice_tilde_perform, 6,
