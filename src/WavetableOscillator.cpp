@@ -1,7 +1,9 @@
 #include "WavetableOscillator.h"
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <unistd.h>
 #include <sstream>
+#include <limits.h>
+#include <cstdlib>
 
 // Ctor: expects an unique name for the waveform
 // This name is used for managiong wavetable files
@@ -167,13 +169,40 @@ void WavetableOscillator::generateSample(Oscillator *osc, const dsp_float &frequ
     }
 }
 
+static void createDir()
+{
+    // Check if directory exists
+    if (access("tables", F_OK) == -1)
+    {
+        // Create directory with rwx------ (0700), adjust if needed
+        mkdir("tables", 0700);
+    }
+}
+
+static std::string absolutePath(const std::string &relativePath)
+{
+    char fullPath[PATH_MAX];
+    if (realpath(relativePath.c_str(), fullPath) != nullptr)
+    {
+        return std::string(fullPath);
+    }
+    else
+    {
+        return relativePath; // fallback
+    }
+}
+
 bool WavetableOscillator::load()
 {
     std::string fileName = "tables/" + waveformName + "_" + std::to_string(static_cast<int>(DSP::sampleRate)) + ".wave";
 
+    DSP::log("Try loading wavetable %s", absolutePath(fileName).c_str());
+
     std::ifstream inFile(fileName.c_str());
     if (!inFile.is_open())
         return false;
+
+    DSP::log("Found wavetable %s", absolutePath(fileName).c_str());
 
     wavetableBuffers.clear();
     baseFrequencies.clear();
@@ -208,29 +237,30 @@ bool WavetableOscillator::load()
             }
 
             if (sampleCount != size)
-                continue;
+            {
+                DSP::log("Invalid format in wavetable %s", absolutePath(fileName).c_str());
+                return false;
+            }
 
             baseFrequencies.push_back(freq);
             tableSizes.push_back(size);
             wavetableBuffers.push_back(std::make_unique<DSPBuffer>(buffer));
         }
+        catch (const std::exception &ex)
+        {
+            DSP::log("Error generating wave forms from wavetable %s (%s)", absolutePath(fileName), ex.what());
+            return false;
+        }
         catch (...)
         {
-            continue;
+            DSP::log("Error reading wavetable %s", absolutePath(fileName).c_str());
+            return false;
         }
     }
 
-    return !wavetableBuffers.empty();
-}
+    DSP::log("Wavetable %s loaded", absolutePath(fileName).c_str());
 
-static void createDir()
-{
-    // Check if directory exists
-    if (access("tables", F_OK) == -1)
-    {
-        // Create directory with rwx------ (0700), adjust if needed
-        mkdir("tables", 0700);
-    }
+    return !wavetableBuffers.empty();
 }
 
 void WavetableOscillator::save() const
@@ -241,18 +271,32 @@ void WavetableOscillator::save() const
     std::ofstream outFile(fileName.c_str());
 
     if (!outFile.is_open())
-        return;
-
-    for (size_t i = 0; i < wavetableBuffers.size(); ++i)
     {
-        const DSPBuffer &buffer = *wavetableBuffers[i];
-        outFile << baseFrequencies[i] << "," << buffer.size();
+        DSP::log("Wavetable %s does not exist", absolutePath(fileName).c_str());
+        return;
+    }
 
-        for (size_t j = 0; j < buffer.size(); ++j)
+    try
+    {
+        for (size_t i = 0; i < wavetableBuffers.size(); ++i)
         {
-            outFile << "," << buffer[j];
-        }
+            const DSPBuffer &buffer = *wavetableBuffers[i];
+            outFile << baseFrequencies[i] << "," << buffer.size();
 
-        outFile << "\n";
+            for (size_t j = 0; j < buffer.size(); ++j)
+            {
+                outFile << "," << buffer[j];
+            }
+
+            outFile << "\n";
+        }
+    }
+    catch (const std::exception &ex)
+    {
+        DSP::log("Error writing wave form to wavetable %s (%s)", absolutePath(fileName).c_str(), ex.what());
+    }
+    catch (...)
+    {
+        DSP::log("Error writung wave form to wavetable %s", absolutePath(fileName).c_str());
     }
 }

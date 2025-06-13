@@ -12,11 +12,11 @@ void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
     size_t size = buffer.size();
 
     // Check for invalid input (no size, zero freq/sampleRate)
-    if (size == 0 || DSP::sampleRate <= 0.0 || baseFrequency <= 0.0)
+    if (size == 0 || baseFrequency <= 0.0)
+    {
+        DSP::log("WaveformGenerator::generateWavetable failed: invalid buffer size or invalid frequency");
         return;
-
-    // Ensure buffer has correct size (resize to itself to be safe)
-    buffer.resize(size);
+    }
 
     // Nyquist frequency: we only include harmonics below this threshold
     const dsp_float nyquist = 0.5 * DSP::sampleRate;
@@ -31,7 +31,7 @@ void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
     for (size_t i = 0; i < size; ++i)
     {
         // Convert index to phase in range [0.0, 1.0)
-        dsp_float phase = static_cast<dsp_float>(i) / static_cast<dsp_float>(size);
+        dsp_float phase = static_cast<dsp_float>(i) / static_cast<dsp_float>(size - 1);
 
         dsp_float sample = 0.0;
 
@@ -46,6 +46,19 @@ void WaveformGenerator::generateWavetable(DSPBuffer &buffer,
         }
 
         // Store computed sample in buffer (converted to DSP format)
-        buffer[i] = static_cast<dsp_float>(sample);
+        buffer[i] = DSP::zeroSubnormals(sample);
+    }
+
+    // Nomralisation
+    // Find peak
+    dsp_float peak = 0.0;
+    for (size_t i = 0; i < size; ++i)
+        peak = std::max(peak, std::abs(buffer[i]));
+
+    // Normalize to ±1.0
+    if (peak > 0.0)
+    {
+        for (size_t i = 0; i < size; ++i)
+            buffer[i] /= peak;
     }
 }

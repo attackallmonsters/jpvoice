@@ -32,17 +32,23 @@ Voice::~Voice()
 
 void Voice::Initialize()
 {
-    DSP::Initialize();    
+    DSP::Initialize();
+
+    if (!DSP::dspIsInitialized())
+    {
+        DSP::log("DSP not initialized. Do DSP::initializeAudio first.");
+        throw("DSP not initialized. Do DSP::initializeAudio first.");
+    }
 
     voiceNumber = ++Voice::voiceCounter;
 
     DSP::log("Initializing jpvoice... %i", voiceNumber);
 
     // Waveform generation
-    sineCarrier->Initialize();
-    sineModulator->Initialize();
     sawCarrier->Initialize();
     sawModulator->Initialize();
+    sineCarrier->Initialize();
+    sineModulator->Initialize();
     squareCarrier->Initialize();
     squareModulator->Initialize();
     trianlgeCarrier->Initialize();
