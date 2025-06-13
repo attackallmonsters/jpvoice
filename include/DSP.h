@@ -19,14 +19,14 @@ public:
     // Initializes a DSP-Object
     virtual void Initialize();
 
-    // Sets the block size
-    static void setBlockSize(size_t size);
-
-    // Sets the sample rate
-    static void setSampleRate(dsp_float rate);
+    // Initializes the DSP with samplerate and blocksize
+    static void InitializeAudio(dsp_float rate, size_t size);
 
     // The max block size
     static constexpr size_t maxBlockSize = 2048;
+
+    // The max sample rate
+    static constexpr size_t maxSamplerate = 96000.0;
 
     // The audio systems current sampling rate
     static dsp_float sampleRate;

@@ -24,6 +24,9 @@ public:
     // Virtual destructor to allow proper cleanup in derived classes
     virtual ~Oscillator() = default;
 
+    // Initializes the oscillator
+    void Initialize() override;
+
     // Sets the detune factor
     virtual void setDetune(dsp_float /*value*/) {};
 
@@ -71,9 +74,6 @@ public:
 
     // Resets the wrap status
     void unWrap();
-
-    // Sets the output sample block size
-    void setBlockSize(int size);
 
     // Buffer for FM
     DSPBuffer *modBufferL;

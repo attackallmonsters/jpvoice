@@ -35,6 +35,13 @@ Oscillator::Oscillator()
     fmFunc = fmThroughZero;
 }
 
+// Initializes the oscillator
+void Oscillator::Initialize()
+{
+    outBufferL.resize(DSP::blockSize);
+    outBufferR.resize(DSP::blockSize);
+}
+
 // Derived classes registers sample generator
 void Oscillator::registerSampleGenerator(SampleGenerator sg)
 {
@@ -90,7 +97,7 @@ void Oscillator::setCalculatedFrequency(dsp_float f)
     calculatedFrequency = f * std::pow(2.0, semitoneOffset / 12.0);
 
     // Update phase increment for waveform generation
-    phaseIncrement = calculatedFrequency / DSP::sampleRate;    
+    phaseIncrement = calculatedFrequency / DSP::sampleRate;
 }
 
 // Gets the current frequency
@@ -115,13 +122,6 @@ bool Oscillator::hasWrapped()
 void Oscillator::unWrap()
 {
     wrapped = false;
-}
-
-// Sets the input/output buffer size
-void Oscillator::setBlockSize(int size)
-{
-    outBufferL.resize(size);
-    outBufferR.resize(size);
 }
 
 // Sets the type of FM to use

@@ -19,6 +19,7 @@ typedef struct _jpvoice
     dsp_float left;
     dsp_float right;
     dsp_float samplerate;
+    size_t blockSize;
 
     DSPBuffer *cutoffBuf;
     DSPBuffer *resoBuf;
@@ -425,12 +426,13 @@ t_int *jpvoice_tilde_perform(t_int *w)
 void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
 {
     x->samplerate = sp[0]->s_sr;
+    x->blockSize = sp[0]->s_n;
+
+    DSP::InitializeAudio(x->samplerate, x->blockSize);
 
     delete x->voice;
-    x->voice = new Voice();
-
-    x->voice->setSampleRate(x->samplerate);
-    x->voice->setBlockSize(sp[0]->s_n);
+    x->voice = new Voice();   
+    
     x->voice->Initialize();
 
     dsp_add(jpvoice_tilde_perform, 6,

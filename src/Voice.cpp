@@ -32,6 +32,8 @@ Voice::~Voice()
 
 void Voice::Initialize()
 {
+    DSP::Initialize();    
+
     voiceNumber = ++Voice::voiceCounter;
 
     DSP::log("Initializing jpvoice... %i", voiceNumber);
@@ -45,6 +47,9 @@ void Voice::Initialize()
     squareModulator->Initialize();
     trianlgeCarrier->Initialize();
     triangleModulator->Initialize();
+
+    mixBufferL.resize(DSP::blockSize);
+    mixBufferR.resize(DSP::blockSize);
 
     DSP::log("jpvoice... %i initialized", voiceNumber);
 }
@@ -97,31 +102,6 @@ void Voice::setFineTune(dsp_float fine)
 void Voice::setNegativeWrappingEnabled(bool enabled)
 {
     negativeWrappingEnabled = enabled;
-}
-
-// Sets teh sample rate for signal calculation
-void Voice::setSampleRate(dsp_float rate)
-{
-    DSP::setSampleRate(rate);
-}
-
-// Sets the size of the current audio buffer
-void Voice::setBlockSize(int size)
-{
-    DSP::setBlockSize(size);
-
-    noise->setBlockSize(size);
-    sineCarrier->setBlockSize(size);
-    sineModulator->setBlockSize(size);
-    sawCarrier->setBlockSize(size);
-    sawModulator->setBlockSize(size);
-    squareCarrier->setBlockSize(size);
-    squareModulator->setBlockSize(size);
-    trianlgeCarrier->setBlockSize(size);
-    triangleModulator->setBlockSize(size);
-
-    mixBufferL.resize(size);
-    mixBufferR.resize(size);
 }
 
 // Sets the current frequency

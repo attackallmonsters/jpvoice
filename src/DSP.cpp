@@ -30,16 +30,11 @@ void DSP::Initialize()
 {
 }
 
-// Sets the block size
-void DSP::setBlockSize(size_t size)
+// Initializes the DSP with samplerate and blocksize
+void DSP::InitializeAudio(dsp_float rate, size_t size)
 {
-    blockSize = size;
-}
-
-// Sets the audio systems current sampling rate
-void DSP::setSampleRate(dsp_float rate)
-{
-    sampleRate = clampmin(rate, 1.0);
+    sampleRate = clamp(rate, 1.0, maxSamplerate);
+    blockSize = clamp(size, static_cast<size_t>(1), maxBlockSize);
 }
 
 // Log function callback registration

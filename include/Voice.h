@@ -55,12 +55,6 @@ public:
     // Enables negative phase wrapping
     void setNegativeWrappingEnabled(bool enabled);
 
-    // Sets the sample rate for signal calculation
-    void setSampleRate(dsp_float rate);
-
-    // Sets the size of the current audio buffer
-    void setBlockSize(int size);
-
     // Sets the frequency of oscillator 1/carrier
     void setFrequency(dsp_float f);
 

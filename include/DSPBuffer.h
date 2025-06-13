@@ -58,6 +58,6 @@ public:
     DSPBuffer clone() const;
 
 private:
-    std::vector<dsp_float> buffer;               // Internal buffer storage
+    std::vector<dsp_float> buffer;                // Internal buffer storage
     std::vector<dsp_float> *bufferOrig = nullptr; // Internal buffer storage
 };
