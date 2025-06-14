@@ -4,6 +4,7 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <cmath>
 #include "clamp.h"
 #include "DSP.h"
 #include "dsp_types.h"
@@ -11,6 +12,7 @@
 size_t DSP::blockSize = 64;
 dsp_float DSP::sampleRate = -1.0;
 bool DSP::isInitialized = false;
+bool DSP::logFileInitialized = false;
 
 // Dummy logger, does nothing
 static void defaultLogger(const std::string &)
@@ -45,14 +47,13 @@ void DSP::InitializeAudio(dsp_float rate, size_t size)
 
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
-
-    isInitialized = true;
 }
 
 // Log function callback registration
 void DSP::registerLogger(LogFunc func)
 {
     logger = func;
+    logFileInitialized = false;
 }
 
 void DSP::log(const char *fmt, ...)
@@ -113,5 +114,5 @@ void DSP::log2File(const char *fmt, ...)
 // Zeros a value if it is in the range of +/- epsilon
 dsp_float DSP::zeroSubnormals(dsp_float value)
 {
-    return (std::abs(value) < epsilon) ? 0.0 : value;
+    return (std::fabs(value) < epsilon) ? 0.0 : value;
 }
