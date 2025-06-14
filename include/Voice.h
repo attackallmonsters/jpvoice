@@ -17,6 +17,7 @@
 #include "BitWavetable.h"
 #include "KorgonFilter.h"
 #include "DSP.h"
+#include "DSPObject.h"
 #include "dsp_types.h"
 
 // The PI
@@ -26,7 +27,7 @@
 
 // The Voice class manages two oscillators and handles interactions like
 // Frequency Modulation (FM) and Oscillator Sync between them.
-class Voice : public DSP
+class Voice : public DSPObject
 {
 public:
     // Constructor: requires two Oscillator pointers and the global sample rateSample

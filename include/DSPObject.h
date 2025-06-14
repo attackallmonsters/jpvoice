@@ -13,6 +13,9 @@ public:
     // Dtor
     virtual ~DSPObject();
 
+    // Initializes a DSP-Object
+    virtual void Initialize();
+
     // Calculates the next sample buffer
     void generateBlock();
 

@@ -41,8 +41,6 @@ Voice::~Voice()
 
 void Voice::Initialize()
 {
-    DSP::Initialize();
-
     if (!DSP::dspIsInitialized())
     {
         DSP::log("DSP not initialized. Do DSP::initializeAudio first.");
@@ -53,7 +51,8 @@ void Voice::Initialize()
 
     DSP::log("Initializing jpvoice... %i", voiceNumber);
 
-    
+    DSPObject::Initialize();
+
     modulationIndex = 0;
     oscmix = 0.0;
     noisemix = 0.0;
@@ -80,6 +79,8 @@ void Voice::Initialize()
     moduloCarrier->Initialize();
     moduloModulator->Initialize();
     bitModulator->Initialize();
+
+    filter->Initialize();
 
     mixBufferL.resize(DSP::blockSize);
     mixBufferR.resize(DSP::blockSize);

@@ -11,6 +11,9 @@ public:
     // Constructor with sample rate
     explicit KorgonFilter();
 
+    // Initializes the filter
+    void Initialize() override;
+
     // Sets the filter drive
     void setDrive(dsp_float value);
 

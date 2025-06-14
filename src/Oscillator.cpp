@@ -37,6 +37,8 @@ Oscillator::Oscillator()
 // Initializes the oscillator
 void Oscillator::Initialize()
 {
+    DSPObject::Initialize();
+    
     outBufferL.resize(DSP::blockSize);
     outBufferR.resize(DSP::blockSize);
 

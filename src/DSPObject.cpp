@@ -13,6 +13,11 @@ DSPObject::~DSPObject()
 {
 }
 
+// Initializes a DSP-Object
+void DSPObject::Initialize()
+{
+}
+
 // Generates the next audio sample block
 void DSPObject::generateBlock()
 {

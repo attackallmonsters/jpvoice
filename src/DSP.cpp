@@ -31,11 +31,6 @@ DSP::~DSP()
 {
 }
 
-// Initializes a DSP-Object
-void DSP::Initialize()
-{
-}
-
 // Initializes the DSP with samplerate and blocksize
 void DSP::InitializeAudio(dsp_float rate, size_t size)
 {
@@ -47,6 +42,8 @@ void DSP::InitializeAudio(dsp_float rate, size_t size)
 
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
+
+    isInitialized = true;
 }
 
 // Log function callback registration

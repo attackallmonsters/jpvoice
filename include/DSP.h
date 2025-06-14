@@ -17,9 +17,6 @@ public:
     // Dtor
     virtual ~DSP();
 
-    // Initializes a DSP-Object
-    virtual void Initialize();
-
     // Initializes the DSP with samplerate and blocksize
     static void InitializeAudio(dsp_float rate, size_t size);
 

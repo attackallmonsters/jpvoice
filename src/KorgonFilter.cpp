@@ -9,10 +9,17 @@
 // Constructor with sample rate
 KorgonFilter::KorgonFilter()
 {
+    registerBlockProcessor(&KorgonFilter::processBlock);
+}
+
+// Initializes the filter
+void KorgonFilter::Initialize()
+{
+    DSPObject::Initialize();
+    
     y1L = y1R = y2L = y2R = 0.0;
     T = 1.0 / DSP::sampleRate;
     drive = 1.0;
-    registerBlockProcessor(&KorgonFilter::processBlock);
 }
 
 // Set the cutoff frequency and update coefficients
@@ -85,6 +92,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
 
         // First integrator (emulating Sallen-Key stage)
         x1 = left - feedback;
+
         y1L += alpha * (x1 - y1L);
 
         // Second integrator

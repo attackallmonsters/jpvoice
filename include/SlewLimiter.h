@@ -1,9 +1,10 @@
 #pragma once
 
 #include "DSP.h"
+#include "DSPObject.h"
 #include "dsp_types.h"
 
-class SlewLimiter : public DSP
+class SlewLimiter : public DSPObject
 {
 public:
     // Constructor: slewTimeMs in milliseconds
