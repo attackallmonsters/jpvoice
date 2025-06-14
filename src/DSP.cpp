@@ -1,6 +1,9 @@
 #include <cstring>
 #include <cstdarg>
 #include <mutex>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 #include "clamp.h"
 #include "DSP.h"
 #include "dsp_types.h"
@@ -70,19 +73,40 @@ void DSP::log2File(const char *fmt, ...)
 
     const char *logFileName = "dsp.log";
 
-    // Only delete on first call
-    FILE *file = std::fopen(logFileName, logFileInitialized ? "a" : "w");
+    const char *mode = logFileInitialized ? "a" : "w";
+    FILE *file = std::fopen(logFileName, mode);
     if (!file)
         return;
 
     logFileInitialized = true;
 
+    // Creates timestamp
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+    std::time_t t = system_clock::to_time_t(now);
+
+    char timebuf[32];
+    std::tm tm;
+#ifdef _WIN32
+    localtime_s(&tm, &t);
+#else
+    localtime_r(&t, &tm);
+#endif
+    std::strftime(timebuf, sizeof(timebuf), "%H:%M:%S", &tm);
+
+    char timestamp[64];
+    std::snprintf(timestamp, sizeof(timestamp), "[%s.%03d] ", timebuf, static_cast<int>(ms.count()));
+
+    // Formatting
+    char msgbuf[2048];
     va_list args;
     va_start(args, fmt);
-    std::vfprintf(file, fmt, args);
-    std::fprintf(file, "\n");
+    std::vsnprintf(msgbuf, sizeof(msgbuf), fmt, args);
     va_end(args);
 
+    // Write and close file
+    std::fprintf(file, "%s%s\n", timestamp, msgbuf);
     std::fclose(file);
 }
 

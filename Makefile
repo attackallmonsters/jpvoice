@@ -36,6 +36,8 @@ BIN_DIR = out
 # === Pure Data sources ===
 PD_SOURCES = \
 	$(SRC_DIR)/DSP.cpp \
+	$(SRC_DIR)/SlewLimiter.cpp \
+	$(SRC_DIR)/ParamFader.cpp \
 	$(SRC_DIR)/DSPBuffer.cpp \
 	$(SRC_DIR)/DSPObject.cpp \
 	$(SRC_DIR)/DCBlocker.cpp \

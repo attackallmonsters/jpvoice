@@ -96,16 +96,20 @@ void WavetableOscillator::setDetune(dsp_float value)
     setNumVoices(numVoices);
 }
 
-DSPBuffer *WavetableOscillator::selectTable(double frequency)
+void WavetableOscillator::selectTable(double frequency)
 {
     for (size_t i = baseFrequencies.size(); i-- > 0;)
     {
         if (frequency >= baseFrequencies[i])
-            return wavetableBuffers[i].get();
+        {
+            selectedTable = wavetableBuffers[i].get();
+            selectedTableSize = selectedTable->size();
+        }
     }
 
     // Fallback
-    return wavetableBuffers.front().get();
+    selectedTable = wavetableBuffers.front().get();
+    selectedTableSize = selectedTable->size();
 }
 
 // Generates the requested sample for Oscillator
@@ -116,8 +120,9 @@ void WavetableOscillator::generateSample(Oscillator *osc, const dsp_float &frequ
     if (wto->numVoices > 1)
     {
         // Lookup table once for base frequency
-        const DSPBuffer &table = *(wto->selectTable(frequency));
-        size_t tableSize = table.size();
+        wto->selectTable(frequency);
+        const DSPBuffer &table = *(wto->selectedTable);
+        size_t tableSize = wto->selectedTableSize;
 
         dsp_float sumL = 0.0;
         dsp_float sumR = 0.0;
@@ -154,17 +159,22 @@ void WavetableOscillator::generateSample(Oscillator *osc, const dsp_float &frequ
         // Fallback to single-voice mode
         if (frequency != wto->lastFrequency)
         {
-            wto->cachedTable = wto->selectTable(frequency);
-            wto->cachedTableSize = wto->cachedTable->size();
+            wto->selectTable(frequency);
             wto->lastFrequency = frequency;
         }
 
-        dsp_float index = phase * wto->cachedTableSize;
+        dsp_float index = phase * wto->selectedTableSize;
+
+        if (index > wto->selectedTableSize)
+        {
+            index = wto->selectedTableSize - 1;
+        }
+
         size_t i0 = static_cast<size_t>(index);
-        size_t i1 = (i0 + 1) % wto->cachedTableSize;
+        size_t i1 = (i0 + 1) % wto->selectedTableSize;
         dsp_float frac = index - i0;
 
-        dsp_float sample = (1.0 - frac) * (*wto->cachedTable)[i0] + frac * (*wto->cachedTable)[i1];
+        dsp_float sample = (1.0 - frac) * (*wto->selectedTable)[i0] + frac * (*wto->selectedTable)[i1];
         left = right = static_cast<dsp_float>(sample);
     }
 }

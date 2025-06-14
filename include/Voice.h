@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DCBlocker.h"
+#include "ParamFader.h"
 #include "Oscillator.h"
 #include "VoiceOptions.h"
 #include "NoiseGenerator.h"
@@ -113,7 +113,6 @@ private:
     Oscillator *modulator;         // Modulator oscillator (for FM or sync)
     Oscillator *carrierTmp;        // Carrier oscillator (may be modulated)
     Oscillator *modulatorTmp;      // Modulator oscillator (for FM or sync)
-    bool applyOscillators = false; // Indicates that an oscillator has changed
 
     dsp_float frequency = 0.0; // Current frequency
 
@@ -129,10 +128,6 @@ private:
     dsp_float pulseWidth = 0.5; // Pulse width square oscillator
     dsp_float pitchOffset = 0;  // Pitch offset modulator
     dsp_float fineTune = 0;     // Fine tune modulator
-
-    int fadeCounter = 0;       // Amplitude for param change
-    const int fadeLength = 32; // Fade in/out samples for param change
-    dsp_float fadeValue = 1.0; // Current amplitude for param change
 
     // Oscillators
     NoiseGenerator *noise = new NoiseGenerator(); // Noise generator
@@ -175,16 +170,13 @@ private:
     dsp_float feedbackAmountCarrier = 0.0;
     dsp_float feedbackAmountModulator = 0.0;
 
-    // Filter for oscillator feedback
-    DCBlocker dcBlockerCarrierL;
-    DCBlocker dcBlockerCarrierR;
-    DCBlocker dcBlockerModulatorL;
-    DCBlocker dcBlockerModulatorR;
-
     // Number of voices
     int numVoices = 1;
 
     // The voice instance number
     int voiceNumber = 0;
     static int voiceCounter;
+
+    //Parameter change fader
+    ParamFader paramFader;
 };

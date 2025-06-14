@@ -142,7 +142,7 @@ void Voice::setFrequency(dsp_float f)
 void Voice::setDetune(dsp_float value)
 {
     detune = value;
-    carrier->setDetune(detune);
+    paramFader.change([=]() { carrier->setDetune(detune); });
 }
 
 // Sets the number of voices
@@ -215,7 +215,16 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     carrierTmp->setDetune(detune);
     carrierTmp->setNumVoices(numVoices);
 
-    applyOscillators = true;
+    paramFader.change([=]()
+    {
+         if (carrier != carrierTmp)
+            carrier = carrierTmp;
+
+         if (modulator != modulatorTmp)
+            modulator = modulatorTmp;
+
+         filter->reset(); 
+    });
 }
 
 // Assigns the modulation oscillator
@@ -263,7 +272,17 @@ void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
     modulatorTmp->setFrequency(frequency);
     modulatorTmp->setPitchOffset(pitchOffset);
     modulatorTmp->setFineTune(fineTune);
-    applyOscillators = true;
+    
+    paramFader.change([=]()
+    {
+         if (carrier != carrierTmp)
+            carrier = carrierTmp;
+
+         if (modulator != modulatorTmp)
+            modulator = modulatorTmp;
+
+         filter->reset(); 
+    });
 }
 
 // Changes the current noise type (white or pink)
@@ -391,40 +410,5 @@ void Voice::computeSamples()
     filter->generateBlock();
 
     // --- Step 7: Smooth fade-out/fade-in when parameters change ---
-    if (applyOscillators)
-    {
-        fadeCounter++;
-
-        if (fadeCounter <= fadeLength)
-        {
-            fadeValue = 1.0 - (dsp_float(fadeCounter) / fadeLength); // Fade out
-        }
-        else if (fadeCounter == fadeLength + 1)
-        {
-            if (carrier != carrierTmp)
-                carrier = carrierTmp;
-
-            if (modulator != modulatorTmp)
-                modulator = modulatorTmp;
-
-            filter->reset();
-        }
-        else if (fadeCounter <= fadeLength * 2)
-        {
-            fadeValue = (dsp_float(fadeCounter - fadeLength) / fadeLength); // Fade in
-        }
-        else
-        {
-            applyOscillators = false;
-            fadeValue = 1.0;
-            fadeCounter = 0;
-        }
-
-        // Apply fade to entire output buffer
-        for (size_t i = 0; i < DSP::blockSize; ++i)
-        {
-            mixBufferL[i] *= fadeValue;
-            mixBufferR[i] *= fadeValue;
-        }
-    }
+    paramFader.processChanges(mixBufferL, mixBufferR);
 }

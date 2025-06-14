@@ -218,6 +218,7 @@ void Oscillator::processBlock(DSPObject *dsp)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
+            // TODO: sometimes becomes huge
             phase += phaseIncrement;
 
             if (phase >= 1.0)

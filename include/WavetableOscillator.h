@@ -57,14 +57,14 @@ private:
     void save() const;
 
     // Select appropriate wavetable for the given frequency
-    DSPBuffer *selectTable(double frequency);
+    void selectTable(double frequency);
 
     // The waveform name
     std::string waveformName;
 
     // stores the last wavetable to prevent lookup when frequency did not change
-    const DSPBuffer *cachedTable = nullptr;
-    size_t cachedTableSize = 0;
+    const DSPBuffer *selectedTable = nullptr;
+    size_t selectedTableSize = 0;
     dsp_float lastFrequency = -1.0;
 
     // The number of voices
