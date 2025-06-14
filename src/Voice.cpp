@@ -53,6 +53,13 @@ void Voice::Initialize()
 
     DSP::log("Initializing jpvoice... %i", voiceNumber);
 
+    
+    modulationIndex = 0;
+    oscmix = 0.0;
+    noisemix = 0.0;
+    feedbackAmountCarrier = 0.0;
+    feedbackAmountModulator = 0.0;
+
     noise->Initialize();
 
     // Waveform generation
@@ -76,6 +83,18 @@ void Voice::Initialize()
 
     mixBufferL.resize(DSP::blockSize);
     mixBufferR.resize(DSP::blockSize);
+
+    setCarrierOscillatorType(CarrierOscillatiorType::Saw);
+    setModulatorOscillatorType(ModulatorOscillatorType::Sine);
+
+    setFrequency(0.0);
+    setDetune(0.0);
+    setSyncEnabled(false);
+    setPitchOffset(0.0);
+    setFineTune(0.0);
+    setPulseWidth(0.5);
+    setNumVoices(1);
+    setFMModIndex(0.0);
 
     DSP::log("jpvoice... %i initialized", voiceNumber);
 }
@@ -102,32 +121,24 @@ void Voice::setSyncEnabled(bool enabled)
     syncEnabled = enabled;
 }
 
-// Sets the duty cycle
-void Voice::setDutyCycle(dsp_float cycle)
-{
-    dsp_float dutyCycle = clamp(cycle, 0.0, 1.0);
-    squareModulator->setDutyCycle(dutyCycle);
-    squareCarrier->setDutyCycle(dutyCycle);
-}
-
 // Sets the pitch offset for the modulator
-void Voice::setPitchOffset(dsp_float offset)
+void Voice::setPitchOffset(int offset)
 {
-    pitchOffset = clamp(offset, -24.0, 24.0);
+    pitchOffset = offset;
     modulator->setPitchOffset(pitchOffset);
 }
 
 // Sets the fine tunig for the modulator
 void Voice::setFineTune(dsp_float fine)
 {
-    fineTune = clamp(fine, -100.0, 100.0);
+    fineTune = fine;
     modulator->setFineTune(fineTune);
 }
 
-// Enables negative phase wrapping
-void Voice::setNegativeWrappingEnabled(bool enabled)
+void Voice::setPulseWidth(dsp_float pw)
 {
-    negativeWrappingEnabled = enabled;
+    carrier->setDutyCycle(pw);
+    modulator->setDutyCycle(pw);
 }
 
 // Sets the current frequency
@@ -209,7 +220,6 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     }
 
     carrierTmp->setFrequency(f);
-    carrierTmp->setNegativeWrappingEnabled(negativeWrappingEnabled);
     carrierTmp->setFMType(fmType);
     carrierTmp->setFMModIndex(modulationIndex);
     carrierTmp->setDetune(detune);

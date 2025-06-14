@@ -31,7 +31,6 @@ Oscillator::Oscillator()
     // to avoid vtable lookup
     registerBlockProcessor(&Oscillator::processBlock);
     generateSampleFunc = &Oscillator::generateSample;
-    setFrequency(0.0);
     fmFunc = fmThroughZero;
 }
 
@@ -40,6 +39,15 @@ void Oscillator::Initialize()
 {
     outBufferL.resize(DSP::blockSize);
     outBufferR.resize(DSP::blockSize);
+
+    setFrequency(0.0);
+    setFineTune(0);
+    setPitchOffset(0);
+    setNumVoices(1);
+    setNegativeWrappingEnabled(false);
+    setFMType(FMType::ThroughZero);
+    setFMModIndex(0.0);
+    unWrap();
 }
 
 // Derived classes registers sample generator

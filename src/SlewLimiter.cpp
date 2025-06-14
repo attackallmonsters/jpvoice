@@ -10,6 +10,10 @@ SlewLimiter::SlewLimiter(dsp_float ms)
 void SlewLimiter::Initialize()
 {
     samplerate = DSP::sampleRate;
+    remaining = 0;
+    current = 0.0;
+    target = 0.0;
+    step = 0.0;
     calcSamples();
 }
 

@@ -48,17 +48,14 @@ public:
     // Enables or disables oscillator sync
     void setSyncEnabled(bool enabled);
 
-    // Sets the duty cycle
-    void setDutyCycle(dsp_float cycle);
-
     // Sets the pitch offset for the modulator
-    void setPitchOffset(dsp_float offset);
+    void setPitchOffset(int offset);
 
     // Sets the fine tunig for the modulator
     void setFineTune(dsp_float fine);
 
-    // Enables negative phase wrapping
-    void setNegativeWrappingEnabled(bool enabled);
+    // Sets modulators pulse width
+    void setPulseWidth(dsp_float pw);
 
     // Sets the frequency of oscillator 1/carrier
     void setFrequency(dsp_float f);
@@ -109,24 +106,23 @@ public:
     DSPBuffer mixBufferR; // Mixing buffer right channel
 
 private:
-    Oscillator *carrier;           // Carrier oscillator (may be modulated)
-    Oscillator *modulator;         // Modulator oscillator (for FM or sync)
-    Oscillator *carrierTmp;        // Carrier oscillator (may be modulated)
-    Oscillator *modulatorTmp;      // Modulator oscillator (for FM or sync)
+    Oscillator *carrier;      // Carrier oscillator (may be modulated)
+    Oscillator *modulator;    // Modulator oscillator (for FM or sync)
+    Oscillator *carrierTmp;   // Carrier oscillator (may be modulated)
+    Oscillator *modulatorTmp; // Modulator oscillator (for FM or sync)
 
     dsp_float frequency = 0.0; // Current frequency
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
     dsp_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
 
-    dsp_float oscmix = 0.0;              // Mix carrier <=> modulator
-    dsp_float noisemix = 0.0;            // Mix oscillators <=> noise
-    bool syncEnabled = false;            // True if Sync is active
-    bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
+    dsp_float oscmix = 0.0;   // Mix carrier <=> modulator
+    dsp_float noisemix = 0.0; // Mix oscillators <=> noise
+    bool syncEnabled = false; // True if Sync is active
 
     dsp_float detune = 0;       // Detune factor supersaw oszillator
     dsp_float pulseWidth = 0.5; // Pulse width square oscillator
-    dsp_float pitchOffset = 0;  // Pitch offset modulator
+    int pitchOffset = 0;        // Pitch offset modulator
     dsp_float fineTune = 0;     // Fine tune modulator
 
     // Oscillators
@@ -177,6 +173,6 @@ private:
     int voiceNumber = 0;
     static int voiceCounter;
 
-    //Parameter change fader
+    // Parameter change fader
     ParamFader paramFader;
 };

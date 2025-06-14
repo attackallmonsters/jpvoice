@@ -28,10 +28,10 @@ public:
     void Initialize() override;
 
     // Sets the detune factor
-    virtual void setDetune(dsp_float /*value*/) {};
+    virtual void setDetune(dsp_float /*value*/){};
 
     // Sets the duty cycle for PWM
-    virtual void setDutyCycle(dsp_float /*value*/) {};
+    virtual void setDutyCycle(dsp_float /*value*/){};
 
     // Resets the internal oscillator phase to 0.0.
     virtual void resetPhase();
@@ -86,24 +86,25 @@ public:
 protected:
     bool syncEnabled;                    // Enables or disable block wise phase synchronization
     bool negativeWrappingEnabled = true; // Indicates if negative phase wrapping is enabled
-    dsp_float frequency;                    // The desired oscillator frequency in Hertz
-    dsp_float calculatedFrequency;          // The calculated FM frequency in Hertz
-    dsp_float pitchOffset;                  // offset in half tones
-    dsp_float fineTune;                     // fine tune in cent
-    dsp_float phaseIncrement;               // Increment based on frquency and sample rate
-    dsp_float currentPhase;                 // Current phase of the oscillator in radians [0, 2π]
+    dsp_float frequency;                 // The desired oscillator frequency in Hertz
+    dsp_float calculatedFrequency;       // The calculated FM frequency in Hertz
+    int pitchOffset;                     // offset in half tones
+    dsp_float fineTune;                  // fine tune in cent
+    dsp_float phaseIncrement;            // Increment based on frquency and sample rate
+    dsp_float currentPhase;              // Current phase of the oscillator in radians [0, 2π]
     bool wrapped = false;                // True when phase wrapped
 
     FMType fmType = FMType::ThroughZero; // The FM operation mode
-    dsp_float modulationIndex = 0;          // FM depth: how much modulator modulates carrier
+    dsp_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
 
     // Avoid vtable lookup for sample calculation
     using SampleGenerator = void (*)(Oscillator * /*osc*/, const dsp_float & /*frequency*/, const dsp_float & /*phase*/, dsp_float & /*left*/, dsp_float & /*right*/);
-    
+
     // Derived classes registers sample generator
     void registerSampleGenerator(SampleGenerator sg);
+
 private:
-    FMCalcFunc fmFunc; // FM calculation method
+    FMCalcFunc fmFunc;                  // FM calculation method
     SampleGenerator generateSampleFunc; // Sample generation ba derived class
 
     // Next sample block generation

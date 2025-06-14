@@ -419,6 +419,22 @@ void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setFilterDrive(d * 20.0);
 }
 
+void jpvoice_tilde_pw(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
+{
+    if (!x->voice)
+        return;
+
+    if (argc < 1)
+    {
+        post("[jpvoice~] usage: filter pw (amount 0.0 – 1.0)");
+        return;
+    }
+
+    dsp_float pw = atom_getfloat(argv);
+
+    x->voice->setPulseWidth(pw);
+}
+
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
@@ -538,4 +554,5 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
+    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_pw, gensym("pw"), A_GIMME, 0);
 }
