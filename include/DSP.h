@@ -59,5 +59,5 @@ private:
     // Logging callback for audio host system
     static LogFunc logger;
     static inline bool logFileInitialized = false;
-    static inline std::mutex logFileMutex;
+    // TODO: fix for gcc 6 static inline std::mutex logFileMutex;
 };

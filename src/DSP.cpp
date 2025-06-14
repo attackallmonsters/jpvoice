@@ -69,7 +69,7 @@ void DSP::log(const char *fmt, ...)
 // Logging to file "dsp.log"
 void DSP::log2File(const char *fmt, ...)
 {
-    std::lock_guard<std::mutex> lock(logFileMutex);
+    // TODO: fix for gcc 6 std::lock_guard<std::mutex> lock(logFileMutex);
 
     const char *logFileName = "dsp.log";
 
