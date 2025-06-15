@@ -48,7 +48,14 @@ protected:
 
 private:
     // Sample calculation without looking up vtable
-    static void generateSample(Oscillator *, const dsp_float &, const dsp_float &, dsp_float &, dsp_float &);
+    static void generateSample(
+        Oscillator *,
+        const dsp_float &,
+        const dsp_float &,
+        dsp_float &,
+        dsp_float &,
+        const dsp_float &,
+        const dsp_float &);
 
     // Loads a wavetable
     bool load();
@@ -58,6 +65,9 @@ private:
 
     // Select appropriate wavetable for the given frequency
     void selectTable(double frequency);
+
+    // Update detune on voices
+    void updateDetune();
 
     // The waveform name
     std::string waveformName;

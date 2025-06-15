@@ -34,13 +34,19 @@ Oscillator::Oscillator()
     fmFunc = fmThroughZero;
 }
 
+Oscillator::~Oscillator()
+{
+}
+
 // Initializes the oscillator
 void Oscillator::Initialize()
 {
     DSPObject::Initialize();
-    
+
     outBufferL.resize(DSP::blockSize);
     outBufferR.resize(DSP::blockSize);
+    modBufferL.resize(DSP::blockSize);
+    modBufferR.resize(DSP::blockSize);
 
     setFrequency(0.0);
     setFineTune(0);
@@ -48,7 +54,7 @@ void Oscillator::Initialize()
     setNumVoices(1);
     setNegativeWrappingEnabled(false);
     setFMType(FMType::ThroughZero);
-    setFMModIndex(0.0);
+    setModIndex(0.0);
     unWrap();
 }
 
@@ -143,11 +149,14 @@ void Oscillator::setFMType(FMType fm)
 
     if (fmType == FMType::Relative && modulationIndex > 30.0)
     {
-        setFMModIndex(30);
+        setModIndex(30);
     }
 
     switch (fmType)
     {
+    case FMType::None:
+        fmFunc = fmNone;
+        break;
     case FMType::Linear:
         fmFunc = fmLinear;
         break;
@@ -165,7 +174,7 @@ void Oscillator::setFMType(FMType fm)
 
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
-void Oscillator::setFMModIndex(dsp_float index)
+void Oscillator::setModIndex(dsp_float index)
 {
     dsp_float modmax = (fmType == FMType::Relative) ? 30 : 1000;
     modulationIndex = clamp(index, 0.0, modmax);
@@ -178,7 +187,13 @@ void Oscillator::setFMModIndex(dsp_float index)
 }
 
 // Dummy ComputeSampleFunc for setSamples
-void Oscillator::generateSample(Oscillator *, const dsp_float & /*frequency*/, const dsp_float &phase, dsp_float &left, dsp_float &right)
+void Oscillator::generateSample(Oscillator *,
+                                const dsp_float & /*frequency*/,
+                                const dsp_float &phase,
+                                dsp_float &left,
+                                dsp_float &right,
+                                const dsp_float & /*modLeft*/,
+                                const dsp_float & /*modRight*/)
 {
     left = right = std::sin(phase * 2.0 * M_PI); // Sine generator
 }
@@ -192,17 +207,21 @@ void Oscillator::processBlock(DSPObject *dsp)
     bool wrappedFlag = false;
     dsp_float baseFreq = osc->calculatedFrequency;
     dsp_float index = osc->modulationIndex;
+    FMType fmType = osc->fmType;
     dsp_float sr = DSP::sampleRate;
     dsp_float phaseIncrement = osc->phaseIncrement;
     dsp_float left, right;
     bool negativeWrappingEnabled = osc->negativeWrappingEnabled;
     size_t blocksize = DSP::blockSize;
 
-    if (index > 0.0)
+    if (index > 0.0 && fmType != FMType::None)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
-            dsp_float mod = 0.5 * ((*osc->modBufferL)[i] + (*osc->modBufferR)[i]);
+            dsp_float modLeft = osc->modBufferL[i];
+            dsp_float modRight = osc->modBufferR[i];
+
+            dsp_float mod = 0.5 * (modLeft + modLeft);
             dsp_float freq = osc->fmFunc(baseFreq, mod, index);
             dsp_float inc = freq / sr;
 
@@ -219,7 +238,7 @@ void Oscillator::processBlock(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            osc->generateSampleFunc(osc, freq, phase, left, right);
+            osc->generateSampleFunc(osc, freq, phase, left, right, modLeft, modRight);
             osc->outBufferL[i] = left;
             osc->outBufferR[i] = right;
         }
@@ -228,6 +247,9 @@ void Oscillator::processBlock(DSPObject *dsp)
     {
         for (size_t i = 0; i < blocksize; ++i)
         {
+            dsp_float modLeft = osc->modBufferL[i];
+            dsp_float modRight = osc->modBufferR[i];
+
             // TODO: sometimes becomes huge
             phase += phaseIncrement;
 
@@ -237,7 +259,7 @@ void Oscillator::processBlock(DSPObject *dsp)
                 wrappedFlag = true;
             }
 
-            osc->generateSampleFunc(osc, baseFreq, phase, left, right);
+            osc->generateSampleFunc(osc, baseFreq, phase, left, right, modLeft, modRight);
             osc->outBufferL[i] = left;
             osc->outBufferR[i] = right;
         }

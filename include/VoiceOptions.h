@@ -39,6 +39,7 @@ enum class NoiseType
 // FM operations modes
 enum class FMType
 {
+    None,
     Linear,
     ThroughZero,
     Relative

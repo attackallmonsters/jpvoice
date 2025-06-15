@@ -224,6 +224,9 @@ void jpvoice_tilde_fmtype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     switch (fmType)
     {
+    case 0:
+        x->voice->setFMType(FMType::None);
+        break;
     case 1:
         x->voice->setFMType(FMType::ThroughZero);
         break;

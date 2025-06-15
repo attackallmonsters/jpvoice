@@ -90,7 +90,7 @@ void DSPBuffer::fill(dsp_float value)
 // Switches the current buffer to a source buffer (shallow reference switch)
 void DSPBuffer::switchTo(DSPBuffer &buf)
 {
-    buffer = std::move(buf.buffer); // Move external buffer in
+    buffer = buf.buffer; // set external buffer to current buffer
 }
 
 // Restores the buffer reference previously changed with switchTo

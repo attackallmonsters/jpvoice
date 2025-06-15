@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <memory>
 #include "clamp.h"
 #include "DSP.h"
 #include "DSPObject.h"
@@ -22,7 +23,7 @@ public:
     Oscillator();
 
     // Virtual destructor to allow proper cleanup in derived classes
-    virtual ~Oscillator() = default;
+    virtual ~Oscillator();
 
     // Initializes the oscillator
     void Initialize() override;
@@ -59,7 +60,7 @@ public:
     // Gets the current frequency
     dsp_float getFrequency();
 
-    // Gets the calculated FM frequency
+    // Gets the calculated frequency (base + pitchOffset + finetune))
     dsp_float getCalculatedFrequency();
 
     // Sets the type of FM to use
@@ -67,7 +68,7 @@ public:
 
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.
-    void setFMModIndex(dsp_float index);
+    void setModIndex(dsp_float index);
 
     // Returns true if the oscillator's phase wrapped during the last getSample() call
     bool hasWrapped();
@@ -75,11 +76,11 @@ public:
     // Resets the wrap status
     void unWrap();
 
-    // Buffer for FM
-    DSPBuffer *modBufferL;
-    DSPBuffer *modBufferR;
+    // Buffer for modulation
+    DSPBuffer modBufferL;
+    DSPBuffer modBufferR;
 
-    // Input buffer for FM, etc.
+    // Sample buffer for output
     DSPBuffer outBufferL;
     DSPBuffer outBufferR;
 
@@ -98,7 +99,14 @@ protected:
     dsp_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
 
     // Avoid vtable lookup for sample calculation
-    using SampleGenerator = void (*)(Oscillator * /*osc*/, const dsp_float & /*frequency*/, const dsp_float & /*phase*/, dsp_float & /*left*/, dsp_float & /*right*/);
+    using SampleGenerator = void (*)(
+        Oscillator * /*osc*/, 
+        const dsp_float & /*frequency*/, 
+        const dsp_float & /*phase*/, 
+        dsp_float & /*left*/, 
+        dsp_float & /*right*/, 
+        const dsp_float & /*modLeft*/, 
+        const dsp_float & /*modRight*/);
 
     // Derived classes registers sample generator
     void registerSampleGenerator(SampleGenerator sg);
@@ -111,5 +119,11 @@ private:
     static void processBlock(DSPObject *dsp);
 
     // Dummy ComputeSampleFunc for setSamples
-    static void generateSample(Oscillator * /*osc*/, const dsp_float & /*frequency*/, const dsp_float & /*phase*/, dsp_float & /*left*/, dsp_float & /*right*/);
+    static void generateSample(Oscillator * /*osc*/, 
+        const dsp_float & /*frequency*/, 
+        const dsp_float & /*phase*/, 
+        dsp_float & /*left*/, 
+        dsp_float & /*right*/, 
+        const dsp_float & /*modLeft*/, 
+        const dsp_float & /*modRight*/);
 };

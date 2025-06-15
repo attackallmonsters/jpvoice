@@ -67,34 +67,42 @@ void WavetableOscillator::setNumVoices(int count)
 
     for (int i = 0; i < numVoices; ++i)
     {
-        dsp_float center = (numVoices - 1) / 2.0;
-        dsp_float offset = i - center;
-
-        // Spread detune symmetrically
-        voices[i].detune_ratio = detune * offset / center;
-
-        // Equal amplitude for now, normalized by number of voices
-        voices[i].amp_ratio = 3.5 / numVoices;
-
         // Randomize phase [0.0, 1.0)
         voices[i].phase = static_cast<dsp_float>(rand()) / RAND_MAX;
 
         // Stereo panning - from -1.0 (left) to +1.0 (right)
         dsp_float pan = (numVoices > 1)
-                            ? static_cast<dsp_float>(i) / (numVoices - 1) * 2.0 - 1.0
-                            : 0.0;
+            ? static_cast<dsp_float>(i) / (numVoices - 1) * 2.0 - 1.0
+            : 0.0;
 
         voices[i].gainL = std::sqrt(0.5 * (1.0 - pan));
         voices[i].gainR = std::sqrt(0.5 * (1.0 + pan));
     }
+
+    // Normalize amplitude across voices
+    for (int i = 0; i < numVoices; ++i)
+        voices[i].amp_ratio = 3.5 / numVoices;
+
+    updateDetune(); // ensure detune_ratios match after resizing
 }
 
-// Sets the detune factor
+void WavetableOscillator::updateDetune()
+{
+    // Detune spread from -1.0 to +1.0
+    dsp_float center = (numVoices - 1) / 2.0;
+    for (int i = 0; i < numVoices; ++i)
+    {
+        dsp_float offset = i - center;
+        voices[i].detune_ratio = detune * offset / center;
+    }
+}
+
 void WavetableOscillator::setDetune(dsp_float value)
 {
     detune = clamp(value, 0.0, 1.0) * 0.125;
-    setNumVoices(numVoices);
+    updateDetune(); // smooth handling possible
 }
+
 
 void WavetableOscillator::selectTable(double frequency)
 {
@@ -113,10 +121,19 @@ void WavetableOscillator::selectTable(double frequency)
 }
 
 // Generates the requested sample for Oscillator
-void WavetableOscillator::generateSample(Oscillator *osc, const dsp_float &frequency, const dsp_float &phase, dsp_float &left, dsp_float &right)
+void WavetableOscillator::generateSample(
+    Oscillator *osc,
+    const dsp_float & /*frequency*/,
+    const dsp_float &phase,
+    dsp_float &left,
+    dsp_float &right,
+    const dsp_float & /*modLeft*/,
+    const dsp_float & /*modRight*/)
 {
     WavetableOscillator *wto = static_cast<WavetableOscillator *>(osc);
 
+    dsp_float frequency = wto->frequency;
+    
     if (wto->numVoices > 1)
     {
         // Lookup table once for base frequency

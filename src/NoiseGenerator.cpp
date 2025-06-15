@@ -21,7 +21,14 @@ void NoiseGenerator::setType(NoiseType type)
     noiseType = type;
 }
 
-void NoiseGenerator::generateSample(Oscillator *osc, const dsp_float & /*frequency*/, const dsp_float & /*phase*/, dsp_float &left, dsp_float &right)
+void NoiseGenerator::generateSample(
+    Oscillator *osc,
+    const dsp_float & /*frequency*/,
+    const dsp_float & /*phase*/,
+    dsp_float &left,
+    dsp_float &right,
+    const dsp_float & /*modLeft*/,
+    const dsp_float & /*modRight*/)
 {
     NoiseGenerator *noise = static_cast<NoiseGenerator *>(osc);
 

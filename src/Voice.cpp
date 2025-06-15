@@ -112,7 +112,7 @@ void Voice::setFMType(FMType fm)
 void Voice::setFMModIndex(dsp_float index)
 {
     modulationIndex = index;
-    carrier->setFMModIndex(modulationIndex);
+    carrier->setModIndex(modulationIndex);
 }
 
 // Enables or disables oscillator synchronization.
@@ -154,7 +154,7 @@ void Voice::setFrequency(dsp_float f)
 void Voice::setDetune(dsp_float value)
 {
     detune = value;
-    paramFader.change([=]() { carrier->setDetune(detune); });
+    carrier->setDetune(detune);
 }
 
 // Sets the number of voices
@@ -164,7 +164,7 @@ void Voice::setNumVoices(int count)
         return;
 
     numVoices = count;
-    carrier->setNumVoices(numVoices);
+    paramFader.change([=]() { carrier->setNumVoices(numVoices); });
 }
 
 // Sets the volume level of the oscillators
@@ -222,7 +222,7 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
 
     carrierTmp->setFrequency(f);
     carrierTmp->setFMType(fmType);
-    carrierTmp->setFMModIndex(modulationIndex);
+    carrierTmp->setModIndex(modulationIndex);
     carrierTmp->setDetune(detune);
     carrierTmp->setNumVoices(numVoices);
 
@@ -345,16 +345,11 @@ void Voice::computeSamples()
     // This signal will be used either for frequency modulation or direct audio mixing.
     modulator->generateBlock();
 
-    // --- Step 2: Apply Through Zero Frequency Modulation if enabled ---
-    // Use the average (mono) value of the stereo modulator signal
-    // to modulate the frequency of the carrier oscillator.
-    if (modulationIndex > 0)
-    {
-        // TODO: Only assign once because from then on the buffers are identical
-        // If this is done on oscillator switch, modBufferL is invalid (and modBufferR valid)
-        carrier->modBufferL = &modulator->outBufferL;
-        carrier->modBufferR = &modulator->outBufferR;
-    }
+    // --- Step 2: Apply mdoulators audioo buffer as modulation source ---
+    // TODO: Only assign once because from then on the buffers should be identicaly
+    // If this is done on oscillator switch, modBufferL is invalid (and modBufferR valid)
+    carrier->modBufferL.switchTo(modulator->outBufferL);
+    carrier->modBufferR.switchTo(modulator->outBufferR);
 
     // --- Step 3: Generate the stereo output from the carrier oscillator ---
     // This will either be used directly (in FM mode) or mixed with the modulator signal.
