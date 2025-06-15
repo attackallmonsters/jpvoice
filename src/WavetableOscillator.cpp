@@ -31,6 +31,8 @@ void WavetableOscillator::Initialize()
 {
     Oscillator::Initialize();
 
+    lastFrequency = -1.0;
+
     DSP::log("Loading wavetable for %s", waveformName.c_str());
 
     if (!load())
@@ -123,24 +125,23 @@ void WavetableOscillator::selectTable(double frequency)
 // Generates the requested sample for Oscillator
 void WavetableOscillator::generateSample(
     Oscillator *osc,
-    const dsp_float & /*frequency*/,
+    const dsp_float &frequency,
     const dsp_float &phase,
     dsp_float &left,
     dsp_float &right,
-    const dsp_float & /*modLeft*/,
-    const dsp_float & /*modRight*/)
+    const dsp_float &modLeft,
+    const dsp_float &modRight)
 {
     WavetableOscillator *wto = static_cast<WavetableOscillator *>(osc);
+    dsp_float mod_index = wto->modulationIndex;
 
-    dsp_float frequency = wto->frequency;
-    
+    // Tabelle wählen (einmalig)
+    wto->selectTable(frequency);
+    const DSPBuffer &table = *(wto->selectedTable);
+    size_t tableSize = wto->selectedTableSize;
+
     if (wto->numVoices > 1)
     {
-        // Lookup table once for base frequency
-        wto->selectTable(frequency);
-        const DSPBuffer &table = *(wto->selectedTable);
-        size_t tableSize = wto->selectedTableSize;
-
         dsp_float sumL = 0.0;
         dsp_float sumR = 0.0;
 
@@ -148,20 +149,26 @@ void WavetableOscillator::generateSample(
         {
             dsp_float voiceFreq = frequency * (1.0 + v.detune_ratio);
 
-            // Calculate fractional index into shared table
-            dsp_float index = v.phase * tableSize;
+            // Modulation (wahlweise modLeft oder modRight je nach Pan)
+            dsp_float modSignal = (v.gainL > v.gainR) ? modLeft : modRight;
+
+            // Phase modulation
+            dsp_float modulatedPhase = v.phase + mod_index * modSignal;
+            modulatedPhase -= std::floor(modulatedPhase); // Wrap to [0, 1)
+
+            dsp_float index = modulatedPhase * tableSize;
             size_t i0 = static_cast<size_t>(index);
             size_t i1 = (i0 + 1) % tableSize;
             dsp_float frac = index - i0;
 
-            // Linear interpolation
+            // Interpolation
             dsp_float sample = (1.0 - frac) * table[i0] + frac * table[i1];
 
-            // Apply voice-specific gain and pan
+            // Sum weighted
             sumL += sample * v.amp_ratio * v.gainL;
             sumR += sample * v.amp_ratio * v.gainR;
 
-            // Phase advance per-voice
+            // Advance phase
             dsp_float inc = voiceFreq / DSP::sampleRate;
             v.phase += inc;
             if (v.phase >= 1.0)
@@ -173,28 +180,38 @@ void WavetableOscillator::generateSample(
     }
     else
     {
-        // Fallback to single-voice mode
+        // Single-voice fallback (wie gehabt)
         if (frequency != wto->lastFrequency)
         {
             wto->selectTable(frequency);
             wto->lastFrequency = frequency;
         }
 
-        dsp_float index = phase * wto->selectedTableSize;
+        dsp_float modPhaseL = phase + mod_index * modLeft;
+        dsp_float modPhaseR = phase + mod_index * modRight;
 
-        if (index > wto->selectedTableSize)
-        {
-            index = wto->selectedTableSize - 1;
-        }
+        modPhaseL -= std::floor(modPhaseL);
+        modPhaseR -= std::floor(modPhaseR);
 
-        size_t i0 = static_cast<size_t>(index);
-        size_t i1 = (i0 + 1) % wto->selectedTableSize;
-        dsp_float frac = index - i0;
+        dsp_float indexL = modPhaseL * wto->selectedTableSize;
+        dsp_float indexR = modPhaseR * wto->selectedTableSize;
 
-        dsp_float sample = (1.0 - frac) * (*wto->selectedTable)[i0] + frac * (*wto->selectedTable)[i1];
-        left = right = static_cast<dsp_float>(sample);
+        size_t i0L = static_cast<size_t>(indexL);
+        size_t i1L = (i0L + 1) % wto->selectedTableSize;
+        dsp_float fracL = indexL - i0L;
+
+        size_t i0R = static_cast<size_t>(indexR);
+        size_t i1R = (i0R + 1) % wto->selectedTableSize;
+        dsp_float fracR = indexR - i0R;
+
+        dsp_float sampleL = (1.0 - fracL) * (*wto->selectedTable)[i0L] + fracL * (*wto->selectedTable)[i1L];
+        dsp_float sampleR = (1.0 - fracR) * (*wto->selectedTable)[i0R] + fracR * (*wto->selectedTable)[i1R];
+
+        left = sampleL;
+        right = sampleR;
     }
 }
+
 
 static void createDir()
 {
