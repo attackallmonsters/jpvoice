@@ -49,7 +49,9 @@ private:
 
     // Control buffer for cutoff
     DSPBuffer *cutoffBuffer;
+    DSPBuffer cutoffInitBuffer;
 
     // Control buffer for resonance
     DSPBuffer *resoBuffer;
+    DSPBuffer resoInitBuffer;
 };

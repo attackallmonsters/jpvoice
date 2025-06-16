@@ -1,0 +1,18 @@
+#N canvas 229 300 377 197 12;
+#X obj 11 10 inlet;
+#X obj 123 42 f \$1;
+#X obj 123 10 loadbang;
+#X obj 11 162 outlet~;
+#X obj 11 87 pack \$1 50;
+#X obj 11 137 vline~;
+#X msg 11 112 \$1 \$2;
+#X obj 78 10 inlet;
+#X obj 123 67 expr if ($f1 <= 0 \, 50 \, $f1);
+#X connect 0 0 4 0;
+#X connect 1 0 8 0;
+#X connect 2 0 1 0;
+#X connect 4 0 6 0;
+#X connect 5 0 3 0;
+#X connect 6 0 5 0;
+#X connect 7 0 4 1;
+#X connect 8 0 4 1;

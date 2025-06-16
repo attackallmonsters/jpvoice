@@ -32,6 +32,8 @@ void WavetableOscillator::Initialize()
     Oscillator::Initialize();
 
     lastFrequency = -1.0;
+    setNumVoices(3);
+    setDetune(0.03);
 
     DSP::log("Loading wavetable for %s", waveformName.c_str());
 
@@ -102,7 +104,7 @@ void WavetableOscillator::updateDetune()
 void WavetableOscillator::setDetune(dsp_float value)
 {
     detune = clamp(value, 0.0, 1.0) * 0.125;
-    updateDetune(); // smooth handling possible
+    updateDetune();
 }
 
 

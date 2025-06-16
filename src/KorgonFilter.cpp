@@ -16,6 +16,15 @@ KorgonFilter::KorgonFilter()
 void KorgonFilter::Initialize()
 {
     DSPObject::Initialize();
+
+    cutoffInitBuffer.resize(DSP::blockSize);
+    resoInitBuffer.resize(DSP::blockSize);
+
+    cutoffInitBuffer.fill(20000.0);
+    resoInitBuffer.fill(0.0);
+
+    setCutoff(&cutoffInitBuffer);
+    setResonance(&resoInitBuffer);
     
     y1L = y1R = y2L = y2R = 0.0;
     T = 1.0 / DSP::sampleRate;

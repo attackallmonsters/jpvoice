@@ -170,10 +170,6 @@ private:
     // Number of voices
     int numVoices = 1;
 
-    // The voice instance number
-    int voiceNumber = 0;
-    static int voiceCounter;
-
     // Parameter change fader
     ParamFader paramFader;
 };

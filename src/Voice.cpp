@@ -5,8 +5,6 @@
 #include "dsp_util.h"
 #include "dsp_types.h"
 
-int Voice::voiceCounter = 0;
-
 // Constructor: initializes the voice with two oscillator instances.
 // These oscillators are externally allocated and represent the carrier (carrier) and modulator (modulator).
 Voice::Voice()
@@ -41,15 +39,13 @@ Voice::~Voice()
 
 void Voice::Initialize()
 {
-    if (!DSP::dspIsInitialized())
+    if (!DSP::isInitialized())
     {
         DSP::log("DSP not initialized. Do DSP::initializeAudio first.");
         throw("DSP not initialized. Do DSP::initializeAudio first.");
     }
 
-    voiceNumber = ++Voice::voiceCounter;
-
-    DSP::log("Initializing jpvoice... %i", voiceNumber);
+    DSP::log("=====> Initializing jpvoice...");
 
     DSPObject::Initialize();
 
@@ -97,7 +93,7 @@ void Voice::Initialize()
     setNumVoices(1);
     setFMModIndex(0.0);
 
-    DSP::log("jpvoice... %i initialized", voiceNumber);
+    DSP::log("=====> jpvoice initialized");
 }
 
 // Sets the type of FM to use

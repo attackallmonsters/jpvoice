@@ -17,6 +17,9 @@ public:
     // Dtor
     virtual ~DSP();
 
+    // Indicates that the host turned the DSP off
+    void off();
+
     // Initializes the DSP with samplerate and blocksize
     static void InitializeAudio(dsp_float rate, size_t size);
 
@@ -32,7 +35,7 @@ public:
     // Zeros a value if it is in the range +/- epsilon
     static dsp_float zeroSubnormals(dsp_float value);
 
-    static bool dspIsInitialized() { return isInitialized; };
+    static bool isInitialized() { return initialized; };
 
     // The max block size
     static constexpr size_t maxBlockSize = 2048;
@@ -51,7 +54,7 @@ public:
 
 private:
     // Indicator if DSP has been initialized
-    static bool isInitialized;
+    static bool initialized;
 
     // Logging callback for audio host system
     static LogFunc logger;

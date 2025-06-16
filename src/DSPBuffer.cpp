@@ -76,7 +76,7 @@ void DSPBuffer::set(const float *source)
 }
 
 // Copy raw data from an external dsp_float array into the buffer
-void DSPBuffer::set(const double *source)
+void DSPBuffer::set(const dsp_float *source)
 {
     std::copy(source, source + DSP::blockSize, buffer.begin());
 }

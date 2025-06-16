@@ -11,7 +11,7 @@
 
 size_t DSP::blockSize = 64;
 dsp_float DSP::sampleRate = -1.0;
-bool DSP::isInitialized = false;
+bool DSP::initialized = false;
 bool DSP::logFileInitialized = false;
 
 // Dummy logger, does nothing
@@ -31,10 +31,16 @@ DSP::~DSP()
 {
 }
 
+// Indicates that the host turned the DSP off
+void DSP::off()
+{
+    initialized = false;
+}
+
 // Initializes the DSP with samplerate and blocksize
 void DSP::InitializeAudio(dsp_float rate, size_t size)
 {
-    if (isInitialized)
+    if (initialized)
         return;
 
     sampleRate = clamp(rate, 1.0, maxSamplerate);
@@ -43,7 +49,7 @@ void DSP::InitializeAudio(dsp_float rate, size_t size)
     DSP::log("DSP audio settings: samplerate is %f", sampleRate);
     DSP::log("DSP audio settings: block size is %i", blockSize);
 
-    isInitialized = true;
+    initialized = true;
 }
 
 // Log function callback registration
