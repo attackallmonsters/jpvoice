@@ -75,11 +75,13 @@ void DSPBuffer::set(const float *source)
         buffer[i] = static_cast<dsp_float>(source[i]);
 }
 
+#ifdef USE_DOUBLE_PRECISION
 // Copy raw data from an external dsp_float array into the buffer
-void DSPBuffer::set(const dsp_float *source)
+void DSPBuffer::set(const double *source)
 {
     std::copy(source, source + DSP::blockSize, buffer.begin());
 }
+#endif
 
 // Fill the buffer with a constant value
 void DSPBuffer::fill(dsp_float value)

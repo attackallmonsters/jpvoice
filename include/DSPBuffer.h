@@ -42,8 +42,10 @@ public:
     // Copy raw data from an external float array into the buffer
     void set(const float *source);
 
+#ifdef USE_DOUBLE_PRECISION
     // Copy raw data from an external dsp_float array into the buffer
     void set(const double *source);
+#endif
 
     // Fill the buffer with a constant value
     void fill(dsp_float value);
