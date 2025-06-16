@@ -6,7 +6,7 @@ I actually just wanted to delve a little deeper into DSP. Since I've always want
 
 I started with mathematical oscillators, only to realize that with the number of voices and filters on the Raspbian 3, that really wasn't an option. The code is still in the repo, but I then had to switch to wavetable with Fourier generation.
 
-The biggest challenge was creating a nice-sounding filter that also worked efficiently. I first tried [bob~]. But with up to six voices in stereo, that would have required 12 [bob~]s. Not an option on the Organelle/Raspbian 3. But I've managed to create a pretty nice and efficient Sallen-Key low-pass filter with a nonlinear, analog-sounding feedback. Its design is not dissimilar to the filter on the Korg MS20. It's now integrated directly into the voice and can be controlled via an audio rate inlet.
+The biggest challenge was creating a nice-sounding filter that also worked efficiently. I first tried [bob~]. But with up to six voices in stereo, that would have required 12 [bob~]s. Not an option on the Organelle/Raspbian 3. But I've managed to create a pretty nice and efficient Sallen-Key low-pass filter with a nonlinear, analog-sounding feedback. Its design is not dissimilar to the filter on the Korg MS20. It's now integrated directly into the voice and can be controlled via an audio rate inlet for cutoff and reso.
 
 There are still a few things I can do to optimize performance and memory. I'll work on that later. But it's currently running pretty stable. I'll finish a complete synth when I get a chance. The goal is to make it run on the Raspberry Pi 3.
 
@@ -20,6 +20,6 @@ For the desktop version, you should copy the "tables" folder to the user's home 
 
 I'm not familiar with the JP-8000 at all, and I don't know what it sounds like. But the sound synthesis, with its rather simple means, offers a wide variety of tonal possibilities. The people at Roland are brilliant. And here modulation options aren't even implemented yet. But that might come later. If I have the opportunity to buy a JP-8000, I would definitely do so.
 
-And as for the operation: just experiment.
+And as for the operation: just experiment. It is best to use an external keyboard.
 
 Have fun!
