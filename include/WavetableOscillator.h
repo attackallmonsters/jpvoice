@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Oscillator.h"
+#include "DSPObject.h"
 #include "DSPBuffer.h"
+#include "clamp.h"
 #include <vector>
 #include <cmath>
 #include <memory>
@@ -18,17 +19,53 @@ struct WavetableVoice
 };
 
 // Abstract base class for all wavetable-based oscillators
-class WavetableOscillator : public Oscillator
+class WavetableOscillator : public DSPObject
 {
 public:
     // Initializes all wavetable buffers for multiple frequency ranges
     void Initialize() override;
 
     // Sets the number of voices
-    void setNumVoices(int count) override;
+    void setNumVoices(int count);
 
     // Sets the detune factor for the voices
-    void setDetune(dsp_float value) override;
+    void setDetune(dsp_float value);
+
+    // Sets the desired oscillator frequency in Hertz
+    void setFrequency(dsp_float value);
+
+    // Sets the pitch offset in semi tones
+    void setPitchOffset(int value);
+
+    // Sets the fine tuning in cent
+    void setFineTune(dsp_float value);
+
+    // Gets the current frequency
+    dsp_float getFrequency();
+
+    // Gets the calculated frequency (base + pitchOffset + finetune))
+    dsp_float getCalculatedFrequency();
+
+    // Sets the modulation index for frequency modulation.
+    // This controls the intensity of the frequency modulation effect.
+    void setModIndex(dsp_float index);
+
+    // Returns true if the oscillator's phase wrapped during the last getSample() call
+    bool hasWrapped();
+
+    // Resets the wrap status
+    void unWrap();
+
+    // Resets the internal oscillator phase to 0.0.
+    void resetPhase();
+
+    // Buffer for modulation
+    DSPBuffer modBufferL;
+    DSPBuffer modBufferR;
+
+    // Sample buffer for output
+    DSPBuffer outBufferL;
+    DSPBuffer outBufferR;
 
 protected:
     // Ctor: expects an unique name for the waveform
@@ -47,15 +84,13 @@ protected:
     std::vector<std::unique_ptr<DSPBuffer>> wavetableBuffers;
 
 private:
-    // Sample calculation without looking up vtable
-    static void generateSample(
-        Oscillator *,
-        const dsp_float &,
-        const dsp_float &,
-        dsp_float &,
-        dsp_float &,
-        const dsp_float &,
-        const dsp_float &);
+    // Next sample block generation
+    static void processBlock(DSPObject *dsp);
+
+    // Calculates the effective frequency based on base frequency,
+    // pitch offset (in semitones), and fine-tuning (in cents).
+    // Then updates the phase increment accordingly.
+    void setCalculatedFrequency(dsp_float f);
 
     // Loads a wavetable
     bool load();
@@ -73,8 +108,8 @@ private:
     std::string waveformName;
 
     // stores the last wavetable to prevent lookup when frequency did not change
-    const DSPBuffer *selectedTable = nullptr;
-    size_t selectedTableSize = 0;
+    const DSPBuffer *selectedWaveTable = nullptr;
+    size_t selectedWaveTableSize = 0;
     dsp_float lastFrequency = -1.0;
 
     // The number of voices
@@ -83,4 +118,13 @@ private:
 
     // Voices detune
     dsp_float detune = 0.03;
+
+    dsp_float frequency;           // The desired oscillator frequency in Hertz
+    dsp_float calculatedFrequency; // The calculated FM frequency in Hertz
+    int pitchOffset;               // offset in half tones
+    dsp_float fineTune;            // fine tune in cent
+    dsp_float modulationIndex = 0; // Phase modulation depth: how much modulator modulates phase of carrier
+    dsp_float phaseIncrement;      // Increment based on frquency and sample rate
+    dsp_float currentPhase;        // Current phase of the oscillator in radians [0, 2π]
+    bool wrapped = false;          // True when phase wrapped
 };

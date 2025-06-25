@@ -89,23 +89,15 @@ void Voice::Initialize()
     setSyncEnabled(false);
     setPitchOffset(0.0);
     setFineTune(0.0);
-    setPulseWidth(0.5);
     setNumVoices(1);
-    setFMModIndex(0.0);
+    setModIndex(0.0);
 
     DSP::log("=====> jpvoice initialized");
 }
 
-// Sets the type of FM to use
-void Voice::setFMType(FMType fm)
-{
-    fmType = fm;
-    carrier->setFMType(fmType);
-}
-
 // Sets the modulation index for frequency modulation.
 // This controls the intensity of the frequency modulation effect.
-void Voice::setFMModIndex(dsp_float index)
+void Voice::setModIndex(dsp_float index)
 {
     modulationIndex = index;
     carrier->setModIndex(modulationIndex);
@@ -132,12 +124,6 @@ void Voice::setFineTune(dsp_float fine)
     modulator->setFineTune(fineTune);
 }
 
-void Voice::setPulseWidth(dsp_float pw)
-{
-    carrier->setDutyCycle(pw);
-    modulator->setDutyCycle(pw);
-}
-
 // Sets the current frequency
 void Voice::setFrequency(dsp_float f)
 {
@@ -160,7 +146,8 @@ void Voice::setNumVoices(int count)
         return;
 
     numVoices = count;
-    paramFader.change([=]() { carrier->setNumVoices(numVoices); });
+    paramFader.change([=]()
+                      { carrier->setNumVoices(numVoices); });
 }
 
 // Sets the volume level of the oscillators
@@ -217,21 +204,19 @@ void Voice::setCarrierOscillatorType(CarrierOscillatiorType oscillatorType)
     }
 
     carrierTmp->setFrequency(f);
-    carrierTmp->setFMType(fmType);
     carrierTmp->setModIndex(modulationIndex);
     carrierTmp->setDetune(detune);
     carrierTmp->setNumVoices(numVoices);
 
     paramFader.change([=]()
-    {
+                      {
          if (carrier != carrierTmp)
             carrier = carrierTmp;
 
          if (modulator != modulatorTmp)
             modulator = modulatorTmp;
 
-         filter->reset(); 
-    });
+         filter->reset(); });
 }
 
 // Assigns the modulation oscillator
@@ -279,17 +264,16 @@ void Voice::setModulatorOscillatorType(ModulatorOscillatorType oscillatorType)
     modulatorTmp->setFrequency(frequency);
     modulatorTmp->setPitchOffset(pitchOffset);
     modulatorTmp->setFineTune(fineTune);
-    
+
     paramFader.change([=]()
-    {
+                      {
          if (carrier != carrierTmp)
             carrier = carrierTmp;
 
          if (modulator != modulatorTmp)
             modulator = modulatorTmp;
 
-         filter->reset(); 
-    });
+         filter->reset(); });
 }
 
 // Changes the current noise type (white or pink)
@@ -337,23 +321,13 @@ void Voice::setFilterDrive(dsp_float value)
 // Next sample block generation
 void Voice::computeSamples()
 {
-    // --- Step 1: Get stereo signal from the modulator oscillator ---
-    // This signal will be used either for frequency modulation or direct audio mixing.
     modulator->generateBlock();
 
-    // --- Step 2: Apply mdoulators audioo buffer as modulation source ---
-    // TODO: Only assign once because from then on the buffers should be identicaly
-    // If this is done on oscillator switch, modBufferL is invalid (and modBufferR valid)
     carrier->modBufferL.switchTo(modulator->outBufferL);
     carrier->modBufferR.switchTo(modulator->outBufferR);
 
-    // --- Step 3: Generate the stereo output from the carrier oscillator ---
-    // This will either be used directly (in FM mode) or mixed with the modulator signal.
     carrier->generateBlock();
 
-    // --- Step 4: Sync handling ---
-    // If sync is enabled and the carrier oscillator has wrapped (phase reset),
-    // we reset the phase of the modulator oscillator to align it.
     if (syncEnabled && carrier->hasWrapped())
     {
         modulator->resetPhase();
@@ -365,7 +339,6 @@ void Voice::computeSamples()
         noise->generateBlock();
     }
 
-    // --- Step 5: Mix the carrier, modulator, feedback and noise signals using an equal-power crossfade
     amp_carrier = std::cos(oscmix * 0.5 * M_PI);
     amp_modulator = std::sin(oscmix * 0.5 * M_PI);
     amp_osc_noise = std::cos(noisemix * 0.5 * M_PI);
@@ -393,24 +366,19 @@ void Voice::computeSamples()
             lastSampleModulatorRight = fast_tanh(modRight);
         }
 
-        // // Noise (optional)
         if (noisemix > 0)
         {
             mixL = amp_osc_noise * mixL + amp_noise * noise->outBufferL[i];
             mixR = amp_osc_noise * mixR + amp_noise * noise->outBufferR[i];
         }
 
-        // Clipping
         mixBufferL[i] = mixL;
         mixBufferR[i] = mixR;
     }
 
-    // Step 6: assign buffers to ladder filter
     filter->setSampleBuffers(&mixBufferL, &mixBufferR);
 
-    // Calculate the samples to be filtered
     filter->generateBlock();
 
-    // --- Step 7: Smooth fade-out/fade-in when parameters change ---
     paramFader.processChanges(mixBufferL, mixBufferR);
 }

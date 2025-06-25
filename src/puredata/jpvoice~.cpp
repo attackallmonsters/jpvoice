@@ -267,39 +267,6 @@ void jpvoice_tilde_noisemix(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setNoiseMix(mix);
 }
 
-// Sets the FM modulation type [fmtype f(
-void jpvoice_tilde_fmtype(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
-{
-    if (!testDSP())
-    {
-        return;
-    }
-
-    if (argc != 1 || argv[0].a_type != A_FLOAT)
-    {
-        pd_error(x, "[jpvoice~]: expected int argument 0 - n for FM modulation type: [fmtype n(");
-        return;
-    }
-
-    int fmType = clampmin(static_cast<int>(atom_getint(argv)), 0);
-
-    switch (fmType)
-    {
-    case 0:
-        x->voice->setFMType(FMType::None);
-        break;
-    case 1:
-        x->voice->setFMType(FMType::ThroughZero);
-        break;
-    case 2:
-        x->voice->setFMType(FMType::Linear);
-        break;
-    case 3:
-        x->voice->setFMType(FMType::Relative);
-        break;
-    }
-}
-
 // Sets the FM modulation index [fmmod f(
 void jpvoice_tilde_modidx(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 {
@@ -315,7 +282,7 @@ void jpvoice_tilde_modidx(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     }
 
     dsp_float idx = clampmin(static_cast<float>(atom_getfloat(argv)), 0.0f);
-    x->voice->setFMModIndex(idx);
+    x->voice->setModIndex(idx);
 }
 
 // Sets the number of voices 1 - 9 [nov f(
@@ -471,24 +438,6 @@ void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
     x->voice->setFilterDrive(d * 20.0);
 }
 
-void jpvoice_tilde_pw(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
-{
-    if (!testDSP())
-    {
-        return;
-    }
-
-    if (argc < 1)
-    {
-        post("[jpvoice~] usage: filter pw (amount 0.0 – 1.0)");
-        return;
-    }
-
-    dsp_float pw = atom_getfloat(argv);
-
-    x->voice->setPulseWidth(pw);
-}
-
 // DSP perform function
 t_int *jpvoice_tilde_perform(t_int *w)
 {
@@ -596,7 +545,6 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_oscmix, gensym("oscmix"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_noisemix, gensym("noisemix"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_noisetype, gensym("noisetype"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_fmtype, gensym("fmtype"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_modidx, gensym("modidx"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_nov, gensym("nov"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_sync, gensym("sync"), A_GIMME, 0);
@@ -605,5 +553,4 @@ extern "C" void jpvoice_tilde_setup(void)
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_cutoff, gensym("cutoff"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_reso, gensym("reso"), A_GIMME, 0);
     class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_drive, gensym("drive"), A_GIMME, 0);
-    class_addmethod(jpvoice_class, (t_method)jpvoice_tilde_pw, gensym("pw"), A_GIMME, 0);
 }

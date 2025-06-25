@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ParamFader.h"
-#include "Oscillator.h"
 #include "VoiceOptions.h"
 #include "NoiseGenerator.h"
 #include "SineWavetable.h"
@@ -39,12 +38,9 @@ public:
     // Initializes the DSP object
     void Initialize() override;
 
-    // Sets the type of FM to use
-    void setFMType(FMType fm);
-
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.
-    void setFMModIndex(dsp_float index);
+    void setModIndex(dsp_float index);
 
     // Enables or disables oscillator sync
     void setSyncEnabled(bool enabled);
@@ -54,9 +50,6 @@ public:
 
     // Sets the fine tunig for the modulator
     void setFineTune(dsp_float fine);
-
-    // Sets modulators pulse width
-    void setPulseWidth(dsp_float pw);
 
     // Sets the frequency of oscillator 1/carrier
     void setFrequency(dsp_float f);
@@ -107,14 +100,13 @@ public:
     DSPBuffer mixBufferR; // Mixing buffer right channel
 
 private:
-    Oscillator *carrier;      // Carrier oscillator (may be modulated)
-    Oscillator *modulator;    // Modulator oscillator (for FM or sync)
-    Oscillator *carrierTmp;   // Carrier oscillator (may be modulated)
-    Oscillator *modulatorTmp; // Modulator oscillator (for FM or sync)
+    WavetableOscillator *carrier;      // Carrier oscillator (may be modulated)
+    WavetableOscillator *modulator;    // Modulator oscillator (for FM or sync)
+    WavetableOscillator *carrierTmp;   // Carrier oscillator (may be modulated)
+    WavetableOscillator *modulatorTmp; // Modulator oscillator (for FM or sync)
 
     dsp_float frequency = 0.0; // Current frequency
 
-    FMType fmType = FMType::ThroughZero; // The FM operation mode
     dsp_float modulationIndex = 0;       // FM depth: how much modulator modulates carrier
 
     dsp_float oscmix = 0.0;   // Mix carrier <=> modulator
