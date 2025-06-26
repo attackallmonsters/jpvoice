@@ -2,17 +2,7 @@
 #   Makefile for Pure Data on Linux   #
 #######################################
 
-# === Compiler settings ===
-# Use g++ as the C++ compiler
 CXX = g++
-
-# Compiler flags:
-# -Wall: enable all warnings
-# -Wextra: enable extra warnings
-# -std=c++17: use the C++17 standard
-# -fPIC: generate position-independent code (useful for shared libraries)
-# -Iinclude: add 'include' directory to the header search path
-# -MMD -MP: generate dependency files for header tracking
 UNAME := $(shell uname -m)
 
 ifeq ($(UNAME),x86_64)
@@ -27,20 +17,25 @@ ifeq ($(UNAME),aarch64)
     CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -DUSE_DOUBLE_PRECISION
 endif
 
-# === Directory layout ===
 SRC_DIR = src
 PD_SRC_DIR = $(SRC_DIR)/puredata
 OBJ_DIR = obj
 BIN_DIR = out
 
-# === Pure Data sources ===
-PD_SOURCES = \
+# === Module names ===
+PD_MODULES = jpvoice~ adsr~
+PD_TARGETS = $(addprefix $(BIN_DIR)/, $(addsuffix .pd_linux, $(PD_MODULES)))
+
+# === Common C++ sources ===
+COMMON_SOURCES = \
+	$(SRC_DIR)/pdbase.cpp \
 	$(SRC_DIR)/DSP.cpp \
 	$(SRC_DIR)/SlewLimiter.cpp \
 	$(SRC_DIR)/ParamFader.cpp \
 	$(SRC_DIR)/DSPBuffer.cpp \
 	$(SRC_DIR)/DSPObject.cpp \
 	$(SRC_DIR)/DCBlocker.cpp \
+	$(SRC_DIR)/ADSR.cpp \
 	$(SRC_DIR)/Voice.cpp \
 	$(SRC_DIR)/Oscillator.cpp \
 	$(SRC_DIR)/SineOscillator.cpp \
@@ -59,17 +54,40 @@ PD_SOURCES = \
 	$(SRC_DIR)/MirrorWavetable.cpp \
 	$(SRC_DIR)/ModuloWavetable.cpp \
 	$(SRC_DIR)/BitWavetable.cpp \
-	$(SRC_DIR)/KorgonFilter.cpp \
-	$(PD_SRC_DIR)/jpvoice~.cpp 
+	$(SRC_DIR)/KorgonFilter.cpp
 
-PD_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(PD_SOURCES))
-PD_TARGET = $(BIN_DIR)/jpvoice~.pd_linux
+# === Pure Data wrapper sources ===
+JPVOICE_SRC = $(PD_SRC_DIR)/jpvoice~.cpp
+ADSR_SRC    = $(PD_SRC_DIR)/adsr~.cpp
 
-# === Dependency files ===
-DEPS = $(PD_OBJECTS:.o=.d)
+# === Object files ===
+COMMON_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(COMMON_SOURCES))
+JPVOICE_OBJECTS = $(patsubst $(PD_SRC_DIR)/%.cpp, $(OBJ_DIR)/puredata/%.o, $(JPVOICE_SRC))
+ADSR_OBJECTS    = $(patsubst $(PD_SRC_DIR)/%.cpp, $(OBJ_DIR)/puredata/%.o, $(ADSR_SRC))
 
-# === Default target ===
-all: $(PD_TARGET)
+# === Targets ===
+all: $(PD_TARGETS)
+
+$(BIN_DIR)/jpvoice~.pd_linux: $(COMMON_OBJECTS) $(JPVOICE_OBJECTS)
+	@mkdir -p $(BIN_DIR)
+	@echo "Linking $@"
+	$(CXX) -shared -o $@ $^
+
+$(BIN_DIR)/adsr~.pd_linux: $(COMMON_OBJECTS) $(ADSR_OBJECTS)
+	@mkdir -p $(BIN_DIR)
+	@echo "Linking $@"
+	$(CXX) -shared -o $@ $^
+
+# === Compile .cpp to .o ===
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<"
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/puredata/%.o: $(PD_SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<"
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # === Debug build ===
 debug: CXXFLAGS += -O0 -g
@@ -79,21 +97,12 @@ debug: clean all
 release: CXXFLAGS += -O3
 release: clean all
 
-# === Build rule for pd_linux external ===
-$(PD_TARGET): $(PD_OBJECTS)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) -shared -o $@ $^
-
-# === Compile rule for .cpp to .o ===
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# === Clean rule ===
+# === Clean ===
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-# === Include dependency files ===
--include $(DEPS)
+# === Dependencies ===
+DEPS = $(JPVOICE_OBJECTS) $(ADSR_OBJECTS) $(COMMON_OBJECTS)
+-include $(DEPS:.o=.d)
 
 .PHONY: all clean debug release

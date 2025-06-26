@@ -25,8 +25,9 @@ void KorgonFilter::Initialize()
 
     setCutoff(&cutoffInitBuffer);
     setResonance(&resoInitBuffer);
-    
-    y1L = y1R = y2L = y2R = 0.0;
+    setDrive(0.0);
+    reset();
+
     T = 1.0 / DSP::sampleRate;
     drive = 1.0;
 }
@@ -79,7 +80,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
     {
         left = (*flt->bufferL)[i];
         right = (*flt->bufferR)[i];
-        cutoff = (*flt->cutoffBuffer)[i];
+        cutoff = clamp((*flt->cutoffBuffer)[i], 0.0, 20000.0);
         reso = (*flt->resoBuffer)[i];
 
         if (cutoff > 15000.0)
@@ -94,7 +95,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
         // Calculate coefficient based on cutoff
         wc = 2.0 * M_PI * cutoff;
 
-        alpha = wc * T / (1.0 + wc * T); // Bilinear transform approximation
+        alpha = clamp(wc * T / (1.0 + wc * T), 0.0, 1.0); // Bilinear transform approximation
 
         // === left ===
         feedback = clamp(reso * reso_scale * (y2L - left), -15.0, 15.0);
@@ -141,10 +142,4 @@ void KorgonFilter::reset()
     y2L = 0.0;
     y1R = 0.0;
     y2R = 0.0;
-}
-
-// Emulate diode clipping behavior with tanh nonlinearity
-dsp_float KorgonFilter::nonlinearFeedback(dsp_float s)
-{
-    return s * 1.5; // Gain scales the nonlinearity
 }

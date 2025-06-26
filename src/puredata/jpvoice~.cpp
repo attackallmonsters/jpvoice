@@ -1,5 +1,6 @@
 // jpvoice.cpp - Pure Data external wrapping the Voice audio synthesis class
 #include "m_pd.h"
+#include "pdbase.h"
 #include "DSP.h"
 #include "Voice.h"
 #include "clamp.h"
@@ -488,11 +489,6 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
             sp[2]->s_vec, // outL
             sp[3]->s_vec, // outR
             sp[0]->s_n);
-}
-
-void log(const std::string &entry)
-{
-    post("%s", entry.c_str());
 }
 
 // Constructor
