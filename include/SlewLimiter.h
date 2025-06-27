@@ -11,7 +11,7 @@ public:
     SlewLimiter(dsp_float ms);
 
     // Initializes the slew limiter
-    void Initialize() override;
+    void initialize() override;
 
     // Set new target (starts smoothing)
     void setTarget(dsp_float newTarget);

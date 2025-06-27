@@ -23,7 +23,7 @@ OBJ_DIR = obj
 BIN_DIR = out
 
 # === Module names ===
-PD_MODULES = jpvoice~ adsr~
+PD_MODULES = jpvoice~ adsr~ lfo~
 PD_TARGETS = $(addprefix $(BIN_DIR)/, $(addsuffix .pd_linux, $(PD_MODULES)))
 
 # === Common C++ sources ===
@@ -54,29 +54,37 @@ COMMON_SOURCES = \
 	$(SRC_DIR)/MirrorWavetable.cpp \
 	$(SRC_DIR)/ModuloWavetable.cpp \
 	$(SRC_DIR)/BitWavetable.cpp \
-	$(SRC_DIR)/KorgonFilter.cpp
+	$(SRC_DIR)/KorgonFilter.cpp \
+	$(SRC_DIR)/LFO.cpp
 
 # === Pure Data wrapper sources ===
-JPVOICE_SRC = $(PD_SRC_DIR)/jpvoice~.cpp
-ADSR_SRC    = $(PD_SRC_DIR)/adsr~.cpp
+PD_JPVOICE_SRC = $(PD_SRC_DIR)/jpvoice~.cpp
+PD_ADSR_SRC    = $(PD_SRC_DIR)/adsr~.cpp
+PD_LFO_SRC    = $(PD_SRC_DIR)/lfo~.cpp
 
 # === Object files ===
 COMMON_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(COMMON_SOURCES))
-JPVOICE_OBJECTS = $(patsubst $(PD_SRC_DIR)/%.cpp, $(OBJ_DIR)/puredata/%.o, $(JPVOICE_SRC))
-ADSR_OBJECTS    = $(patsubst $(PD_SRC_DIR)/%.cpp, $(OBJ_DIR)/puredata/%.o, $(ADSR_SRC))
+PD_JPVOICE_OBJECTS = $(patsubst $(PD_SRC_DIR)/%.cpp, $(OBJ_DIR)/puredata/%.o, $(PD_JPVOICE_SRC))
+PD_ADSR_OBJECTS    = $(patsubst $(PD_SRC_DIR)/%.cpp, $(OBJ_DIR)/puredata/%.o, $(PD_ADSR_SRC))
+PD_LFO_OBJECTS    = $(patsubst $(PD_SRC_DIR)/%.cpp, $(OBJ_DIR)/puredata/%.o, $(PD_LFO_SRC))
 
 # === Targets ===
 all: $(PD_TARGETS)
 
-$(BIN_DIR)/jpvoice~.pd_linux: $(COMMON_OBJECTS) $(JPVOICE_OBJECTS)
+$(BIN_DIR)/jpvoice~.pd_linux: $(COMMON_OBJECTS) $(PD_JPVOICE_OBJECTS)
 	@mkdir -p $(BIN_DIR)
 	@echo "Linking $@"
 	$(CXX) -shared -o $@ $^
 
-$(BIN_DIR)/adsr~.pd_linux: $(COMMON_OBJECTS) $(ADSR_OBJECTS)
+$(BIN_DIR)/adsr~.pd_linux: $(COMMON_OBJECTS) $(PD_ADSR_OBJECTS)
 	@mkdir -p $(BIN_DIR)
 	@echo "Linking $@"
 	$(CXX) -shared -o $@ $^
+
+$(BIN_DIR)/lfo~.pd_linux: $(COMMON_OBJECTS) $(PD_LFO_OBJECTS)
+	@mkdir -p $(BIN_DIR)
+	@echo "Linking $@"
+	$(CXX) -shared -o $@ $^	
 
 # === Compile .cpp to .o ===
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -102,7 +110,7 @@ clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
 # === Dependencies ===
-DEPS = $(JPVOICE_OBJECTS) $(ADSR_OBJECTS) $(COMMON_OBJECTS)
+DEPS = $(PD_JPVOICE_OBJECTS) $(PD_ADSR_OBJECTS) $(PD_LFO_OBJECTS) $(COMMON_OBJECTS)
 -include $(DEPS:.o=.d)
 
 .PHONY: all clean debug release

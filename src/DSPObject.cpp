@@ -14,7 +14,7 @@ DSPObject::~DSPObject()
 }
 
 // Initializes a DSP-Object
-void DSPObject::Initialize()
+void DSPObject::initialize()
 {
 }
 

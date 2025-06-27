@@ -99,9 +99,9 @@ void adsr_dsp(t_adsr_tilde *x, t_signal **sp)
     x->samplerate = sp[0]->s_sr;
     x->blockSize = sp[0]->s_n;
     
-    DSP::InitializeAudio(x->samplerate, x->blockSize);
+    DSP::initializeAudio(x->samplerate, x->blockSize);
     
-    x->adsr->Initialize();
+    x->adsr->initialize();
 
     dsp_add(adsr_perform, 3, x, sp[0]->s_vec, sp[0]->s_n);
 }

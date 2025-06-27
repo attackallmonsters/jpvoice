@@ -37,7 +37,7 @@ Voice::~Voice()
     delete bitModulator;
 }
 
-void Voice::Initialize()
+void Voice::initialize()
 {
     if (!DSP::isInitialized())
     {
@@ -47,7 +47,7 @@ void Voice::Initialize()
 
     DSP::log("=====> Initializing jpvoice...");
 
-    DSPObject::Initialize();
+    DSPObject::initialize();
 
     modulationIndex = 0;
     oscmix = 0.0;
@@ -55,28 +55,28 @@ void Voice::Initialize()
     feedbackAmountCarrier = 0.0;
     feedbackAmountModulator = 0.0;
 
-    noise->Initialize();
+    noise->initialize();
 
     // Waveform generation
-    sawCarrier->Initialize();
-    sawModulator->Initialize();
-    sineCarrier->Initialize();
-    sineModulator->Initialize();
-    squareCarrier->Initialize();
-    squareModulator->Initialize();
-    trianlgeCarrier->Initialize();
-    triangleModulator->Initialize();
-    clusterCarrier->Initialize();
-    clusterModulator->Initialize();
-    fibonacciCarrier->Initialize();
-    fibonacciModulator->Initialize();
-    mirrorCarrier->Initialize();
-    mirrorModulator->Initialize();
-    moduloCarrier->Initialize();
-    moduloModulator->Initialize();
-    bitModulator->Initialize();
+    sawCarrier->initialize();
+    sawModulator->initialize();
+    sineCarrier->initialize();
+    sineModulator->initialize();
+    squareCarrier->initialize();
+    squareModulator->initialize();
+    trianlgeCarrier->initialize();
+    triangleModulator->initialize();
+    clusterCarrier->initialize();
+    clusterModulator->initialize();
+    fibonacciCarrier->initialize();
+    fibonacciModulator->initialize();
+    mirrorCarrier->initialize();
+    mirrorModulator->initialize();
+    moduloCarrier->initialize();
+    moduloModulator->initialize();
+    bitModulator->initialize();
 
-    filter->Initialize();
+    filter->initialize();
 
     mixBufferL.resize(DSP::blockSize);
     mixBufferR.resize(DSP::blockSize);

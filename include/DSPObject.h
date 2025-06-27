@@ -14,7 +14,7 @@ public:
     virtual ~DSPObject();
 
     // Initializes a DSP-Object
-    virtual void Initialize();
+    virtual void initialize();
 
     // Calculates the next sample buffer
     void generateBlock();

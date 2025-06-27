@@ -475,12 +475,12 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
     x->samplerate = sp[0]->s_sr;
     x->blockSize = sp[0]->s_n;
     
-    DSP::InitializeAudio(x->samplerate, x->blockSize);
+    DSP::initializeAudio(x->samplerate, x->blockSize);
 
     x->cutoffBuf.resize(x->blockSize);
     x->resoBuf.resize(x->blockSize);
 
-    x->voice->Initialize();
+    x->voice->initialize();
 
     dsp_add(jpvoice_tilde_perform, 6,
             x,

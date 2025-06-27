@@ -22,7 +22,7 @@ public:
     ADSR();
     
     // Initializes the ADSR
-    virtual void Initialize() override;
+    virtual void initialize() override;
 
     void setAttack(double ms);
     void setDecay(double ms);

@@ -7,9 +7,9 @@ SlewLimiter::SlewLimiter(dsp_float ms)
 }
 
 // Initializes the slew limiter
-void SlewLimiter::Initialize()
+void SlewLimiter::initialize()
 {
-    DSPObject::Initialize();
+    DSPObject::initialize();
     
     samplerate = DSP::sampleRate;
     remaining = 0;

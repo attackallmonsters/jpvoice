@@ -27,9 +27,9 @@ WavetableOscillator::WavetableOscillator(const std::string formName)
     wavetableBuffers.reserve(tableSizes.size());
 }
 
-void WavetableOscillator::Initialize()
+void WavetableOscillator::initialize()
 {
-    DSPObject::Initialize();
+    DSPObject::initialize();
 
     outBufferL.resize(DSP::blockSize);
     outBufferR.resize(DSP::blockSize);

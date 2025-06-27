@@ -36,7 +36,7 @@ public:
     ~Voice();
 
     // Initializes the DSP object
-    void Initialize() override;
+    void initialize() override;
 
     // Sets the modulation index for frequency modulation.
     // This controls the intensity of the frequency modulation effect.

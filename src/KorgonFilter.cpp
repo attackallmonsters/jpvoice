@@ -13,9 +13,9 @@ KorgonFilter::KorgonFilter()
 }
 
 // Initializes the filter
-void KorgonFilter::Initialize()
+void KorgonFilter::initialize()
 {
-    DSPObject::Initialize();
+    DSPObject::initialize();
 
     cutoffInitBuffer.resize(DSP::blockSize);
     resoInitBuffer.resize(DSP::blockSize);

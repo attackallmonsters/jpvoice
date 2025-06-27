@@ -38,7 +38,7 @@ void DSP::off()
 }
 
 // Initializes the DSP with samplerate and blocksize
-void DSP::InitializeAudio(dsp_float rate, size_t size)
+void DSP::initializeAudio(dsp_float rate, size_t size)
 {
     if (initialized)
         return;

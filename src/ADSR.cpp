@@ -5,7 +5,7 @@ ADSR::ADSR()
     registerBlockProcessor(&ADSR::processBlock);
 }
 
-void ADSR::Initialize()
+void ADSR::initialize()
 {
     sampleRateMS = DSP::sampleRate / 1000.0;
     gain = 1.0;

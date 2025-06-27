@@ -23,7 +23,7 @@ class WavetableOscillator : public DSPObject
 {
 public:
     // Initializes all wavetable buffers for multiple frequency ranges
-    void Initialize() override;
+    void initialize() override;
 
     // Sets the number of voices
     void setNumVoices(int count);

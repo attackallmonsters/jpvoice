@@ -39,9 +39,9 @@ Oscillator::~Oscillator()
 }
 
 // Initializes the oscillator
-void Oscillator::Initialize()
+void Oscillator::initialize()
 {
-    DSPObject::Initialize();
+    DSPObject::initialize();
 
     outBufferL.resize(DSP::blockSize);
     outBufferR.resize(DSP::blockSize);

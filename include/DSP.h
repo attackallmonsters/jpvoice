@@ -21,7 +21,7 @@ public:
     void off();
 
     // Initializes the DSP with samplerate and blocksize
-    static void InitializeAudio(dsp_float rate, size_t size);
+    static void initializeAudio(dsp_float rate, size_t size);
 
     // Log function callback registration
     static void registerLogger(LogFunc func);

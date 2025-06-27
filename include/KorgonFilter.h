@@ -12,7 +12,7 @@ public:
     explicit KorgonFilter();
 
     // Initializes the filter
-    void Initialize() override;
+    void initialize() override;
 
     // Sets the filter drive
     void setDrive(dsp_float value);

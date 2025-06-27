@@ -26,7 +26,7 @@ public:
     virtual ~Oscillator();
 
     // Initializes the oscillator
-    void Initialize() override;
+    void initialize() override;
 
     // Sets the detune factor
     virtual void setDetune(dsp_float /*value*/){};
