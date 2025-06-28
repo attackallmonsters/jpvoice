@@ -16,7 +16,7 @@ void ADSR::initialize()
     setAttack(10);
     setDecay(100);
     setSustain(0.7);
-    setRelease(200);
+    setRelease(750);
     setAttackShape(0.0);
     setReleaseShape(0.0);
     setGain(1);
@@ -42,13 +42,13 @@ dsp_float ADSR::powerLerp(dsp_float start, dsp_float end, dsp_float p, dsp_float
 
 void ADSR::setAttack(dsp_float ms)
 {
-    attackTime = clamp(ms, 0.0, 10000.0);
+    attackTime = clamp(ms, 0.0, MAX_TIME);
     attackSamples = std::max(1, static_cast<int>(attackTime * sampleRateMS));
 }
 
 void ADSR::setDecay(dsp_float ms)
 {
-    decayTime = clamp(ms, 0.0, 10000.0);
+    decayTime = clamp(ms, 0.0, MAX_TIME);
     decaySamples = std::max(1, static_cast<int>(decayTime * sampleRateMS));
 }
 
@@ -60,7 +60,7 @@ void ADSR::setSustain(dsp_float level)
 void ADSR::setRelease(dsp_float ms)
 {
     dsp_float offset = startAtCurrentEnv ? 0.0 : startupTimeMS;
-    releaseTime = clamp(ms - offset, 0.0, 10000.0);
+    releaseTime = clamp(ms - offset, 0.0, MAX_TIME);
     releaseSamples = std::max(1, static_cast<int>(releaseTime * sampleRateMS));
 }
 
@@ -76,7 +76,7 @@ void ADSR::setReleaseShape(dsp_float f)
 
 void ADSR::setGain(dsp_float g)
 {
-    gain = clampmin(g, 1.0);
+    gain = clampmin(g, 0.0);
 }
 
 void ADSR::setOneShot(bool b)

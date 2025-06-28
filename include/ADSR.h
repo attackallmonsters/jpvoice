@@ -24,13 +24,13 @@ public:
     // Initializes the ADSR
     virtual void initialize() override;
 
-    void setAttack(double ms);
-    void setDecay(double ms);
-    void setSustain(double level);
-    void setRelease(double ms);
-    void setAttackShape(double shape);
-    void setReleaseShape(double shape);
-    void setGain(double g);
+    void setAttack(dsp_float ms);
+    void setDecay(dsp_float ms);
+    void setSustain(dsp_float level);
+    void setRelease(dsp_float ms);
+    void setAttackShape(dsp_float shape);
+    void setReleaseShape(dsp_float shape);
+    void setGain(dsp_float g);
     void setOneShot(bool b);
     void setStartAtCurrent(bool start);
 
@@ -48,10 +48,10 @@ private:
     PhaseFunc phaseFunc;
 
     // Envelope values
-    double attackTime, decayTime, sustainLevel, releaseTime;
-    double attackShape, releaseShape;
-    double currentEnv, phaseStartEnv;
-    double gain;
+    dsp_float attackTime, decayTime, sustainLevel, releaseTime;
+    dsp_float attackShape, releaseShape;
+    dsp_float currentEnv, phaseStartEnv;
+    dsp_float gain;
     bool oneShot;
     bool startAtCurrentEnv;
 
@@ -68,11 +68,13 @@ private:
     void phaseSustain();
     void phaseRelease();
 
-    static double powerLerp(double start, double end, double p, double shape);
-    static double shapeToExponent(double f);
+    static dsp_float powerLerp(dsp_float start, dsp_float end, dsp_float p, dsp_float shape);
+    static dsp_float shapeToExponent(dsp_float f);
 
-    double sampleRateMS;
+    dsp_float sampleRateMS;
     ADSRPhase phase;
     int currentSample;
     DSPBuffer curveBuffer;
+
+    static constexpr dsp_float MAX_TIME = std::numeric_limits<dsp_float>::max();
 };
