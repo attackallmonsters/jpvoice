@@ -1,4 +1,4 @@
-#N canvas 1078 292 559 451 12;
+#N canvas 1078 292 913 806 12;
 #X obj 62 385 outlet~;
 #X obj 122 385 outlet~;
 #X obj 63 17 r param;
@@ -23,6 +23,8 @@
 #X obj 152 67 r bend;
 #X obj 152 92 t b f;
 #X obj 120 112 +;
+#X obj 189 360 scope~;
+#X obj 498 361 scope~;
 #X connect 2 0 3 0;
 #X connect 3 0 4 0;
 #X connect 3 1 5 0;
@@ -36,8 +38,10 @@
 #X connect 10 0 3 2;
 #X connect 11 0 10 0;
 #X connect 12 0 3 1;
+#X connect 12 0 24 0;
 #X connect 13 0 5 1;
 #X connect 13 0 4 1;
+#X connect 13 0 25 0;
 #X connect 14 0 12 0;
 #X connect 15 0 17 0;
 #X connect 15 1 19 0;

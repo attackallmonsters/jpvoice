@@ -17,11 +17,8 @@ void KorgonFilter::initialize()
 {
     DSPObject::initialize();
 
-    cutoffInitBuffer.resize(DSP::blockSize);
-    resoInitBuffer.resize(DSP::blockSize);
-
-    cutoffInitBuffer.fill(20000.0);
-    resoInitBuffer.fill(0.0);
+    cutoffInitBuffer.create(DSP::blockSize, 20000.0);
+    resoInitBuffer.create(DSP::blockSize);
 
     setCutoff(&cutoffInitBuffer);
     setResonance(&resoInitBuffer);
@@ -35,20 +32,20 @@ void KorgonFilter::initialize()
 // Set the cutoff frequency and update coefficients
 void KorgonFilter::setCutoff(DSPBuffer *buffer)
 {
-    cutoffBuffer = buffer;
+    cutoffBuffer.set(buffer);
 }
 
 // Set the resonance amount
-void KorgonFilter::setResonance(DSPBuffer *buffer)
+void KorgonFilter::setResonance(DSPBuffer &buffer)
 {
-    resoBuffer = buffer;
+    resoBuffer.set(buffer);
 }
 
 // Assigns the samples to process
-void KorgonFilter::setSampleBuffers(DSPBuffer *samplesL, DSPBuffer *samplesR)
+void KorgonFilter::setSampleBuffers(DSPBuffer &samplesL, DSPBuffer &samplesR)
 {
-    bufferL = samplesL;
-    bufferR = samplesR;
+    bufferL.set(samplesL);
+    bufferR.set(samplesR);
 }
 
 // Sets the filter drive
@@ -78,15 +75,15 @@ void KorgonFilter::processBlock(DSPObject *dsp)
 
     for (size_t i = 0; i < blocksize; ++i)
     {
-        left = (*flt->bufferL)[i];
-        right = (*flt->bufferR)[i];
-        cutoff = clamp((*flt->cutoffBuffer)[i], 0.0, 20000.0);
-        reso = (*flt->resoBuffer)[i];
+        left = (flt->bufferL)[i];
+        right = (flt->bufferR)[i];
+        cutoff = clamp((flt->cutoffBuffer)[i], 0.0, 20000.0);
+        reso = (flt->resoBuffer)[i];
 
         if (cutoff > 15000.0)
         {
-            (*flt->bufferL)[i] = left;
-            (*flt->bufferR)[i] = right;
+            (flt->bufferL)[i] = left;
+            (flt->bufferR)[i] = right;
             continue;
         }
 
@@ -111,7 +108,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
         // Apply asymmetric soft clip
         left = y2L * drive;
         left = (left >= 0.0) ? fast_tanh(left) : 1.5 * fast_tanh(0.5 * left);
-        (*flt->bufferL)[i] = left;
+        (flt->bufferL)[i] = left;
 
         // === right ===
         feedback = clamp(reso * reso_scale * (y2R - right), -15.0, 15.0);
@@ -126,7 +123,7 @@ void KorgonFilter::processBlock(DSPObject *dsp)
         // Apply asymmetric soft clip
         right = y2R * drive;
         right = (right >= 0.0) ? fast_tanh(right) : 1.5 * fast_tanh(0.5 * right);
-        (*flt->bufferR)[i] = right;
+        (flt->bufferR)[i] = right;
     }
 
     flt->y1L = y1L;

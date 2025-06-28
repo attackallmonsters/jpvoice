@@ -1,110 +1,141 @@
-// === DSPBuffer.cpp ===
-#include "DSP.h"
 #include "DSPBuffer.h"
+#include "DSP.h"
 #include <algorithm>
-#include "dsp_types.h"
-#include "clamp.h"
+#include <cstring>
 
-// Constructor with optional initial size (default: 2048 samples)
-DSPBuffer::DSPBuffer()
+// Constructor: empty state
+DSPBuffer::DSPBuffer() = default;
+
+// Move constructor
+DSPBuffer::DSPBuffer(DSPBuffer &&other) noexcept
 {
-    buffer.resize(DSP::maxBlockSize, 0.0);
-    bufferOrig = &buffer;
+    *this = std::move(other);
 }
 
-// Resize the internal buffer and initialize new elements to 0.0
-void DSPBuffer::resize(size_t newSize)
+// Destructor: free memory if owned
+DSPBuffer::~DSPBuffer()
 {
-    buffer.resize(clampmin(newSize , static_cast<size_t>(1)), 0.0);
-    bufferOrig = &buffer;
+    release();
 }
 
-// Set all buffer elements to 0.0
-void DSPBuffer::clear()
+// Create owned buffer, zero-initialized
+void DSPBuffer::create(size_t size, dsp_float f)
 {
-    std::fill(buffer.begin(), buffer.begin() + DSP::blockSize, 0.0);
+    release();
+
+    buffer = new dsp_float[size];
+    
+    bufferSize = size;
+    ownsBuffer = true;
+
+    fill(f);
 }
 
-// Return a mutable pointer to the internal buffer data
+// Use external buffer (no ownership)
+void DSPBuffer::set(DSPBuffer &externalBuffer)
+{
+    release();
+
+    buffer = externalBuffer.data();
+    bufferSize = externalBuffer.size();
+    ownsBuffer = false;
+}
+
+// Use external buffer (no ownership)
+void DSPBuffer::set(dsp_float *externalBuffer, size_t size)
+{
+    release();
+
+    buffer = externalBuffer;
+    bufferSize = size;
+    ownsBuffer = false;
+}
+
+// Fills the buffer with a value
+void DSPBuffer::fill(dsp_float f)
+{
+    std::fill(buffer, buffer + bufferSize, f);
+}
+
+// Frees buffer if owned
+void DSPBuffer::release()
+{
+    if (ownsBuffer && buffer)
+    {
+        delete[] buffer;
+    }
+
+    buffer = nullptr;
+    bufferSize = 0;
+    ownsBuffer = false;
+}
+
+// Direct access
 dsp_float *DSPBuffer::data()
 {
-    return buffer.data();
+    return buffer;
 }
 
-// Return a const pointer to the internal buffer data
 const dsp_float *DSPBuffer::data() const
 {
-    return buffer.data();
+    return buffer;
 }
 
-// Return the number of elements in the buffer
 size_t DSPBuffer::size() const
 {
-    return buffer.size();
+    return bufferSize;
 }
 
-// Element access by index (read/write)
+// Array access
 dsp_float &DSPBuffer::operator[](size_t index)
 {
     return buffer[index];
 }
 
-// Element access by index (read-only for const instances)
 const dsp_float &DSPBuffer::operator[](size_t index) const
 {
     return buffer[index];
 }
 
-// Multiply all buffer samples by a scalar gain value
-void DSPBuffer::applyGain(dsp_float gain)
+// Set all values to 0
+void DSPBuffer::clear()
 {
-    for (auto &sample : buffer)
-        sample *= gain;
+    if (buffer)
+        std::fill(buffer, buffer + bufferSize, 0.0f);
 }
 
-// Copy contents from another DSPBuffer instance
-void DSPBuffer::set(const DSPBuffer &other)
+// Copy values from external buffer
+void DSPBuffer::copyFrom(const dsp_float *source)
 {
-    std::copy(other.buffer.begin(), other.buffer.begin() + DSP::blockSize, buffer.begin());
+    if (buffer && source)
+        std::copy(source, source + bufferSize, buffer);
 }
 
-// Copy raw data from an external float array into the buffer
-void DSPBuffer::set(const float *source)
+// Query ownership
+bool DSPBuffer::owns() const
 {
-    for (size_t i = 0; i < DSP::blockSize; ++i)
-        buffer[i] = static_cast<dsp_float>(source[i]);
+    return ownsBuffer;
 }
 
-#ifdef USE_DOUBLE_PRECISION
-// Copy raw data from an external dsp_float array into the buffer
-void DSPBuffer::set(const double *source)
+DSPBuffer &DSPBuffer::operator=(dsp_float *ptr)
 {
-    std::copy(source, source + DSP::blockSize, buffer.begin());
-}
-#endif
-
-// Fill the buffer with a constant value
-void DSPBuffer::fill(dsp_float value)
-{
-    std::fill(buffer.begin(), buffer.begin() + DSP::blockSize, value);
+    set(ptr, DSP::blockSize);
+    return *this;
 }
 
-// Switches the current buffer to a source buffer (shallow reference switch)
-void DSPBuffer::switchTo(DSPBuffer &buf)
+// Move assignment
+DSPBuffer &DSPBuffer::operator=(DSPBuffer &&other) noexcept
 {
-    buffer = buf.buffer; // set external buffer to current buffer
-}
+    if (this != &other)
+    {
+        release();
+        buffer = other.buffer;
+        bufferSize = other.bufferSize;
+        ownsBuffer = other.ownsBuffer;
 
-// Restores the buffer reference previously changed with switchTo
-void DSPBuffer::restore()
-{
-    buffer = std::move(*bufferOrig); // Restore saved buffer
-}
-
-// Create and return a deep copy of this buffer
-DSPBuffer DSPBuffer::clone() const
-{
-    DSPBuffer clonedCopy;
-    std::copy(buffer.begin(), buffer.begin() + DSP::blockSize, clonedCopy.buffer.begin());
-    return clonedCopy;
+        other.buffer = nullptr;
+        other.bufferSize = 0;
+        other.ownsBuffer = false;
+    }
+    return *this;
 }

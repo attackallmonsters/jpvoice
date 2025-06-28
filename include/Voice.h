@@ -96,8 +96,8 @@ public:
     // Next sample block generation
     void computeSamples();
 
-    DSPBuffer mixBufferL; // Mixing buffer left channel
-    DSPBuffer mixBufferR; // Mixing buffer right channel
+    DSPBuffer outBufferL; // Mixing buffer left channel from audio host
+    DSPBuffer outBufferR; // Mixing buffer right channel from audio host
 
 private:
     WavetableOscillator *carrier;      // Carrier oscillator (may be modulated)

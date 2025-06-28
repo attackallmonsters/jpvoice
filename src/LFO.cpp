@@ -8,7 +8,7 @@ LFO::LFO()
 void LFO::initialize()
 {
     samplerate = DSP::sampleRate;
-    lfoBuffer.resize(DSP::blockSize);
+    lfoBuffer.create(DSP::blockSize);
 
     phase = 0.0;
     phaseInc = 0.0;

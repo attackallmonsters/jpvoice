@@ -24,7 +24,7 @@ public:
     void setResonance(DSPBuffer *buffer);
 
     // Assigns the samples to process
-    void setSampleBuffers(DSPBuffer *samplesL, DSPBuffer *samplesR);
+    void setSampleBuffers(DSPBuffer &samplesL, DSPBuffer &samplesR);
 
     // Reset internal filter state
     void reset();

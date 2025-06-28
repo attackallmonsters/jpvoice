@@ -43,10 +43,10 @@ void Oscillator::initialize()
 {
     DSPObject::initialize();
 
-    outBufferL.resize(DSP::blockSize);
-    outBufferR.resize(DSP::blockSize);
-    modBufferL.resize(DSP::blockSize);
-    modBufferR.resize(DSP::blockSize);
+    outBufferL.create(DSP::blockSize);
+    outBufferR.create(DSP::blockSize);
+    modBufferL.create(DSP::blockSize);
+    modBufferR.create(DSP::blockSize);
 
     setFrequency(0.0);
     setFineTune(0);

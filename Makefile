@@ -6,7 +6,7 @@ CXX = g++
 UNAME := $(shell uname -m)
 
 ifeq ($(UNAME),x86_64)
-	CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -DUSE_DOUBLE_PRECISION
+	CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP
 endif
 
 ifeq ($(UNAME),armv7l)
@@ -14,7 +14,7 @@ ifeq ($(UNAME),armv7l)
 endif
 
 ifeq ($(UNAME),aarch64)
-    CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP -DUSE_DOUBLE_PRECISION
+    CXXFLAGS = -Wall -Wextra -std=c++17 -fPIC -Iinclude -MMD -MP
 endif
 
 SRC_DIR = src

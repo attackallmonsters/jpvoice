@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DSPBuffer.h"
+#include "dsp_types.h"
 #include <functional>
 
 // The WaveformGenerator class creates a band-limited wavetable
@@ -11,7 +12,7 @@ class WaveformGenerator
 public:
     // The amplitude function defines the amplitude of each harmonic (n)
     // up to maxHarmonics. It is user-supplied and determines the waveform shape.
-    using AmplitudeFunction = std::function<dsp_float(int harmonic)>;
+    using AmplitudeFunction = std::function<double(int harmonic)>;
 
     // Fills the given buffer with one full waveform cycle (0–1 phase range)
     // using additive synthesis. Only harmonics below Nyquist are included.

@@ -33,7 +33,7 @@ public:
     static void log2File(const char *fmt, ...);
 
     // Zeros a value if it is in the range +/- epsilon
-    static dsp_float zeroSubnormals(dsp_float value);
+    static double zeroSubnormals(dsp_float value);
 
     static bool isInitialized() { return initialized; };
 

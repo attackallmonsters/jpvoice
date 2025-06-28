@@ -1,65 +1,59 @@
-// DSPBuffer: A utility class for managing a dynamic buffer of dsp_float-precision audio samples.
-// Provides common operations such as resize, clear, gain application, and deep copying.
-
 #pragma once
-#include <vector>
-#include <cstddef>
+
 #include "dsp_types.h"
+#include <cstddef>
 
-class DSPBuffer
-{
+class DSPBuffer {
 public:
-    // Constructor with optional initial size (default: 2048 samples)
-    explicit DSPBuffer();
+    DSPBuffer();
+    ~DSPBuffer();
 
-    // Resize the internal buffer and initialize new elements to 0.0
-    void resize(size_t newSize);
+    // Create internal, zero-initialized buffer with ownership
+    void create(size_t size, dsp_float f = 0.0);
 
-    // Set all buffer elements to 0.0
-    void clear();
+    // Set external buffer (no ownership)
+    void set(DSPBuffer &externalBuffer);
 
-    // Return a mutable pointer to the internal buffer data
-    dsp_float *data();
+    // Set external buffer (no ownership)
+    void set(dsp_float* externalBuffer, size_t size);
 
-    // Return a const pointer to the internal buffer data
-    const dsp_float *data() const;
+    // Fills the buffer with a value
+    void fill(dsp_float f);
 
-    // Return the number of elements in the buffer
+    // Free internal buffer if owned
+    void release();
+
+    // Buffer access
+    dsp_float* data();
+    const dsp_float* data() const;
     size_t size() const;
 
-    // Element access by index (read/write)
-    dsp_float &operator[](size_t index);
+    // Access via operator[]
+    dsp_float& operator[](size_t index);
+    const dsp_float& operator[](size_t index) const;
 
-    // Element access by index (read-only for const instances)
-    const dsp_float &operator[](size_t index) const;
+    // Set all values to 0.0
+    void clear();
 
-    // Multiply all buffer samples by a scalar gain value
-    void applyGain(dsp_float gain);
+    // Copy from external buffer (must be at least `size()` samples)
+    void copyFrom(const dsp_float* source);
 
-    // Copy contents from another DSPBuffer instance
-    void set(const DSPBuffer &other);
+    // Returns true if the buffer owns its memory
+    bool owns() const;
 
-    // Copy raw data from an external float array into the buffer
-    void set(const float *source);
+    // Assignment of fixed size buffer (DSP block size)
+    DSPBuffer& operator=(dsp_float* ptr);
 
-#ifdef USE_DOUBLE_PRECISION
-    // Copy raw data from an external dsp_float array into the buffer
-    void set(const double *source);
-#endif
+    // Move constructor / assignment
+    DSPBuffer(DSPBuffer&& other) noexcept;
+    DSPBuffer& operator=(DSPBuffer&& other) noexcept;
 
-    // Fill the buffer with a constant value
-    void fill(dsp_float value);
-
-    // Switches the current buffer to a source buffer.
-    void switchTo(DSPBuffer &buf);
-
-    // Restores the buffer reference previously changed with switchTo.
-    void restore();
-
-    // Create and return a deep copy of this buffer
-    DSPBuffer clone() const;
+    // Copy disabled (ambiguous ownership)
+    DSPBuffer(const DSPBuffer&) = delete;
+    DSPBuffer& operator=(const DSPBuffer&) = delete;
 
 private:
-    std::vector<dsp_float> buffer;                // Internal buffer storage
-    std::vector<dsp_float> *bufferOrig = nullptr; // Internal buffer storage
+    dsp_float* buffer = nullptr;
+    size_t bufferSize = 0;
+    bool ownsBuffer = false;
 };

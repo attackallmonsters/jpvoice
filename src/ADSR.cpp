@@ -11,7 +11,7 @@ void ADSR::initialize()
     gain = 1.0;
     currentEnv = 0.0;
     oneShot = false;
-    curveBuffer.resize(DSP::blockSize);
+    curveBuffer.create(DSP::blockSize);
 
     setAttack(10);
     setDecay(100);

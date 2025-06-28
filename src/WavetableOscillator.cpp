@@ -31,10 +31,10 @@ void WavetableOscillator::initialize()
 {
     DSPObject::initialize();
 
-    outBufferL.resize(DSP::blockSize);
-    outBufferR.resize(DSP::blockSize);
-    modBufferL.resize(DSP::blockSize);
-    modBufferR.resize(DSP::blockSize);
+    outBufferL.create(DSP::blockSize);
+    outBufferR.create(DSP::blockSize);
+    modBufferL.create(DSP::blockSize);
+    modBufferR.create(DSP::blockSize);
 
     setFrequency(0.0);
     setFineTune(0);
@@ -59,7 +59,7 @@ void WavetableOscillator::initialize()
 
             // Create a new DSPBuffer instance and resize it to the desired table size
             auto buffer = std::make_unique<DSPBuffer>();
-            buffer->resize(size);
+            buffer->create(size);
 
             // Let the subclass generate the actual waveform data
             createWavetable(*buffer, freq);
@@ -389,7 +389,7 @@ bool WavetableOscillator::load()
             size_t size = static_cast<size_t>(std::stoul(item));
 
             DSPBuffer buffer;
-            buffer.resize(size);
+            buffer.create(size);
 
             // Read data
             size_t sampleCount = 0;
@@ -406,7 +406,7 @@ bool WavetableOscillator::load()
 
             baseFrequencies.push_back(freq);
             tableSizes.push_back(size);
-            wavetableBuffers.push_back(std::make_unique<DSPBuffer>(buffer));
+            wavetableBuffers.push_back(std::make_unique<DSPBuffer>(std::move(buffer)));
         }
         catch (const std::exception &ex)
         {

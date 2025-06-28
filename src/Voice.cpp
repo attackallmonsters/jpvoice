@@ -78,9 +78,6 @@ void Voice::initialize()
 
     filter->initialize();
 
-    mixBufferL.resize(DSP::blockSize);
-    mixBufferR.resize(DSP::blockSize);
-
     setCarrierOscillatorType(CarrierOscillatiorType::Saw);
     setModulatorOscillatorType(ModulatorOscillatorType::Sine);
 
@@ -323,8 +320,8 @@ void Voice::computeSamples()
 {
     modulator->generateBlock();
 
-    carrier->modBufferL.switchTo(modulator->outBufferL);
-    carrier->modBufferR.switchTo(modulator->outBufferR);
+    carrier->modBufferL.set(modulator->outBufferL);
+    carrier->modBufferR.set(modulator->outBufferR);
 
     carrier->generateBlock();
 
@@ -372,13 +369,13 @@ void Voice::computeSamples()
             mixR = amp_osc_noise * mixR + amp_noise * noise->outBufferR[i];
         }
 
-        mixBufferL[i] = mixL;
-        mixBufferR[i] = mixR;
+        outBufferL[i] = carrier->outBufferL[i]; // mixL;
+        outBufferR[i] = carrier->outBufferL[i]; //mixR;
     }
 
-    filter->setSampleBuffers(&mixBufferL, &mixBufferR);
+    filter->setSampleBuffers(&outBufferL, &outBufferR);
 
     filter->generateBlock();
 
-    paramFader.processChanges(mixBufferL, mixBufferR);
+    paramFader.processChanges(outBufferL, outBufferR);
 }

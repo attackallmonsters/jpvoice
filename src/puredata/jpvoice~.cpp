@@ -1,5 +1,6 @@
 // jpvoice.cpp - Pure Data external wrapping the Voice audio synthesis class
 #include "m_pd.h"
+#include "dsp_types.h"
 #include "pdbase.h"
 #include "DSP.h"
 #include "Voice.h"
@@ -411,7 +412,7 @@ void jpvoice_tilde_reso(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: filter reso (amount 0.0 – 1.0)");
+        post("[jpvoice~] usage: filter reso (amount 0.0 - 1.0)");
         return;
     }
 
@@ -430,7 +431,7 @@ void jpvoice_tilde_drive(t_jpvoice *x, t_symbol *, int argc, t_atom *argv)
 
     if (argc < 1)
     {
-        post("[jpvoice~] usage: filter drive (amount 0.0 – 1.0)");
+        post("[jpvoice~] usage: filter drive (amount 0.0 - 1.0)");
         return;
     }
 
@@ -449,22 +450,16 @@ t_int *jpvoice_tilde_perform(t_int *w)
     t_sample *outR = (t_sample *)(w[5]);
     int n = (int)(w[6]);
 
-    x->cutoffBuf.set(cutoff);
+    x->cutoffBuf.set(cutoff, n);
     x->voice->setFilterCutoff(&x->cutoffBuf);
 
-    x->resoBuf.set(reso);
+    x->resoBuf.set(reso, n);
     x->voice->setFilterResonance(&x->resoBuf);
 
+    x->voice->outBufferL.set(outL, n);
+    x->voice->outBufferR.set(outR, n);
+
     x->voice->computeSamples();
-
-    dsp_float *bufL = x->voice->mixBufferL.data();
-    dsp_float *bufR = x->voice->mixBufferR.data();
-
-    for (int i = 0; i < n; ++i)
-    {
-        outL[i] = static_cast<t_sample>(bufL[i]);
-        outR[i] = static_cast<t_sample>(bufR[i]);
-    }
 
     return (w + 7);
 }
@@ -477,8 +472,8 @@ void jpvoice_tilde_dsp(t_jpvoice *x, t_signal **sp)
     
     DSP::initializeAudio(x->samplerate, x->blockSize);
 
-    x->cutoffBuf.resize(x->blockSize);
-    x->resoBuf.resize(x->blockSize);
+    x->cutoffBuf.create(x->blockSize);
+    x->resoBuf.create(x->blockSize);
 
     x->voice->initialize();
 

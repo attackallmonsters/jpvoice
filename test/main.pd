@@ -1461,9 +1461,7 @@
 #X connect 83 0 10 0;
 #X coords 0 -1 1 1 260 110 2 350 20;
 #X restore 228 213 pd demo;
-#X obj 516 100 poly 6 1;
-#X obj 516 175 clone the-jpvoice 6;
-#N canvas 288 565 980 630 synth 1;
+#N canvas 288 565 980 630 synth 0;
 #X obj 681 194 loadbang;
 #X obj 231 350 outlet~;
 #X obj 345 350 outlet~;
@@ -1488,7 +1486,6 @@
 #X connect 0 0 4 0;
 #X connect 3 1 1 0;
 #X connect 3 2 2 0;
-#X connect 4 0 3 0;
 #X connect 5 0 8 0;
 #X connect 6 0 3 0;
 #X connect 7 0 3 0;
@@ -1509,6 +1506,8 @@
 #X connect 19 0 17 0;
 #X connect 20 0 3 0;
 #X restore 413 510 pd synth;
+#X obj 516 100 poly 1 1;
+#X obj 516 175 clone the-jpvoice 1;
 #X connect 5 0 6 0;
 #X connect 6 0 8 0;
 #X connect 6 1 7 0;
@@ -1522,9 +1521,9 @@
 #X connect 17 0 16 0;
 #X connect 17 0 26 0;
 #X connect 18 0 12 4;
-#X connect 19 0 52 0;
-#X connect 20 0 52 1;
-#X connect 21 0 53 0;
+#X connect 19 0 53 0;
+#X connect 20 0 53 1;
+#X connect 21 0 54 0;
 #X connect 25 0 28 0;
 #X connect 26 0 15 4;
 #X connect 27 0 29 0;
@@ -1542,8 +1541,8 @@
 #X connect 44 0 45 0;
 #X connect 45 0 47 0;
 #X connect 47 0 46 0;
-#X connect 52 0 11 0;
-#X connect 52 1 21 1;
-#X connect 52 2 21 2;
-#X connect 53 0 30 0;
-#X connect 53 1 31 0;
+#X connect 53 0 11 0;
+#X connect 53 1 21 1;
+#X connect 53 2 21 2;
+#X connect 54 0 30 0;
+#X connect 54 1 31 0;

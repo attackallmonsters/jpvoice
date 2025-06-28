@@ -115,7 +115,7 @@ void DSP::log2File(const char *fmt, ...)
 }
 
 // Zeros a value if it is in the range of +/- epsilon
-dsp_float DSP::zeroSubnormals(dsp_float value)
+double DSP::zeroSubnormals(dsp_float value)
 {
     return (std::fabs(value) < epsilon) ? 0.0 : value;
 }
